@@ -82,7 +82,7 @@ public class Book {
     @JoinColumn(name = "contributor_id", nullable = false)
     private Contributor contributor;
 
-    public Book(String title, String explanation, String content, String publisher, LocalDate publishDate, String ISBN, Contributor contributor, BookStatus status, Boolean packable, Integer regularPrice, Integer salePrice, Integer stock, Long viewCount) {
+    public Book(String title, String explanation, String content, String publisher, LocalDate publishDate, String isbn, Contributor contributor, BookStatus status, Boolean packable, Integer regularPrice, Integer salePrice, Integer stock, Long viewCount) {
         this.title = title;
         this.explanation = explanation;
         this.content = content;
