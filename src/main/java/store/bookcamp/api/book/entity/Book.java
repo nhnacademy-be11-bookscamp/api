@@ -1,7 +1,19 @@
 package store.bookcamp.api.book.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import store.bookcamp.api.contributor.entity.Contributor;
 
 import java.time.LocalDate;
@@ -9,7 +21,6 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "book")
 public class Book {
 
     @Id
@@ -39,7 +50,7 @@ public class Book {
 
     // ISBN
     @Column(length = 13, unique = true, nullable = false)
-    private String ISBN;
+    private String isbn;
 
     // 정가
     @Column(name = "regular_price", nullable = false)
@@ -55,7 +66,7 @@ public class Book {
 
     // 조회수
     @Column(name = "view_count", nullable = false)
-    private Integer viewCount = 0;
+    private Long viewCount = 0L;
 
     // 포장 가능 여부
     @Column(nullable = false)
@@ -71,13 +82,13 @@ public class Book {
     @JoinColumn(name = "contributor_id", nullable = false)
     private Contributor contributor;
 
-    public Book(String title, String explanation, String content, String publisher, LocalDate publishDate, String ISBN, Contributor contributor, BookStatus status, Boolean packable, Integer regularPrice, Integer salePrice, Integer stock, Integer viewCount) {
+    public Book(String title, String explanation, String content, String publisher, LocalDate publishDate, String ISBN, Contributor contributor, BookStatus status, Boolean packable, Integer regularPrice, Integer salePrice, Integer stock, Long viewCount) {
         this.title = title;
         this.explanation = explanation;
         this.content = content;
         this.publisher = publisher;
         this.publishDate = publishDate;
-        this.ISBN = ISBN;
+        this.isbn = isbn;
         this.contributor = contributor;
         this.status = status;
         this.packable = packable;

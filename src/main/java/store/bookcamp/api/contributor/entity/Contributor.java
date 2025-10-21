@@ -1,15 +1,18 @@
 package store.bookcamp.api.contributor.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "contributor")
 public class Contributor {
 
     @Id
@@ -20,4 +23,8 @@ public class Contributor {
     // 기여자
     @Column(nullable = false)
     private String contributors;
+
+    public Contributor(String contributors) {
+        this.contributors = contributors;
+    }
 }
