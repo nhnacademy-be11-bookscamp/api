@@ -43,7 +43,6 @@ class MemberServiceTest {
         );
 
         savedMember = new Member(createRequest.id(),createRequest.password(),createRequest.name(),createRequest.email(),createRequest.phone(),createRequest.birth());
-        savedMember.setId(1L);
     }
 
     @Test
