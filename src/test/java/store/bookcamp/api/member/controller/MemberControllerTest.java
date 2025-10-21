@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import store.bookcamp.api.member.controller.request.MemberCreateRequest;
 import store.bookcamp.api.member.controller.response.MemberCreateResponse;
+import store.bookcamp.api.member.service.MemberDto; // MemberDto 임포트 추가
 import store.bookcamp.api.member.service.MemberService;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +30,7 @@ class MemberControllerTest {
 
     private MemberCreateRequest mockRequest;
     private MemberCreateResponse mockResponse;
+    private String expectedName = "홍길동";
 
     @BeforeEach
     void setUp() {
@@ -40,21 +42,21 @@ class MemberControllerTest {
                 "010-1234-5678",
                 LocalDate.of(1990, 1, 1)
         );
-        mockResponse = new MemberCreateResponse("홍길동");
+        mockResponse = new MemberCreateResponse(expectedName);
     }
 
     @Test
     @DisplayName("회원 생성 API 호출 성공 및 201 Created 반환 테스트")
     void createMember_success_returns201() {
-        when(memberService.create(any(MemberCreateRequest.class))).thenReturn(mockResponse);
+        when(memberService.create(any(MemberDto.class))).thenReturn(expectedName);
 
         ResponseEntity<MemberCreateResponse> actualResponse = memberController.createMember(mockRequest);
 
-        verify(memberService, times(1)).create(mockRequest);
+        verify(memberService, times(1)).create(any(MemberDto.class));
 
         assertEquals(HttpStatus.CREATED, actualResponse.getStatusCode(), "HTTP 상태 코드는 201 Created여야 합니다.");
 
         assertNotNull(actualResponse.getBody(), "응답 본문은 null이 아니어야 합니다.");
-        assertEquals(mockResponse.name(), actualResponse.getBody().name(), "응답 DTO의 name 필드가 일치해야 합니다.");
+        assertEquals(expectedName, actualResponse.getBody().name(), "응답 DTO의 name 필드가 일치해야 합니다.");
     }
 }

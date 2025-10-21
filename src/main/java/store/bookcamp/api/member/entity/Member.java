@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.bookcamp.api.member.service.MemberDto;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,14 +51,13 @@ public class Member {
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    public Member(String accountId, String password, String name, String email, String phone,
-                  LocalDate birthDate){
-        this.accountId = accountId;
-        this.password = password;
-        this.name = name;
-        this.email= email;
-        this.phone = phone;
-        this.birthDate = birthDate;
+    public Member(MemberDto memberDto){
+        this.accountId = memberDto.accountId();
+        this.password = memberDto.password();
+        this.name = memberDto.name();
+        this.email= memberDto.email();
+        this.phone = memberDto.phone();
+        this.birthDate = memberDto.birthDate();
         this.point = 0;
         this.status = Status.NORMAL;
         this.statusUpdateDate = LocalDate.now();
