@@ -1,20 +1,18 @@
 package store.bookcamp.api.member.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class Member {
 
@@ -22,50 +20,44 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @Column(nullable = false)
     private String name;
 
-    @NotNull
-    @Size(min = 8, max = 64)
+    @Column(nullable = false)
     private String password;
 
-    @NotNull
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @NotNull
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String phone;
 
-    @NotNull
+    @Column(nullable = false)
     private Integer point;
 
-    @NotNull
+    @Column(nullable = false)
     private Status status;
 
-    @NotNull
-    @Column(name = "status_update_date")
+    @Column(nullable = false)
     private LocalDate statusUpdateDate;
 
-    @NotNull
-    @Column(name = "account_id" , unique = true)
+    @Column(nullable = false, unique = true)
     private String accountId;
 
-    @Nullable
-    @Column(name = "last_login_at")
+    @Column(nullable = true)
     private LocalDateTime lastLoginAt;
 
-    @NotNull
-    private LocalDate birth;
+    @Column(nullable = false)
+    private LocalDate birthDate;
 
     public Member(String accountId, String password, String name, String email, String phone,
-                  LocalDate birth){
+                  LocalDate birthDate){
         this.accountId = accountId;
         this.password = password;
         this.name = name;
         this.email= email;
         this.phone = phone;
-        this.birth = birth;
+        this.birthDate = birthDate;
         this.point = 0;
         this.status = Status.NORMAL;
         this.statusUpdateDate = LocalDate.now();

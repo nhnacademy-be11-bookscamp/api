@@ -20,7 +20,7 @@ public class MemberService {
                 request.name(),
                 request.email(),
                 request.phone(),
-                request.birth()
+                request.birthDate()
         );
         Member savedMember = memberRepository.save(newMember);
         return new MemberCreateResponse(savedMember.getName());
