@@ -1,4 +1,4 @@
-package store.bookcamp.api.book.entity;
+package store.bookcamp.api.contributor.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -8,10 +8,7 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "contributor")
 public class Contributor {
 

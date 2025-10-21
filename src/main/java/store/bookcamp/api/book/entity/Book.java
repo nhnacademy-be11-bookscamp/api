@@ -2,15 +2,13 @@ package store.bookcamp.api.book.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import store.bookcamp.api.contributor.entity.Contributor;
 
 import java.time.LocalDate;
 
 @Entity
 @Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "book")
 public class Book {
 
@@ -36,8 +34,8 @@ public class Book {
     private String publisher;
 
     // 출판일자
-    @Column(name = "published_date", nullable = false)
-    private LocalDate publishedDate;
+    @Column(name = "publish_date", nullable = false)
+    private LocalDate publishDate;
 
     // ISBN
     @Column(length = 13, unique = true, nullable = false)
@@ -60,10 +58,11 @@ public class Book {
     private Integer viewCount = 0;
 
     // 포장 가능 여부
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private Boolean packable;
+    @Column(nullable = false)
+    private Boolean packable = false;
 
     // 판매 가능 여부
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookStatus status;
 
@@ -71,4 +70,20 @@ public class Book {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contributor_id", nullable = false)
     private Contributor contributor;
+
+    public Book(String title, String explanation, String content, String publisher, LocalDate publishDate, String ISBN, Contributor contributor, BookStatus status, Boolean packable, Integer regularPrice, Integer salePrice, Integer stock, Integer viewCount) {
+        this.title = title;
+        this.explanation = explanation;
+        this.content = content;
+        this.publisher = publisher;
+        this.publishDate = publishDate;
+        this.ISBN = ISBN;
+        this.contributor = contributor;
+        this.status = status;
+        this.packable = packable;
+        this.regularPrice = regularPrice;
+        this.salePrice = salePrice;
+        this.stock = stock;
+        this.viewCount = viewCount;
+    }
 }
