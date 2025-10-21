@@ -24,8 +24,9 @@ public class MemberController {
     @Tag(name = "Member API")
     @Operation(summary = "create", description = "회원가입 api")
     public ResponseEntity<MemberCreateResponse> createMember(@RequestBody MemberCreateRequest memberCreateRequest){
-        MemberCreateResponse response = memberService.create();
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        //MemberCreateResponse response = memberService.create();
+        //return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return null;
     }
 
 

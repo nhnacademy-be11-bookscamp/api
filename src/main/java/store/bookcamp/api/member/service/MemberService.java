@@ -9,5 +9,5 @@ import store.bookcamp.api.member.repository.MemberRepository;
 public class MemberService {
     private final MemberRepository memberRepository;
 
-    public
+    //public
 }
