@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store.bookcamp.api.member.controller.request.MemberCreateRequest;
 import store.bookcamp.api.member.controller.response.MemberCreateResponse;
 import store.bookcamp.api.member.entity.Member;
-import store.bookcamp.api.member.entity.State;
+import store.bookcamp.api.member.entity.Status;
 import store.bookcamp.api.member.repository.MemberRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,17 +42,8 @@ class MemberServiceTest {
                 LocalDate.of(1990, 1, 1)
         );
 
-        savedMember = new Member();
+        savedMember = new Member(createRequest.id(),createRequest.password(),createRequest.name(),createRequest.email(),createRequest.phone(),createRequest.birth());
         savedMember.setId(1L);
-        savedMember.setAccountId(createRequest.id());
-        savedMember.setPassword(createRequest.password());
-        savedMember.setName(createRequest.name());
-        savedMember.setEmail(createRequest.email());
-        savedMember.setPhone(createRequest.phone());
-        savedMember.setBirth(createRequest.birth());
-        savedMember.setPoint(0);
-        savedMember.setState(State.NORMAL);
-        savedMember.setStatusUpdateDate(LocalDate.now());
     }
 
     @Test
@@ -73,7 +64,7 @@ class MemberServiceTest {
             assertEquals(createRequest.password(), argument.getPassword());
             assertEquals(createRequest.name(), argument.getName());
             assertEquals(0, argument.getPoint());
-            assertEquals(State.NORMAL, argument.getState());
+            assertEquals(Status.NORMAL, argument.getStatus());
             assertTrue(argument.getStatusUpdateDate().isEqual(LocalDate.now()) || argument.getStatusUpdateDate().isEqual(LocalDate.now().minusDays(1)));
             assertNull(argument.getLastLoginAt());
             return true;

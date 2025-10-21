@@ -3,7 +3,7 @@ package store.bookcamp.api.member.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import store.bookcamp.api.member.entity.Member;
-import store.bookcamp.api.member.entity.State;
+import store.bookcamp.api.member.entity.Status;
 
 public record MemberDto(
         Long id,
@@ -13,7 +13,7 @@ public record MemberDto(
         String phone,
         LocalDate birth,
         Integer point,
-        State state,
+        Status state,
         LocalDate statusUpdateDate,
         LocalDateTime lastLoginAt
 ) {
@@ -26,7 +26,7 @@ public record MemberDto(
                 member.getPhone(),
                 member.getBirth(),
                 member.getPoint(),
-                member.getState(),
+                member.getStatus(),
                 member.getStatusUpdateDate(),
                 member.getLastLoginAt()
         );

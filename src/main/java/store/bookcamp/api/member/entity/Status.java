@@ -1,5 +1,5 @@
 package store.bookcamp.api.member.entity;
 
-public enum State {
+public enum Status {
     NORMAL, DORMANT, WITHDRAWN
 }

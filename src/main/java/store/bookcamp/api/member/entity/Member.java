@@ -9,15 +9,31 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 public class Member {
+
+    public Member(String accountId, String password, String name, String email, String phone,
+                  LocalDate birth){
+        this.accountId = accountId;
+        this.password = password;
+        this.name = name;
+        this.email= email;
+        this.phone = phone;
+        this.birth = birth;
+        this.point = 0;
+        this.status = Status.NORMAL;
+        this.statusUpdateDate = LocalDate.now();
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,8 +43,7 @@ public class Member {
     private String name;
 
     @NotNull
-    @Min(8)
-    @Max(64)
+    @Size(min = 8, max = 64)
     private String password;
 
     @NotNull
@@ -43,7 +58,7 @@ public class Member {
     private Integer point;
 
     @NotNull
-    private State state;
+    private Status status;
 
     @NotNull
     @Column(name = "status_update_date")
@@ -59,5 +74,6 @@ public class Member {
 
     @NotNull
     private LocalDate birth;
+
 
 }

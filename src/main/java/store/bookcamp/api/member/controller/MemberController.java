@@ -18,6 +18,7 @@ import store.bookcamp.api.member.service.MemberService;
 @RequestMapping("/member")
 @Tag(name = "Member API", description = "Member CRU API입니다")
 public class MemberController {
+
     private final MemberService memberService;
 
     @PostMapping
