@@ -1,6 +1,7 @@
 server:
   forward-headers-strategy: framework
-
+  port: 8081
+  
 springdoc:
   api-docs:
     path: /bookscamp
@@ -17,3 +18,13 @@ springdoc:
   cache:
     disabled: true
   model-and-view-allowed: true
+
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+spring:
+  application:
+    name: api-server
