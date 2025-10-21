@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import store.bookcamp.api.member.controller.request.MemberCreateRequest; // Request DTO는 Dto 생성용으로 유지
 import store.bookcamp.api.member.entity.Member;
 import store.bookcamp.api.member.entity.Status;
 import store.bookcamp.api.member.repository.MemberRepository;
