@@ -18,19 +18,6 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Member {
 
-    public Member(String accountId, String password, String name, String email, String phone,
-                  LocalDate birth){
-        this.accountId = accountId;
-        this.password = password;
-        this.name = name;
-        this.email= email;
-        this.phone = phone;
-        this.birth = birth;
-        this.point = 0;
-        this.status = Status.NORMAL;
-        this.statusUpdateDate = LocalDate.now();
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -71,5 +58,16 @@ public class Member {
     @NotNull
     private LocalDate birth;
 
-
+    public Member(String accountId, String password, String name, String email, String phone,
+                  LocalDate birth){
+        this.accountId = accountId;
+        this.password = password;
+        this.name = name;
+        this.email= email;
+        this.phone = phone;
+        this.birth = birth;
+        this.point = 0;
+        this.status = Status.NORMAL;
+        this.statusUpdateDate = LocalDate.now();
+    }
 }

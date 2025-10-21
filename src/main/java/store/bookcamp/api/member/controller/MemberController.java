@@ -28,6 +28,4 @@ public class MemberController {
         MemberCreateResponse response = memberService.create(memberCreateRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-
-
 }

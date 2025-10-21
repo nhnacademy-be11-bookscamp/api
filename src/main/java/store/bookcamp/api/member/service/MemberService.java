@@ -14,9 +14,15 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    @Transactional
     public MemberCreateResponse create(MemberCreateRequest request) {
-        Member newMember = new Member(request.id(),request.password(),request.name(),request.email(),request.phone(),request.birth());
+        Member newMember = new Member(
+                request.id(),
+                request.password(),
+                request.name(),
+                request.email(),
+                request.phone(),
+                request.birth()
+        );
         Member savedMember = memberRepository.save(newMember);
         return new MemberCreateResponse(savedMember.getName());
     }
