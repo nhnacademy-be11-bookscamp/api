@@ -4,7 +4,7 @@ server:
 springdoc:
   api-docs:
     path: /bookscamp
-    gruops:
+    groups:
       enabled: true
   swagger-ui:
     path: /swagger-ui-custom.html
