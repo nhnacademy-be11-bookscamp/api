@@ -2,7 +2,6 @@ package store.bookcamp.api.member.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import store.bookcamp.api.member.controller.request.MemberCreateRequest;
 import store.bookcamp.api.member.controller.response.MemberCreateResponse;
 import store.bookcamp.api.member.entity.Member;
