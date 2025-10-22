@@ -25,6 +25,16 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
 
+#jasypt:
+#  encryptor:
+#    # 환경 변수 JASYPT_ENCRYPTOR_PASSWORD의 값을 마스터 키로 사용
+#    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+
 spring:
   application:
     name: api-server
+
+  datasource:
+    url: jdbc:mysql://s4.java21.net:13306/project_be11_team3
+    username: project_be11_team3
+    password: ENC(2JZwitHDXNUG2K2ks3039bKHHStHqfsYFIIBh7z2U+U=)
