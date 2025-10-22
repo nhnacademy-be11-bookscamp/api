@@ -27,12 +27,12 @@ public record MemberCreateRequest(
 ) {
     public static MemberCreateDto toDto(MemberCreateRequest memberCreateRequest){
         return new MemberCreateDto(
-                memberCreateRequest.id,
-                memberCreateRequest.password,
-                memberCreateRequest.name,
-                memberCreateRequest.email,
-                memberCreateRequest.phone,
-                memberCreateRequest.birthDate
+                memberCreateRequest.id(),
+                memberCreateRequest.password(),
+                memberCreateRequest.name(),
+                memberCreateRequest.email(),
+                memberCreateRequest.phone(),
+                memberCreateRequest.birthDate()
         );
     }
 }
