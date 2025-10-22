@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.bookcamp.api.member.service.MemberDto;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import store.bookcamp.api.member.controller.request.MemberCreateRequest;
 import store.bookcamp.api.member.controller.response.MemberCreateResponse;
 import store.bookcamp.api.member.service.MemberCreateDto;
-import store.bookcamp.api.member.service.MemberDto;
 import store.bookcamp.api.member.service.MemberService;
 
 @RequiredArgsConstructor
