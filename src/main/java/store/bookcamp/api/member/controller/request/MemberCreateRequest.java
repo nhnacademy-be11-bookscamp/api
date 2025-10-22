@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import store.bookcamp.api.member.service.MemberCreateDto;
 
 @Valid
 public record MemberCreateRequest(
@@ -24,4 +25,14 @@ public record MemberCreateRequest(
         @NotNull
         LocalDate birthDate
 ) {
+    public static MemberCreateDto toDto(MemberCreateRequest memberCreateRequest){
+        return new MemberCreateDto(
+                memberCreateRequest.id,
+                memberCreateRequest.password,
+                memberCreateRequest.name,
+                memberCreateRequest.email,
+                memberCreateRequest.phone,
+                memberCreateRequest.birthDate
+        );
+    }
 }

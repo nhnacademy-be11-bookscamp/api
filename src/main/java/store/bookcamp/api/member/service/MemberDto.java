@@ -14,25 +14,10 @@ public record MemberDto(
         String phone,
         LocalDate birthDate,
         Integer point,
-        Status state,
+        Status status,
         LocalDate statusUpdateDate,
         LocalDateTime lastLoginAt
         ) {
-    public MemberDto(String accountId, String password, String name, String email,String phone, LocalDate birthDate) {
-        this(
-                null,
-                accountId,
-                password,
-                name,
-                email,
-                phone,
-                birthDate,
-                0,
-                Status.NORMAL,
-                LocalDate.now(),
-                null
-        );
-    }
     public static MemberDto fromEntity(Member member) {
         return new MemberDto(
                 member.getId(),

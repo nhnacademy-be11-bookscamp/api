@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import store.bookcamp.api.member.controller.request.MemberCreateRequest;
 import store.bookcamp.api.member.controller.response.MemberCreateResponse;
-import store.bookcamp.api.member.service.MemberDto; // MemberDto 임포트 추가
+import store.bookcamp.api.member.service.MemberCreateDto;
 import store.bookcamp.api.member.service.MemberService;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,11 +48,11 @@ class MemberControllerTest {
     @Test
     @DisplayName("회원 생성 API 호출 성공 및 201 Created 반환 테스트")
     void createMember_success_returns201() {
-        when(memberService.create(any(MemberDto.class))).thenReturn(expectedName);
+        when(memberService.create(any(MemberCreateDto.class))).thenReturn(expectedName);
 
         ResponseEntity<MemberCreateResponse> actualResponse = memberController.createMember(mockRequest);
 
-        verify(memberService, times(1)).create(any(MemberDto.class));
+        verify(memberService, times(1)).create(any(MemberCreateDto.class));
 
         assertEquals(HttpStatus.CREATED, actualResponse.getStatusCode(), "HTTP 상태 코드는 201 Created여야 합니다.");
 

@@ -45,21 +45,32 @@ public class Member {
     @Column(nullable = false, unique = true)
     private String accountId;
 
-    @Column(nullable = true)
     private LocalDateTime lastLoginAt;
 
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    public Member(MemberDto memberDto){
-        this.accountId = memberDto.accountId();
-        this.password = memberDto.password();
-        this.name = memberDto.name();
-        this.email= memberDto.email();
-        this.phone = memberDto.phone();
-        this.birthDate = memberDto.birthDate();
-        this.point = 0;
-        this.status = Status.NORMAL;
-        this.statusUpdateDate = LocalDate.now();
+    public Member(Long id,
+                  String accountId,
+                  String password,
+                  String name,
+                  String email,
+                  String phone,
+                  Integer point,
+                  Status status,
+                  LocalDate statusUpdateDate,
+                  LocalDateTime lastLoginAt,
+                  LocalDate birthDate) {
+        this.password = password;
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.point = point;
+        this.status = status;
+        this.statusUpdateDate = statusUpdateDate;
+        this.accountId = accountId;
+        this.lastLoginAt = lastLoginAt;
+        this.birthDate = birthDate;
     }
 }
