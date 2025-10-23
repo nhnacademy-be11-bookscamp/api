@@ -1,34 +1,46 @@
 package store.bookscamp.api.book.service.dto;
 
+import java.time.LocalDate;
 import lombok.Getter;
+import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.book.entity.BookStatus;
+import store.bookscamp.api.contributor.entity.Contributor;
 
-@Getter
-public class BookSortDto {
+public record BookSortDto(
+        Long id,
+        String title,
+        String explanation,
+        String content,
+        String publisher,
+        LocalDate publishDate,
+        Contributor contributor,
+        BookStatus status,
+        Boolean packable,
+        Integer regularPrice,
+        Integer salePrice,
+        Integer stock,
+        Long viewCount
+) {
 
-    private String title;
-    private String publisher;
-    private Long reviewCount;
-    private double averageRating;
+//    public BookSortDto(Long id, String title, Integer salePrice, Long viewCount){
+//        this(id, title,"","","",LocalDate.now(), new Contributor(""),BookStatus.AVAILABLE, true,0, salePrice,100, viewCount);
+//    }
 
-    public BookSortDto(String title, String publisher){
-        this.title = title;
-        this.publisher = publisher;
-        this.reviewCount = 0L;
-        this.averageRating = 0.0;
-    }
-
-
-    public BookSortDto(String title, String publisher, Long reviewCount){
-        this.title = title;
-        this.publisher = publisher;
-        this.reviewCount = reviewCount;
-        this.averageRating = 0.0;
-    }
-
-    public BookSortDto(String title, String publisher, double averageRating){
-        this.title = title;
-        this.publisher = publisher;
-        this.reviewCount = 0L;
-        this.averageRating = averageRating;
+    public static BookSortDto from(Book book) {
+        return new BookSortDto(
+                book.getId(),
+                book.getTitle(),
+                book.getExplanation(),
+                book.getContent(),
+                book.getPublisher(),
+                book.getPublishDate(),
+                book.getContributor(),
+                book.getStatus(),
+                book.getPackable(),
+                book.getRegularPrice(),
+                book.getSalePrice(),
+                book.getStock(),
+                book.getViewCount()
+        );
     }
 }

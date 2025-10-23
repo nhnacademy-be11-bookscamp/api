@@ -1,12 +1,17 @@
 server:
   forward-headers-strategy: framework
   port: 8081
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+#
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/
 
 spring:
   application:
     name: api-server
+
+  datasource:
+    url: jdbc:mysql://s4.java21.net:13306/project_be11_team3_dev
+    username: project_be11_team3
+    password: 51Cn(Ag5HLkiFLke
