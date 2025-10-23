@@ -30,9 +30,9 @@ public class BookImage {
     private String imageUrl;
 
     @Column(nullable = false)
-    private Boolean isThumbnail;
+    private boolean isThumbnail;
 
-    public BookImage(Book book, String imageUrl, Boolean isThumbnail) {
+    public BookImage(Book book, String imageUrl, boolean isThumbnail) {
         this.book = book;
         this.imageUrl = imageUrl;
         this.isThumbnail = isThumbnail;

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import store.bookscamp.api.common.entity.SoftDeleteEntity;
-import store.bookscamp.api.order.entity.Order;
+import store.bookscamp.api.orderinfo.entity.OrderInfo;
 
 @Entity
 @Getter
@@ -30,7 +30,7 @@ public class Payment extends SoftDeleteEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    private Order order;
+    private OrderInfo orderInfo;
 
     @Column(nullable = false)
     private Integer paidAmount;
