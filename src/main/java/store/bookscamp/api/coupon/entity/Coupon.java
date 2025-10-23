@@ -31,10 +31,10 @@ public class Coupon {
     private DiscountType discountType;
 
     @Column(nullable = false)
-    private Integer discountValue;
+    private int discountValue;
 
     @Column(nullable = false)
-    private Integer minOrderAmount = 0;
+    private int minOrderAmount;
 
     private Integer maxDiscountAmount;
 
@@ -43,8 +43,8 @@ public class Coupon {
     public Coupon(TargetType targetType,
                   Long targetId,
                   DiscountType discountType,
-                  Integer discountValue,
-                  Integer minOrderAmount,
+                  int discountValue,
+                  int minOrderAmount,
                   Integer maxDiscountAmount,
                   Integer validDays
     ) {

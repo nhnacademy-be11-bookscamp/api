@@ -39,7 +39,7 @@ public class Member extends SoftDeleteEntity {
     private String phone;
 
     @Column(nullable = false)
-    private Integer point;
+    private int point;
 
     @Column(nullable = false)
     private MemberStatus status;
@@ -59,7 +59,7 @@ public class Member extends SoftDeleteEntity {
                   String password,
                   String email,
                   String phone,
-                  Integer point,
+                  int point,
                   MemberStatus status,
                   LocalDate statusUpdateDate,
                   String accountId,
