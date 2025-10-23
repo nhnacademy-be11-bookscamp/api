@@ -9,5 +9,6 @@ public class ApplicationException extends RuntimeException {
 
     public ApplicationException(ErrorCode errorCode) {
         super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 }

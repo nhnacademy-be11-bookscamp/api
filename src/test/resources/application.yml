@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:;MODE=MySQL;DB_CLOSE_DELAY=-1
+    generate-unique-name: true
+    username: sa
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        highlight_sql: true
+        auto_quote_keyword: true
+
+
+logging.level:
+  root: info
+
+redis:
+  host: localhost
+  port: 6379

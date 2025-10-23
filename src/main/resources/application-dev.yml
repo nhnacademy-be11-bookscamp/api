@@ -53,3 +53,8 @@ aladin:
   output: js
   version: "20131101"
 
+
+
+redis:
+  host: localhost
+  port: 6379
