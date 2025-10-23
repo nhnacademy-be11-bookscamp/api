@@ -5,6 +5,7 @@ import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
@@ -13,9 +14,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.common.entity.BaseEntity;
 import store.bookscamp.api.contributor.entity.Contributor;
 
@@ -81,6 +86,13 @@ public class Book extends BaseEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "contributor_id", nullable = false)
     private Contributor contributor;
+
+    /*
+    PageResponse에서 이미지를 어떻게 가져와야할지 몰라서 일단 이렇게 사용하기로
+     */
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookImage> images = new ArrayList<>();
+
 
     public Book(String title,
                 String explanation,
