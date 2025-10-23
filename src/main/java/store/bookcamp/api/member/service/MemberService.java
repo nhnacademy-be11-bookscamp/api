@@ -13,7 +13,11 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public String create(MemberCreateDto member) {
+    public MemberGetDto getMember(String id){
+        return MemberGetDto.fromEntity(memberRepository.getByAccountId(id));
+    }
+
+    public void createMember(MemberCreateDto member) {
 
         Member newMember = new Member(
                 null,
@@ -30,6 +34,7 @@ public class MemberService {
         );
 
         Member savedMember = memberRepository.save(newMember);
-        return savedMember.getName();
     }
+
+    public MemberGetDto updateMember
 }

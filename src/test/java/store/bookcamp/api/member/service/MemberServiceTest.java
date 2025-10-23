@@ -58,10 +58,8 @@ class MemberServiceTest {
     @DisplayName("회원 생성 성공 테스트")
     void createMember_success() {
         when(memberRepository.save(any(Member.class))).thenReturn(savedMember);
-        String actualName = memberService.create(createDto);
+        memberService.create(createDto);
         verify(memberRepository, times(1)).save(any(Member.class));
-        assertNotNull(actualName, "응답 이름은 null이 아니어야 합니다.");
-        assertEquals(expectedName, actualName, "응답 이름은 저장된 회원의 이름과 일치해야 합니다.");
     }
 
     @Test

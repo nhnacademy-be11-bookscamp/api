@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import store.bookcamp.api.member.controller.request.MemberCreateRequest;
-import store.bookcamp.api.member.controller.response.MemberCreateResponse;
 import store.bookcamp.api.member.service.MemberCreateDto;
 import store.bookcamp.api.member.service.MemberService;
 
@@ -50,13 +49,11 @@ class MemberControllerTest {
     void createMember_success_returns201() {
         when(memberService.create(any(MemberCreateDto.class))).thenReturn(expectedName);
 
-        ResponseEntity<MemberCreateResponse> actualResponse = memberController.createMember(mockRequest);
+        ResponseEntity<Void> actualResponse = memberController.createMember(mockRequest);
 
         verify(memberService, times(1)).create(any(MemberCreateDto.class));
 
-        assertEquals(HttpStatus.CREATED, actualResponse.getStatusCode(), "HTTP 상태 코드는 201 Created여야 합니다.");
+        assertEquals(HttpStatus.SEE_OTHER, actualResponse.getStatusCode(), "HTTP 상태 코드는 303 SEE_OTHER여야 합니다.");
 
-        assertNotNull(actualResponse.getBody(), "응답 본문은 null이 아니어야 합니다.");
-        assertEquals(expectedName, actualResponse.getBody().name(), "응답 DTO의 name 필드가 일치해야 합니다.");
     }
 }
