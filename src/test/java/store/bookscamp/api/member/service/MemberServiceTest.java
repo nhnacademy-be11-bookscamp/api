@@ -1,4 +1,4 @@
-package store.bookcamp.api.member.service;
+package store.bookscamp.api.member.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
