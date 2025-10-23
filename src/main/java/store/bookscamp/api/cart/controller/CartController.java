@@ -1,13 +1,8 @@
 package store.bookscamp.api.cart.controller;
 
-import static org.springframework.http.HttpHeaders.SET_COOKIE;
-
 import jakarta.validation.Valid;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +14,7 @@ import store.bookscamp.api.cart.controller.request.CartItemAddRequest;
 import store.bookscamp.api.cart.controller.request.CartItemUpdateRequest;
 import store.bookscamp.api.cart.service.CartService;
 import store.bookscamp.api.cart.service.dto.CartItemAddDto;
+import store.bookscamp.api.cart.session.CartId;
 
 @RestController
 @RequestMapping("/cart")
@@ -29,28 +25,11 @@ public class CartController {
 
     @PostMapping
     public ResponseEntity<Void> addCartItem(
-            @CookieValue(name = "cartId", required = false) Long cartId,
+            @CartId Long cartId,
             @Valid @RequestBody CartItemAddRequest request
     ) {
-        ResponseCookie cookie = null;
-        if (cartId == null) {
-            cartId = cartService.createCart(request.memberId());
-
-            cookie = ResponseCookie.from("cartId", cartId.toString())
-                    .httpOnly(true)
-                    .path("/")
-                    .maxAge(Duration.ofDays(7))
-                    .build();
-        }
-
         CartItemAddDto dto = request.toDto(cartId);
         cartService.addCartItem(dto);
-
-        if (cookie != null) {
-            return ResponseEntity.ok()
-                    .header(SET_COOKIE, cookie.toString())
-                    .build();
-        }
 
         return ResponseEntity.ok().build();
     }

@@ -6,7 +6,6 @@ import static store.bookscamp.api.book.entity.BookStatus.AVAILABLE;
 import static store.bookscamp.api.common.exception.ErrorCode.BOOK_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_ITEM_NOT_FOUNd;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_NOT_FOUND;
-import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static store.bookscamp.api.member.entity.MemberStatus.NORMAL;
 
 import java.time.LocalDate;
@@ -95,7 +94,7 @@ class CartServiceTest {
         @DisplayName("정상적으로 장바구니 아이템 추가")
         void success_addCartItem() {
             // given
-            CartItemAddDto dto = new CartItemAddDto(cart.getId(), member.getId(), book.getId(), 3);
+            CartItemAddDto dto = new CartItemAddDto(cart.getId(), book.getId(), 3);
 
             // when
             Long cartItemId = cartService.addCartItem(dto);
@@ -110,7 +109,7 @@ class CartServiceTest {
         @Test
         @DisplayName("존재하지 않는 장바구니 ID일 경우 예외 발생")
         void fail_cartNotFound() {
-            CartItemAddDto dto = new CartItemAddDto(999L, member.getId(), book.getId(), 1);
+            CartItemAddDto dto = new CartItemAddDto(999L, book.getId(), 1);
 
             assertThatThrownBy(() -> cartService.addCartItem(dto))
                     .isInstanceOf(ApplicationException.class)
@@ -121,37 +120,12 @@ class CartServiceTest {
         @Test
         @DisplayName("존재하지 않는 도서 ID일 경우 예외 발생")
         void fail_bookNotFound() {
-            CartItemAddDto dto = new CartItemAddDto(cart.getId(), member.getId(), 999L, 1);
+            CartItemAddDto dto = new CartItemAddDto(cart.getId(), 999L, 1);
 
             assertThatThrownBy(() -> cartService.addCartItem(dto))
                     .isInstanceOf(ApplicationException.class)
                     .extracting("errorCode")
                     .isEqualTo(BOOK_NOT_FOUND);
-        }
-    }
-
-    @Nested
-    @DisplayName("장바구니 생성 시")
-    class CreateCartTest {
-
-        @Test
-        @DisplayName("회원이 존재하지 않으면 예외 발생")
-        void createCart_memberNotFound() {
-            assertThatThrownBy(() -> cartService.createCart(999L))
-                    .isInstanceOf(ApplicationException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(MEMBER_NOT_FOUND);
-        }
-
-        @Test
-        @DisplayName("비회원 장바구니 생성")
-        void createCart_guest() {
-            // when
-            Long cartId = cartService.createCart(null);
-
-            // then
-            Cart cart = cartRepository.findById(cartId).orElseThrow();
-            assertThat(cart.getMember()).isNull();
         }
     }
 

@@ -3,7 +3,6 @@ package store.bookscamp.api.cart.service;
 import static store.bookscamp.api.common.exception.ErrorCode.BOOK_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_ITEM_NOT_FOUNd;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_NOT_FOUND;
-import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,8 +14,6 @@ import store.bookscamp.api.cart.repository.CartItemRepository;
 import store.bookscamp.api.cart.repository.CartRepository;
 import store.bookscamp.api.cart.service.dto.CartItemAddDto;
 import store.bookscamp.api.common.exception.ApplicationException;
-import store.bookscamp.api.member.entity.Member;
-import store.bookscamp.api.member.repository.MemberRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +22,6 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final BookRepository bookRepository;
     private final CartRepository cartRepository;
-    private final MemberRepository memberRepository;
 
     public Long addCartItem(CartItemAddDto dto) {
         Cart cart = cartRepository.findById(dto.cartId())
@@ -36,16 +32,6 @@ public class CartService {
 
         return cartItemRepository.save(cartItem)
                 .getId();
-    }
-
-    public Long createCart(Long memberId) {
-        if (memberId != null) {
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
-            return cartRepository.save(new Cart(member)).getId();
-        }
-
-        return cartRepository.save(new Cart(null)).getId();
     }
 
     public void updateCart(Long cartItemId, Integer quantity) {

@@ -1,6 +1,9 @@
 server:
   forward-headers-strategy: framework
   port: 8081
+  servlet:
+    session:
+      timeout: 7d
 
 springdoc:
   api-docs:
@@ -32,6 +35,13 @@ eureka:
 spring:
   application:
     name: api-server
+  session:
+    redis:
+      flush-mode: on_save
+  data:
+    redis:
+      host: localhost
+      port: 6379
   servlet:
     multipart:
       max-file-size: 5MB
@@ -52,9 +62,3 @@ aladin:
   ttb-key: ttbtvsqyfzvpj1722001
   output: js
   version: "20131101"
-
-
-
-redis:
-  host: localhost
-  port: 6379

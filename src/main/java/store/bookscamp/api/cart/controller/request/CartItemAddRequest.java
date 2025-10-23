@@ -5,8 +5,6 @@ import store.bookscamp.api.cart.service.dto.CartItemAddDto;
 
 public record CartItemAddRequest(
 
-        Long memberId,
-
         @NotNull
         Long bookId,
 
@@ -17,7 +15,6 @@ public record CartItemAddRequest(
     public CartItemAddDto toDto(Long cartId) {
         return new CartItemAddDto(
                 cartId,
-                memberId,
                 bookId,
                 quantity
         );

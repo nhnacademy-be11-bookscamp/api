@@ -16,10 +16,9 @@ spring:
         highlight_sql: true
         auto_quote_keyword: true
 
-
-logging.level:
-  root: info
-
-redis:
-  host: localhost
-  port: 6379
+  application:
+    name: api-server
+  data:
+    redis:
+          host: localhost
+          port: 6379
