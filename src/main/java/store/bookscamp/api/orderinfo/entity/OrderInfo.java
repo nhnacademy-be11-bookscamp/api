@@ -1,4 +1,4 @@
-package store.bookscamp.api.order.entity;
+package store.bookscamp.api.orderinfo.entity;
 
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -22,9 +22,9 @@ import store.bookscamp.api.member.entity.Member;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-@SQLDelete(sql = "UPDATE `order` SET deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE `order_info` SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
-public class Order extends SoftDeleteEntity {
+public class OrderInfo extends SoftDeleteEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     private Long id;
@@ -48,14 +48,14 @@ public class Order extends SoftDeleteEntity {
     private OrderStatus orderStatus;
 
     @Column(nullable = false)
-    private Integer usedPoint = 0;
+    private int usedPoint;
 
-    public Order(Member member,
+    public OrderInfo(Member member,
                  Coupon coupon,
                  Delivery delivery,
                  Integer netAmount,
                  OrderStatus orderStatus,
-                 Integer usedPoint
+                 int usedPoint
     ) {
         this.member = member;
         this.coupon = coupon;
