@@ -1,7 +1,6 @@
 package store.bookscamp.api.book.service.dto;
 
 import java.time.LocalDate;
-import lombok.Getter;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.contributor.entity.Contributor;
@@ -21,11 +20,6 @@ public record BookSortDto(
         Integer stock,
         Long viewCount
 ) {
-
-//    public BookSortDto(Long id, String title, Integer salePrice, Long viewCount){
-//        this(id, title,"","","",LocalDate.now(), new Contributor(""),BookStatus.AVAILABLE, true,0, salePrice,100, viewCount);
-//    }
-
     public static BookSortDto from(Book book) {
         return new BookSortDto(
                 book.getId(),

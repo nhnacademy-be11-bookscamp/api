@@ -3,7 +3,6 @@ package store.bookscamp.api.book.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.repository.BookRepository;
