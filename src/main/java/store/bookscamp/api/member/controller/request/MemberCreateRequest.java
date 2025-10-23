@@ -1,11 +1,11 @@
-package store.bookcamp.api.member.controller.request;
+package store.bookscamp.api.member.controller.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
-import store.bookcamp.api.member.service.MemberCreateDto;
+import store.bookscamp.api.member.service.MemberCreateDto;
 
 public record MemberCreateRequest(
         @NotNull

@@ -15,6 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store.bookcamp.api.member.entity.Member;
 import store.bookcamp.api.member.entity.Status;
 import store.bookcamp.api.member.repository.MemberRepository;
+import store.bookscamp.api.member.service.MemberCreateDto;
+import store.bookscamp.api.member.service.MemberService;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {

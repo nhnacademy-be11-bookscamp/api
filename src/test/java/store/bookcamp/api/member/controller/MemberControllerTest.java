@@ -14,10 +14,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import store.bookcamp.api.member.controller.request.MemberCreateRequest;
-import store.bookcamp.api.member.controller.response.MemberCreateResponse;
-import store.bookcamp.api.member.service.MemberCreateDto;
-import store.bookcamp.api.member.service.MemberService;
+import store.bookscamp.api.member.controller.MemberController;
+import store.bookscamp.api.member.controller.request.MemberCreateRequest;
+import store.bookscamp.api.member.controller.response.MemberCreateResponse;
+import store.bookscamp.api.member.service.MemberCreateDto;
+import store.bookscamp.api.member.service.MemberService;
 
 @ExtendWith(MockitoExtension.class)
 class MemberControllerTest {

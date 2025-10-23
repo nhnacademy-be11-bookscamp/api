@@ -1,4 +1,4 @@
-package store.bookcamp.api.member.controller;
+package store.bookscamp.api.member.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import store.bookcamp.api.member.controller.request.MemberCreateRequest;
-import store.bookcamp.api.member.controller.response.MemberCreateResponse;
-import store.bookcamp.api.member.service.MemberCreateDto;
-import store.bookcamp.api.member.service.MemberService;
+import store.bookscamp.api.member.controller.request.MemberCreateRequest;
+import store.bookscamp.api.member.controller.response.MemberCreateResponse;
+import store.bookscamp.api.member.service.MemberCreateDto;
+import store.bookscamp.api.member.service.MemberService;
 
 @RequiredArgsConstructor
 @RestController

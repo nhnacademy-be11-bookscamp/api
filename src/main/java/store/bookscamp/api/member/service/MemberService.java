@@ -1,11 +1,11 @@
-package store.bookcamp.api.member.service;
+package store.bookscamp.api.member.service;
 
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import store.bookcamp.api.member.entity.Member;
-import store.bookcamp.api.member.entity.Status;
-import store.bookcamp.api.member.repository.MemberRepository;
+import store.bookscamp.api.member.entity.Member;
+import store.bookscamp.api.member.entity.MemberStatus;
+import store.bookscamp.api.member.repository.MemberRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -16,15 +16,14 @@ public class MemberService {
     public String create(MemberCreateDto member) {
 
         Member newMember = new Member(
-                null,
-                member.accountId(),
-                member.password(),
                 member.name(),
+                member.password(),
                 member.email(),
                 member.phone(),
                 0,
-                Status.NORMAL,
+                MemberStatus.NORMAL,
                 LocalDate.now(),
+                member.accountId(),
                 null,
                 member.birthDate()
         );
