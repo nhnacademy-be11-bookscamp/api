@@ -18,7 +18,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import store.bookscamp.api.common.entity.SoftDeleteEntity;
 import store.bookscamp.api.member.entity.Member;
-import store.bookscamp.api.order.entity.Order;
+import store.bookscamp.api.orderinfo.entity.OrderInfo;
 
 @Entity
 @Getter
@@ -32,7 +32,7 @@ public class PointHistory extends SoftDeleteEntity {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "order_id")
-    private Order order;
+    private OrderInfo orderInfo;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
@@ -45,8 +45,8 @@ public class PointHistory extends SoftDeleteEntity {
     @Column(nullable = false)
     private Integer pointAmount;
 
-    public PointHistory(Order order, Member member, PointType pointType, Integer pointAmount) {
-        this.order = order;
+    public PointHistory(OrderInfo orderInfo, Member member, PointType pointType, Integer pointAmount) {
+        this.orderInfo = orderInfo;
         this.member = member;
         this.pointType = pointType;
         this.pointAmount = pointAmount;

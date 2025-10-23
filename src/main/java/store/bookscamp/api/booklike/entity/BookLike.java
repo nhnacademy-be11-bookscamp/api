@@ -40,5 +40,5 @@ public class BookLike {
     private Member member;
 
     @Column(nullable = false)
-    private Boolean liked = true;
+    private boolean liked;
 }
