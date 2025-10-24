@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.entity.MemberStatus;
 import store.bookscamp.api.member.repository.MemberRepository;
+import store.bookscamp.api.member.service.dto.MemberCreateDto;
+import store.bookscamp.api.member.service.dto.MemberGetDto;
+import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
+import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 
 @Service
 @RequiredArgsConstructor
