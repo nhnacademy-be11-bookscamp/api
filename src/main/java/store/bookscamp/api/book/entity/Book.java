@@ -82,19 +82,21 @@ public class Book extends BaseEntity {
     @JoinColumn(name = "contributor_id", nullable = false)
     private Contributor contributor;
 
-    public Book(String title,
-                String explanation,
-                String content,
-                String publisher,
-                LocalDate publishDate,
-                String isbn,
-                Contributor contributor,
-                BookStatus status,
-                Boolean packable,
-                Integer regularPrice,
-                Integer salePrice,
-                Integer stock,
-                long viewCount
+    public Book(
+
+            String title,
+            String explanation,
+            String content,
+            String publisher,
+            LocalDate publishDate,
+            String isbn,
+            Contributor contributor,
+            BookStatus status,
+            boolean packable,
+            Integer regularPrice,
+            Integer salePrice,
+            Integer stock,
+            long viewCount
     ) {
         this.title = title;
         this.explanation = explanation;
