@@ -1,4 +1,4 @@
-package store.bookcamp.api.member.service;
+package store.bookscamp.api.member.service;
 
 public record MemberUpdateDto(
         String name,

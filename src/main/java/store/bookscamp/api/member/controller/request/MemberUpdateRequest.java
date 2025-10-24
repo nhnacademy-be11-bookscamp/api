@@ -1,8 +1,8 @@
-package store.bookcamp.api.member.controller.request;
+package store.bookscamp.api.member.controller.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import store.bookcamp.api.member.service.MemberUpdateDto;
+import store.bookscamp.api.member.service.MemberUpdateDto;
 
 public record MemberUpdateRequest(
         @NotBlank

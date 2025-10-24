@@ -1,9 +1,9 @@
-package store.bookcamp.api.member.service;
+package store.bookscamp.api.member.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import store.bookcamp.api.member.entity.Member;
-import store.bookcamp.api.member.entity.Status;
+import store.bookscamp.api.member.entity.Member;
+import store.bookscamp.api.member.entity.MemberStatus;
 
 public record MemberDto(
         Long id,
@@ -14,7 +14,7 @@ public record MemberDto(
         String phone,
         LocalDate birthDate,
         Integer point,
-        Status status,
+        MemberStatus status,
         LocalDate statusUpdateDate,
         LocalDateTime lastLoginAt
         ) {

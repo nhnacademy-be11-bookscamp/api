@@ -1,7 +1,7 @@
-package store.bookcamp.api.member.controller.response;
+package store.bookscamp.api.member.controller.response;
 
 import java.time.LocalDate;
-import store.bookcamp.api.member.service.MemberGetDto;
+import store.bookscamp.api.member.service.MemberGetDto;
 
 public record MemberGetResponse(
         String name,

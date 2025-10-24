@@ -77,4 +77,17 @@ public class Member extends SoftDeleteEntity {
         this.lastLoginAt = lastLoginAt;
         this.birthDate = birthDate;
     }
+    public void changeInfo(String name, String email, String phone){
+        this.name= name;
+        this.email=email;
+        this.phone=phone;
+    }
+
+    public void changeStatus(MemberStatus memberStatus){
+        this.status = memberStatus;
+    }
+
+    public void changePassword(String password){
+        this.password = password;
+    }
 }

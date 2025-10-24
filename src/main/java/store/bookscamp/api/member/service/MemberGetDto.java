@@ -1,7 +1,7 @@
-package store.bookcamp.api.member.service;
+package store.bookscamp.api.member.service;
 
 import java.time.LocalDate;
-import store.bookcamp.api.member.entity.Member;
+import store.bookscamp.api.member.entity.Member;
 
 public record MemberGetDto(
         String name,
