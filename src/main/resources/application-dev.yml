@@ -27,3 +27,28 @@ eureka:
 spring:
   application:
     name: api-server
+
+
+aladin:
+  base-url: https://www.aladin.co.kr/ttb/api
+  ttb-key:  ttbtvsqyfzvpj1722001
+  output: js
+  version: "20131101"
+
+
+springdoc:
+  api-docs:
+    path: /bookscamp
+    groups:
+      enabled: true
+  swagger-ui:
+    path: /swagger-ui-custom.html
+    enabled: true
+    groups-order: ASC
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  cache:
+    disabled: true
+  model-and-view-allowed: true
