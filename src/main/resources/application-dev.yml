@@ -10,3 +10,11 @@ eureka:
 spring:
   application:
     name: api-server
+
+minio:
+  url: http://storage.java21.net
+  access-key: EvJ2FP8gy27lDYolEWGQ
+  secret-key: h9uzw85pZPDchOTHzslEOUlNd5cDPFLQnJCofZfH
+  bucket:
+    book: bookscamp-book-image
+    review: bookscamp-review-image
