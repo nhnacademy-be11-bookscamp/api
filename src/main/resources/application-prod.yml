@@ -19,7 +19,6 @@ springdoc:
     disabled: true
   model-and-view-allowed: true
 
-
 eureka:
   client:
     serviceUrl:
