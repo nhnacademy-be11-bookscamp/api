@@ -13,10 +13,10 @@ public record BookSortResponse(
         LocalDate publishDate,
         Contributor contributor,
         BookStatus status,
-        Boolean packable,
+        boolean packable,
         Integer regularPrice,
         Integer salePrice,
         Integer stock,
-        Long viewCount
+        long viewCount
 ) {
 }

@@ -14,11 +14,11 @@ public record BookSortDto(
         LocalDate publishDate,
         Contributor contributor,
         BookStatus status,
-        Boolean packable,
+        boolean packable,
         Integer regularPrice,
         Integer salePrice,
         Integer stock,
-        Long viewCount
+        long viewCount
 ) {
     public static BookSortDto from(Book book) {
         return new BookSortDto(
@@ -30,7 +30,7 @@ public record BookSortDto(
                 book.getPublishDate(),
                 book.getContributor(),
                 book.getStatus(),
-                book.getPackable(),
+                book.isPackable(),
                 book.getRegularPrice(),
                 book.getSalePrice(),
                 book.getStock(),

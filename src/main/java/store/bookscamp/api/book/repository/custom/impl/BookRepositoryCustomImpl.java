@@ -25,7 +25,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private final QContributor contributor = QContributor.contributor;
 
     @Override
-    public Page<Book> getBooks(Long categoryId, String keyword, String sortType, Pageable pageable) {
+    public Page<Book> getBooks(List<Long> categoryIds, String keyword, String sortType, Pageable pageable) {
 
         OrderSpecifier<?> sortOrder = getSortSpecifier(sortType, book);
 
@@ -36,7 +36,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .leftJoin(bookCategory).on(book.id.eq(bookCategory.book.id))
                 .leftJoin(category).on(bookCategory.category.id.eq(category.id))
                 .where(
-                        eqCategory(categoryId)
+                        inCategories(categoryIds)
                 )
                 .orderBy(sortOrder)
                 .offset(pageable.getOffset())
@@ -51,7 +51,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 .leftJoin(bookCategory).on(book.id.eq(bookCategory.book.id))
                 .leftJoin(category).on(bookCategory.category.id.eq(category.id))
                 .where(
-                        eqCategory(categoryId)
+                        inCategories(categoryIds)
                 )
                 .fetchOne();
 
@@ -60,12 +60,12 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return new PageImpl<>(results, pageable, total);
     }
 
-    // 카테고리 아이디 null 체크
-    private BooleanExpression eqCategory(Long categoryId) {
-        if (categoryId == null) {
-            return null;
+
+    private BooleanExpression inCategories(List<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return null; // 카테고리 필터 없음
         }
-        return category.id.eq(categoryId);
+        return category.id.in(categoryIds);
     }
 
     // 케이스에 따라 orderBy 안의 조건을 선택하는 역할
