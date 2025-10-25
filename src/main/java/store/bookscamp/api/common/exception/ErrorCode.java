@@ -1,5 +1,6 @@
 package store.bookscamp.api.common.exception;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import lombok.Getter;
@@ -12,7 +13,11 @@ public enum ErrorCode {
     BOOK_NOT_FOUND(NOT_FOUND, "도서를 찾을 수 없습니다."),
     CART_NOT_FOUND(NOT_FOUND, "장바구니를 찾을 수 없습니다."),
     CART_ITEM_NOT_FOUNd(NOT_FOUND, "장바구니에 담긴 상품을 찾을 수 없습니다."),
+
+    TAG_NOT_FOUND(NOT_FOUND, "태그를 찾을 수 없습니다."),
+    TAG_BAD_REQUEST(BAD_REQUEST, "잘못된 태그 요청입니다."),
     ;
+
 
     private HttpStatus httpStatus;
     private String message;
