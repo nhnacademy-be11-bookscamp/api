@@ -12,7 +12,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.bookscamp.api.order.entity.Order;
+import store.bookscamp.api.orderinfo.entity.OrderInfo;
 
 @Entity
 @Getter
@@ -27,13 +27,13 @@ public class NonMember {
     @OneToOne(fetch = LAZY)
     @MapsId
     @JoinColumn(name = "order_id")
-    private Order order;
+    private OrderInfo orderInfo;
 
     @Column(name = "password", nullable = false)
     private Integer password; // 암호화된 비밀번호
 
-    public NonMember(Order order, Integer password) {
-        this.order = order;
+    public NonMember(OrderInfo orderInfo, Integer password) {
+        this.orderInfo = orderInfo;
         this.password = password;
     }
 }

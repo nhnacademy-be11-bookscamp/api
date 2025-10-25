@@ -1,4 +1,4 @@
-package store.bookscamp.api.order.entity;
+package store.bookscamp.api.orderinfo.entity;
 
 public enum OrderStatus {
 

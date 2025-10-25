@@ -71,11 +71,11 @@ public class Book extends BaseEntity {
 
     // 조회수
     @Column(nullable = false)
-    private Long viewCount = 0L;
+    private long viewCount;
 
     // 포장 가능 여부
     @Column(nullable = false)
-    private Boolean packable = false;
+    private boolean packable;
 
     // 판매 가능 여부
     @Enumerated(STRING)
@@ -106,7 +106,7 @@ public class Book extends BaseEntity {
                 Integer regularPrice,
                 Integer salePrice,
                 Integer stock,
-                Long viewCount
+                long viewCount
     ) {
         this.title = title;
         this.explanation = explanation;
