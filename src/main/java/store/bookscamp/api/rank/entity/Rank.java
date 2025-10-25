@@ -1,11 +1,11 @@
 package store.bookscamp.api.rank.entity;
 
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -22,7 +22,7 @@ public class Rank {
     @Id @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "point_policy_id")
     private PointPolicy pointPolicy;
 
@@ -30,10 +30,10 @@ public class Rank {
     private String name;
 
     @Column(nullable = false)
-    private Integer cumulativeMinAmount;
+    private int cumulativeMinAmount;
 
     @Column(nullable = false)
-    private Integer cumulativeMaxAmount;
+    private int cumulativeMaxAmount;
 
     public Rank(PointPolicy pointPolicy, String name, Integer cumulativeMinAmount, Integer cumulativeMaxAmount) {
         this.pointPolicy = pointPolicy;

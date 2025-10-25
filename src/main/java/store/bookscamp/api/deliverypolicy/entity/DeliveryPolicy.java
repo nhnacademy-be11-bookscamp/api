@@ -19,12 +19,12 @@ public class DeliveryPolicy {
     private Long id;
 
     @Column(nullable = false)
-    private Integer freeDeliveryThreshold;
+    private int freeDeliveryThreshold;
 
     @Column(nullable = false)
-    private Integer baseDeliveryFee;
+    private int baseDeliveryFee;
 
-    public DeliveryPolicy(Integer freeDeliveryThreshold, Integer baseDeliveryFee) {
+    public DeliveryPolicy(int freeDeliveryThreshold, int baseDeliveryFee) {
         this.freeDeliveryThreshold = freeDeliveryThreshold;
         this.baseDeliveryFee = baseDeliveryFee;
     }
