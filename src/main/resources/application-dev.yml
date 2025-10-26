@@ -2,23 +2,6 @@ server:
   forward-headers-strategy: framework
   port: 8081
 
-springdoc:
-  api-docs:
-    path: /bookscamp
-    groups:
-      enabled: true
-  swagger-ui:
-    path: /swagger-ui-custom.html
-    enabled: true
-    groups-order: ASC
-    tags-sorter: alpha
-    operations-sorter: alpha
-    display-request-duration: true
-    doc-expansion: none
-  cache:
-    disabled: true
-  model-and-view-allowed: true
-
 eureka:
   client:
     serviceUrl:
@@ -52,3 +35,12 @@ springdoc:
   cache:
     disabled: true
   model-and-view-allowed: true
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG
+
+
+
+
