@@ -20,10 +20,10 @@ import store.bookscamp.api.member.controller.request.MemberCreateRequest;
 import store.bookscamp.api.member.controller.request.MemberPasswordUpdateRequest;
 import store.bookscamp.api.member.controller.request.MemberUpdateRequest;
 import store.bookscamp.api.member.controller.response.MemberGetResponse;
-import store.bookscamp.api.member.service.MemberCreateDto;
-import store.bookscamp.api.member.service.MemberPasswordUpdateDto;
+import store.bookscamp.api.member.service.dto.MemberCreateDto;
+import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
 import store.bookscamp.api.member.service.MemberService;
-import store.bookscamp.api.member.service.MemberUpdateDto;
+import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 
 @RequiredArgsConstructor
 @RestController
