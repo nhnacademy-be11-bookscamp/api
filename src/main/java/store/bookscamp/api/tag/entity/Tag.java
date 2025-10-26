@@ -15,21 +15,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PROTECTED)
 public class Tag {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String name;
 
-    /** 엔티티 생성 책임을 한 곳으로 모은 '팩토리 메서드' */
     public static Tag create(String name) {
         Tag t = new Tag();
         t.name = name;
         return t;
     }
 
-    /** 세터 대신 의도를 드러내는 '도메인 메서드' */
-    public void changeName(String name) {
-        this.name = name;
+    public void changeName(String newName) {
+        if (newName != null && !this.name.equals(newName)) {
+            this.name = newName;
+        }
     }
 }

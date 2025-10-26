@@ -1,7 +1,10 @@
 package store.bookscamp.api.tag.exception;
 
-public class TagAlreadyExists extends RuntimeException {
-    public TagAlreadyExists(String message) {
-        super(message);
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
+
+public class TagAlreadyExists extends ApplicationException {
+    public TagAlreadyExists(ErrorCode errorCode) {
+        super(errorCode);
     }
 }
