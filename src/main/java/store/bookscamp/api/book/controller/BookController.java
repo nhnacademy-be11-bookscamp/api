@@ -1,5 +1,11 @@
 package store.bookscamp.api.book.controller;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import store.bookscamp.api.book.controller.dto.request.BookRegisterRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +26,11 @@ public class BookController {
 
     private final BookService bookService;
 
+
+    @PostMapping(value = "/register", produces = "application/json")
+    public ResponseEntity<?> registerBook(@RequestBody @Valid BookRegisterRequest req) {
+        bookService.registerBook(req);
+        return ResponseEntity.ok().body("{\"message\":\"도서 등록이 완료되었습니다.\"}");
     @GetMapping
     public ResponseEntity<Page<BookSortResponse>> getBooks(
             @RequestParam(required = false) Long categoryId,

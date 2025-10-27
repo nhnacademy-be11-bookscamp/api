@@ -5,23 +5,6 @@ server:
     session:
       timeout: 7d
 
-springdoc:
-  api-docs:
-    path: /bookscamp
-    groups:
-      enabled: true
-  swagger-ui:
-    path: /swagger-ui-custom.html
-    enabled: true
-    groups-order: ASC
-    tags-sorter: alpha
-    operations-sorter: alpha
-    display-request-duration: true
-    doc-expansion: none
-  cache:
-    disabled: true
-  model-and-view-allowed: true
-
 eureka:
   instance:
     hostname: localhost
@@ -29,8 +12,11 @@ eureka:
     ip-address: 127.0.0.1
     instance-id: ${spring.application.name}:${server.port}
   client:
-    serviceUrl:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
       defaultZone: http://localhost:8761/eureka/
+
 
 spring:
   application:
@@ -71,3 +57,30 @@ aladin:
   ttb-key: ttbtvsqyfzvpj1722001
   output: js
   version: "20131101"
+
+
+springdoc:
+  api-docs:
+    path: /bookscamp
+    groups:
+      enabled: true
+  swagger-ui:
+    path: /swagger-ui-custom.html
+    enabled: true
+    groups-order: ASC
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  cache:
+    disabled: true
+  model-and-view-allowed: true
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG
+
+
+
+

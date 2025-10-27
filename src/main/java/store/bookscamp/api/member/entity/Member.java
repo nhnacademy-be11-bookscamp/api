@@ -48,7 +48,7 @@ public class Member extends SoftDeleteEntity {
     private LocalDate statusUpdateDate;
 
     @Column(nullable = false, unique = true)
-    private String accountId;
+    private String userName;
 
     private LocalDateTime lastLoginAt;
 
@@ -62,7 +62,7 @@ public class Member extends SoftDeleteEntity {
                   int point,
                   MemberStatus status,
                   LocalDate statusUpdateDate,
-                  String accountId,
+                  String userName,
                   LocalDateTime lastLoginAt,
                   LocalDate birthDate
     ) {
@@ -73,7 +73,7 @@ public class Member extends SoftDeleteEntity {
         this.point = point;
         this.status = status;
         this.statusUpdateDate = statusUpdateDate;
-        this.accountId = accountId;
+        this.userName = userName;
         this.lastLoginAt = lastLoginAt;
         this.birthDate = birthDate;
     }
