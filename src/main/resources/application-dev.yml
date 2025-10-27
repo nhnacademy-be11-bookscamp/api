@@ -1,6 +1,9 @@
 server:
   forward-headers-strategy: framework
   port: 8081
+  servlet:
+    session:
+      timeout: 7d
 
 eureka:
   instance:
@@ -18,7 +21,13 @@ eureka:
 spring:
   application:
     name: api-server
-
+  session:
+    redis:
+      flush-mode: on_save
+  data:
+    redis:
+      host: localhost
+      port: 6379
   datasource:
     url: jdbc:mysql://s4.java21.net:13306/project_be11_team3_dev
     username: project_be11_team3

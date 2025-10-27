@@ -1,0 +1,49 @@
+spring:
+  profiles:
+    active: test
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:;MODE=MySQL;DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE;
+    generate-unique-name: true
+    username: sa
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        highlight_sql: true
+        auto_quote_keyword: true
+
+  application:
+    name: api-server
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  session:
+    redis:
+          flush-mode: on_save
+  servlet:
+    multipart:
+          max-file-size: 5MB
+          max-request-size: 5MB
+
+minio:
+  # 브라우저에서 접근 가능한 public base URL (리턴용)
+  url: http://storage.java21.net:8000
+  access-key: EvJ2FP8gy27lDYolEWGQ
+  secret-key: h9uzw85pZPDchOTHzslEOUlNd5cDPFLQnJCofZfH
+  bucket:
+    book: bookscamp-book-image
+    review: bookscamp-review-image
+
+aladin:
+  base-url: https://www.aladin.co.kr/ttb/api
+  ttb-key: ttbtvsqyfzvpj1722001
+  output: js
+  version: "20131101"
