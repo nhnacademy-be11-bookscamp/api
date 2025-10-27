@@ -32,5 +32,7 @@ public class Tag {
         if (newName != null && !this.name.equals(newName)) {
             this.name = newName;
         }
+    public Tag(String name) {
+        this.name = name;
     }
 }
