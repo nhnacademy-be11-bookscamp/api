@@ -24,4 +24,14 @@ public class SwaggerConfig {
     public GroupedOpenApi api(){
         return null;
     }
+
+    @Bean
+    public GroupedOpenApi aladinApi(){
+        return GroupedOpenApi.builder()
+                .group("aladin")
+                .pathsToMatch("/api/aladin/**")
+                .build();
+    }
+
+
 }
