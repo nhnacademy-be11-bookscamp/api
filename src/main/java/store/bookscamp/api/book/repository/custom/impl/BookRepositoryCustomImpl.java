@@ -63,7 +63,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     private BooleanExpression inCategories(List<Long> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
-            return null;
+            return null; // 카테고리 필터 없음
         }
         return category.id.in(categoryIds);
     }

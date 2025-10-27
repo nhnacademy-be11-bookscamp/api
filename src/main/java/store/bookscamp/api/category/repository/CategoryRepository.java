@@ -9,6 +9,10 @@ import store.bookscamp.api.category.entity.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
+    /**
+     * 현재 카테고리 ID를 포함한 모든 하위 카테고리 ID를 재귀적으로 조회합니다.
+     * (PostgreSQL, MySQL 8.0+, MariaDB 10.2+ 표준 SQL 기준)
+     */
     @Query(value = """
         WITH RECURSIVE CategoryTree AS (
             SELECT id

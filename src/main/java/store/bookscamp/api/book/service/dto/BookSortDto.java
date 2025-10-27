@@ -6,7 +6,6 @@ import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.contributor.entity.Contributor;
 
 public record BookSortDto(
-
         Long id,
         String title,
         String explanation,

@@ -83,6 +83,20 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>3.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>5.0.0</version>
+            <classifier>jakarta</classifier>
+        </dependency>
+
+       
 		<dependency>
 			<groupId>io.minio</groupId>
 			<artifactId>minio</artifactId>
@@ -172,6 +186,8 @@
                             <version>3.1.0</version>
                         </path>
 					</annotationProcessorPaths>
+
+
 				</configuration>
 			</plugin>
 			<plugin>
