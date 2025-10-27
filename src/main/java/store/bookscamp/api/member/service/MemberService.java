@@ -24,7 +24,7 @@ public class MemberService {
 
     public MemberGetDto getMember(String id){
 
-        return MemberGetDto.fromEntity(memberRepository.getByAccountId(id).orElseThrow(
+        return MemberGetDto.fromEntity(memberRepository.getByUserName(id).orElseThrow(
                 () -> new MemberNotFoundException(
                 ErrorCode.MEMBER_NOT_FOUND)
         )
@@ -32,7 +32,7 @@ public class MemberService {
     }
 
     public boolean checkIdDuplicate(String id) {
-        return memberRepository.existsByAccountId(id);
+        return memberRepository.existsByUserName(id);
     }
 
     public void createMember(MemberCreateDto member) {
@@ -45,7 +45,7 @@ public class MemberService {
                 0,
                 MemberStatus.NORMAL,
                 LocalDate.now(),
-                member.accountId(),
+                member.userName(),
                 null,
                 member.birthDate()
         );
@@ -55,7 +55,7 @@ public class MemberService {
 
     @Transactional
     public void updateMember(String id, MemberUpdateDto memberUpdateDto){
-        Member member = memberRepository.getByAccountId(id).orElseThrow(
+        Member member = memberRepository.getByUserName(id).orElseThrow(
                 () -> new MemberNotFoundException(
                         ErrorCode.MEMBER_NOT_FOUND)
         );
@@ -70,7 +70,7 @@ public class MemberService {
     @Transactional
     public void updateMemberPassoword(String id, MemberPasswordUpdateDto memberPasswordUpdateDto){
         String encodedPassword = passwordEncoder.encode(memberPasswordUpdateDto.password());
-        Member member = memberRepository.getByAccountId(id).orElseThrow(
+        Member member = memberRepository.getByUserName(id).orElseThrow(
                 () -> new MemberNotFoundException(
                         ErrorCode.MEMBER_NOT_FOUND)
         );
@@ -80,7 +80,7 @@ public class MemberService {
 
     @Transactional
     public void deleteMember(String id){
-        Member member = memberRepository.getByAccountId(id).orElseThrow(
+        Member member = memberRepository.getByUserName(id).orElseThrow(
                 () -> new MemberNotFoundException(
                         ErrorCode.MEMBER_NOT_FOUND)
         );
