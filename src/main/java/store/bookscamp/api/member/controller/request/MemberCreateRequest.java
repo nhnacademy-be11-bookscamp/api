@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
-import store.bookscamp.api.member.service.MemberCreateDto;
+import store.bookscamp.api.member.service.dto.MemberCreateDto;
 
 public record MemberCreateRequest(
         @NotNull

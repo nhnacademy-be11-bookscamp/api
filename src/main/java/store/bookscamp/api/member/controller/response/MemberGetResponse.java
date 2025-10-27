@@ -1,12 +1,13 @@
 package store.bookscamp.api.member.controller.response;
 
 import java.time.LocalDate;
-import store.bookscamp.api.member.service.MemberGetDto;
+import store.bookscamp.api.member.service.dto.MemberGetDto;
 
 public record MemberGetResponse(
         String name,
         String email,
         String phone,
+        Integer point,
         LocalDate birthDate
 ) {
     public static MemberGetResponse fromDto(MemberGetDto memberGetDto){
@@ -14,6 +15,7 @@ public record MemberGetResponse(
                 memberGetDto.name(),
                 memberGetDto.email(),
                 memberGetDto.phone(),
+                memberGetDto.point(),
                 memberGetDto.birthDate()
         );
     }

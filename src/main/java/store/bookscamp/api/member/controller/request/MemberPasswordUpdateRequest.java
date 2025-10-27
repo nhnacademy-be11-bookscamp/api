@@ -2,7 +2,7 @@ package store.bookscamp.api.member.controller.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import store.bookscamp.api.member.service.MemberPasswordUpdateDto;
+import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
 
 public record MemberPasswordUpdateRequest(
         @NotNull
