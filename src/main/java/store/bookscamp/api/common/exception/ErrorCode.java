@@ -1,5 +1,6 @@
 package store.bookscamp.api.common.exception;
 
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import lombok.Getter;
@@ -8,6 +9,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
 
+    MINIO_BUCKET_NOT_FOUND(NOT_FOUND, "버킷을 찾을 수 없습니다."),
+    MINIO_UPLOAD_FAILED(INTERNAL_SERVER_ERROR,"파일 업로드에 실패했습니다."),
     MEMBER_NOT_FOUND(NOT_FOUND, "회원을 찾을 수 없습니다."),
     BOOK_NOT_FOUND(NOT_FOUND, "도서를 찾을 수 없습니다."),
     CART_NOT_FOUND(NOT_FOUND, "장바구니를 찾을 수 없습니다."),

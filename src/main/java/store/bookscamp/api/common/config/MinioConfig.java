@@ -17,6 +17,8 @@ public class MinioConfig {
     @Value("${minio.secret-key}")
     private String secretKey;
 
+    // MinIO 전용 클라이언트 (io.minio.MinioClient)
+    //   -> bucketExists, makeBucket, putObject 같은 MinIO API 직접 호출
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
