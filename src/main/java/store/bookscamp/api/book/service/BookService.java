@@ -19,6 +19,11 @@ import store.bookscamp.api.contributor.entity.Contributor;
 import store.bookscamp.api.contributor.repository.ContributorRepository;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import store.bookscamp.api.book.service.dto.BookSortDto;
+
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +60,8 @@ public class BookService {
                 0                          // viewCount
         );
         bookRepository.save(book);
-
+    
+  
       /*  // bookImg
         if (req.getImageUrls() != null) {
             for (String url : req.getImageUrls()) {
@@ -80,5 +86,19 @@ public class BookService {
                 bookTagRepository.save(new BookTag(book, tag));
             }
         }*/
+    }
+    public Page<BookSortDto> searchBooks(Long categoryId, String keyword, String sortType, Pageable pageable) {
+
+        List<Long> categoryIdsToSearch = null;
+
+        if (categoryId != null) {
+            categoryIdsToSearch = categoryRepository.getAllDescendantIdsIncludingSelf(categoryId);
+        }
+
+        Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, keyword, sortType, pageable);
+        // from 메서드를 통해 Dto로 변환
+        Page<BookSortDto> dtoPage = bookPage.map(BookSortDto::from);
+
+        return dtoPage;
     }
 }
