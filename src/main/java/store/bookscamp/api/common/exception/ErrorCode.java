@@ -14,7 +14,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(NOT_FOUND, "회원을 찾을 수 없습니다."),
     BOOK_NOT_FOUND(NOT_FOUND, "도서를 찾을 수 없습니다."),
     CART_NOT_FOUND(NOT_FOUND, "장바구니를 찾을 수 없습니다."),
-    CART_ITEM_NOT_FOUNd(NOT_FOUND, "장바구니에 담긴 상품을 찾을 수 없습니다."),
+    CART_ITEM_NOT_FOUND(NOT_FOUND, "장바구니에 담긴 상품을 찾을 수 없습니다."),
     ;
 
     private HttpStatus httpStatus;
