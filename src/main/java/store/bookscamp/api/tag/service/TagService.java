@@ -1,6 +1,6 @@
 package store.bookscamp.api.tag.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import store.bookscamp.api.tag.service.dto.TagGetDto;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class TagService {
 
     private final TagRepository tagRepository;
@@ -31,7 +31,6 @@ public class TagService {
         return TagGetDto.from(tag);
     }
 
-    @Transactional
     public TagGetDto getById(Long id) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException(
@@ -39,7 +38,6 @@ public class TagService {
         return TagGetDto.from(tag);
     }
 
-    @Transactional
     public List<TagGetDto> getAll() {
         return tagRepository.findAll().stream()
                 .map(TagGetDto::from)

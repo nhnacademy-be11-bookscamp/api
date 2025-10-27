@@ -6,7 +6,6 @@ import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,12 +20,10 @@ import store.bookscamp.api.tag.controller.response.TagGetResponse;
 import store.bookscamp.api.tag.service.TagService;
 import store.bookscamp.api.tag.service.dto.TagCreateDto;
 import store.bookscamp.api.tag.service.dto.TagGetDto;
-import store.bookscamp.api.tag.service.dto.TagUpdateDto;
 
 @RestController
-@RequestMapping("/tags")
+@RequestMapping("/admin/tags")
 @RequiredArgsConstructor
-@Validated
 public class TagController {
 
     private final TagService tagService;
