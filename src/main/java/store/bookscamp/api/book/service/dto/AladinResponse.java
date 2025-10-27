@@ -1,10 +1,15 @@
 package store.bookscamp.api.book.service.dto;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import java.util.List;
+import lombok.NoArgsConstructor;
 
-/** 공통 래퍼 (ItemSearch, ItemList 공통 구조) */
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class AladinResponse {
     private String version;
