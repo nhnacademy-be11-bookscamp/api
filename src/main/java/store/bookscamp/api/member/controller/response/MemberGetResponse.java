@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import store.bookscamp.api.member.service.dto.MemberGetDto;
 
 public record MemberGetResponse(
+        String username,
         String name,
         String email,
         String phone,
@@ -12,6 +13,7 @@ public record MemberGetResponse(
 ) {
     public static MemberGetResponse fromDto(MemberGetDto memberGetDto){
         return new MemberGetResponse(
+                memberGetDto.username(),
                 memberGetDto.name(),
                 memberGetDto.email(),
                 memberGetDto.phone(),

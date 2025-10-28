@@ -10,7 +10,7 @@ import store.bookscamp.api.member.service.dto.MemberCreateDto;
 public record MemberCreateRequest(
         @NotNull
         @Size(min=4, max = 20)
-        String id,
+        String username,
         @NotNull
         @Size(min = 8, max = 20)
         String password,
@@ -25,7 +25,7 @@ public record MemberCreateRequest(
 ) {
     public static MemberCreateDto toDto(MemberCreateRequest memberCreateRequest){
         return new MemberCreateDto(
-                memberCreateRequest.id(),
+                memberCreateRequest.username(),
                 memberCreateRequest.password(),
                 memberCreateRequest.name(),
                 memberCreateRequest.email(),

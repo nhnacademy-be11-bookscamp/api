@@ -1,4 +1,4 @@
-package store.bookscamp.api.book.controller.dto.response;
+package store.bookscamp.api.book.controller.response;
 
 import lombok.Builder;
 import lombok.Data;

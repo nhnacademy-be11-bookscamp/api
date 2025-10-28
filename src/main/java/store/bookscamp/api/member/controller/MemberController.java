@@ -58,9 +58,7 @@ public class MemberController {
     public ResponseEntity<Void> createMember(@Valid @RequestBody MemberCreateRequest memberCreateRequest){
         MemberCreateDto memberCreateDto = MemberCreateRequest.toDto(memberCreateRequest);
         memberService.createMember(memberCreateDto);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Location","/login");
-        return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
@@ -69,8 +67,7 @@ public class MemberController {
     public ResponseEntity<MemberGetResponse> updateMember(@PathVariable String id, @Valid @RequestBody MemberUpdateRequest memberUpdateRequest) {
         MemberUpdateDto memberUpdateDto = MemberUpdateRequest.toDto(memberUpdateRequest);
         memberService.updateMember(id, memberUpdateDto);
-        MemberGetResponse memberGetResponse = MemberGetResponse.fromDto(memberService.getMember(id));
-        return new ResponseEntity<>(memberGetResponse, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{id}/change-password")
@@ -79,9 +76,7 @@ public class MemberController {
         public ResponseEntity<Void> updatePassword(@PathVariable String id, @Valid @RequestBody MemberPasswordUpdateRequest memberPasswordUpdateRequest) {
         MemberPasswordUpdateDto memberPasswordUpdateDto = MemberPasswordUpdateRequest.toDto(memberPasswordUpdateRequest);
         memberService.updateMemberPassoword(id,memberPasswordUpdateDto);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/login");
-        return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -89,8 +84,6 @@ public class MemberController {
     @Operation(summary = "delete Member", description = "회원탈퇴 API")
     public ResponseEntity<Void> deleteMember(@PathVariable String id){
         memberService.deleteMember(id);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Location","/login");
-        return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

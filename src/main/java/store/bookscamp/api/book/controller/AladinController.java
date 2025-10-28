@@ -9,16 +9,16 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import store.bookscamp.api.book.controller.dto.response.BookDetailResponse;
-import store.bookscamp.api.book.controller.dto.request.BookListRequest;
-import store.bookscamp.api.book.controller.dto.response.BookListResponse;
-import store.bookscamp.api.book.controller.dto.request.BookSearchRequest;
-import store.bookscamp.api.book.controller.dto.response.BookSummaryResponse;
+import store.bookscamp.api.book.controller.response.BookDetailResponse;
+import store.bookscamp.api.book.controller.request.BookListRequest;
+import store.bookscamp.api.book.controller.response.BookListResponse;
+import store.bookscamp.api.book.controller.request.BookSearchRequest;
+import store.bookscamp.api.book.controller.response.BookSummaryResponse;
 import store.bookscamp.api.book.service.AladinService;
 import store.bookscamp.api.book.service.dto.AladinResponse;
 
 @RestController
-@RequestMapping(value = "/api/aladin", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/admin/aladin", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Validated
 @Tag(name= "Aladin API")
@@ -35,18 +35,22 @@ public class AladinController {
 
     // 2) 상세 (ISBN13)
     @GetMapping("/books/{isbn13}")
-    public Mono<BookDetailResponse> detail(@PathVariable String isbn13){
-        return aladinService.lookupByIsbn13(isbn13)
-                .map(resp -> resp.getItem() != null && !resp.getItem().isEmpty()
-                        ? BookDetailResponse.from(resp.getItem().get(0))
-                        : null);
+    public BookDetailResponse detail(@PathVariable String isbn13){
+        var resp = aladinService.lookupByIsbn13(isbn13).block(); // ✅ Mono -> AladinResponse 로 변환
+        if (resp == null || resp.getItem() == null || resp.getItem().isEmpty()) {
+            return null;
+        }
+        return BookDetailResponse.from(resp.getItem().get(0));
     }
 
     // 3) 검색
-    @GetMapping("/search")
-    public Mono<BookListResponse> search(@Valid @ModelAttribute BookSearchRequest req){
-        return aladinService.search(req.getQuery(), req.getQueryType(), req.getStart(), req.getMaxResults(), req.getSort())
-                .map(this::toListResponse);
+    @GetMapping(value ="/search",produces="application/json")
+    public BookListResponse search(@Valid @ModelAttribute BookSearchRequest req){
+        AladinResponse resp = aladinService
+                .search(req.getQuery(), req.getQueryType(), req.getStart(), req.getMaxResults(), req.getSort())
+                .block();
+
+        return toListResponse(resp);
     }
 
     private BookListResponse toListResponse(AladinResponse resp){

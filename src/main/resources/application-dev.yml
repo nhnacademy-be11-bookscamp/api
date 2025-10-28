@@ -1,43 +1,64 @@
 server:
   forward-headers-strategy: framework
   port: 8081
-
-springdoc:
-  api-docs:
-    path: /bookscamp
-    groups:
-      enabled: true
-  swagger-ui:
-    path: /swagger-ui-custom.html
-    enabled: true
-    groups-order: ASC
-    tags-sorter: alpha
-    operations-sorter: alpha
-    display-request-duration: true
-    doc-expansion: none
-  cache:
-    disabled: true
-  model-and-view-allowed: true
+  servlet:
+    session:
+      timeout: 7d
 
 eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
   client:
-    serviceUrl:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
       defaultZone: http://localhost:8761/eureka/
+
 
 spring:
   application:
     name: api-server
-
+  session:
+    redis:
+      flush-mode: on_save
+  data:
+    redis:
+      host: localhost
+      port: 6379
   datasource:
     url: jdbc:mysql://s4.java21.net:13306/project_be11_team3_dev
     username: project_be11_team3
     password: ${PASSWORD}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
+minio:
+  # 브라우저에서 접근 가능한 public base URL (리턴용)
+  url: http://storage.java21.net:8000
+  access-key: EvJ2FP8gy27lDYolEWGQ
+  secret-key: h9uzw85pZPDchOTHzslEOUlNd5cDPFLQnJCofZfH
+  bucket:
+    book: bookscamp-book-image
+    review: bookscamp-review-image
 
 aladin:
   base-url: https://www.aladin.co.kr/ttb/api
-  ttb-key:  ttbtvsqyfzvpj1722001
+  ttb-key: ttbtvsqyfzvpj1722001
   output: js
   version: "20131101"
+
+
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG
+
+
 
 

@@ -1,4 +1,4 @@
-package store.bookscamp.api.book.controller.dto.response;
+package store.bookscamp.api.book.controller.response;
 
 import java.time.LocalDate;
 import store.bookscamp.api.book.entity.Book;

@@ -8,7 +8,6 @@ import java.util.List;
 import store.bookscamp.api.category.entity.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-
     @Query(value = """
         WITH RECURSIVE CategoryTree AS (
             SELECT id
@@ -23,3 +22,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
         """, nativeQuery = true)
     List<Long> getAllDescendantIdsIncludingSelf(@Param("categoryId") Long categoryId);
 }
+
+

@@ -10,6 +10,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.bookscamp.api.book.entity.Book;
@@ -17,6 +19,12 @@ import store.bookscamp.api.book.entity.Book;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(
+        name = "cart_item",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"cart_id", "book_id"})
+        }
+)
 public class CartItem {
 
     @Id @GeneratedValue(strategy = IDENTITY)
@@ -36,6 +44,10 @@ public class CartItem {
     public CartItem(Cart cart, Book book, Integer quantity) {
         this.cart = cart;
         this.book = book;
+        this.quantity = quantity;
+    }
+
+    public void updateQuantity(int quantity) {
         this.quantity = quantity;
     }
 }
