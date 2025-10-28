@@ -12,26 +12,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import store.bookscamp.api.book.controller.dto.BookSortResponse;
-import store.bookscamp.api.book.controller.dto.request.BookRegisterRequest;
+import store.bookscamp.api.book.controller.response.BookSortResponse;
+import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.service.BookService;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/books")
+@RequestMapping
 public class BookController {
 
     private final BookService bookService;
 
 
-    @PostMapping(value = "/register", produces = "application/json")
-    public ResponseEntity<?> registerBook(@RequestBody @Valid BookRegisterRequest req) {
-        bookService.registerBook(req);
+    @PostMapping(value = "/admin/books/create", produces = "application/json")
+    public ResponseEntity<?> createBook(@RequestBody @Valid BookCreateRequest req) {
+        bookService.createBook(req);
         return ResponseEntity.ok().body("{\"message\":\"도서 등록이 완료되었습니다.\"}");
     }
 
-    @GetMapping
+    @GetMapping("/books")
     public ResponseEntity<Page<BookSortResponse>> getBooks(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyWord,

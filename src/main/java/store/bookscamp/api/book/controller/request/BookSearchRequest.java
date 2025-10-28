@@ -1,4 +1,4 @@
-package store.bookscamp.api.book.controller.dto.request;
+package store.bookscamp.api.book.controller.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +9,7 @@ public class BookSearchRequest {
     @NotBlank
     private String query;
     private String queryType;   // Title/Author/Publisher/Keyword (기본 Keyword)
-    @Min(1) private Integer start = 1;
-    @Min(1) private Integer maxResults = 10;
+    @Min(1) private Integer start;
+    @Min(1) private Integer maxResults;
     private String sort;        // Accuracy/PublishTime 등
 }
