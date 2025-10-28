@@ -2,6 +2,7 @@ package store.bookscamp.api.cart.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
@@ -26,6 +28,9 @@ import store.bookscamp.api.member.repository.MemberRepository;
 @Import(JpaConfig.class)
 @DataJpaTest
 class CartItemRepositoryTest {
+
+    @MockitoBean
+    private JPAQueryFactory jpaQueryFactory;
 
     @Autowired
     private CartItemRepository cartItemRepository;
