@@ -23,7 +23,7 @@ public class BookImage {
     private Long id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "book_id")
+    @JoinColumn(name = "book_id", nullable = true)
     private Book book;
 
     @Column(nullable = false)
