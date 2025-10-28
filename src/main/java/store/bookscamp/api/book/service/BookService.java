@@ -3,21 +3,16 @@ package store.bookscamp.api.book.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.bookscamp.api.book.controller.dto.request.BookRegisterRequest;
+import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
-import store.bookscamp.api.bookcategory.entity.BookCategory;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
-import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
-import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
-import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.contributor.entity.Contributor;
 import store.bookscamp.api.contributor.repository.ContributorRepository;
-import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -38,7 +33,7 @@ public class BookService {
     private final BookCategoryRepository bookCategoryRepository;
     private final BookTagRepository bookTagRepository;
 
-    public void registerBook(BookRegisterRequest req) {
+    public void createBook(BookCreateRequest req) {
 
         // contributor
         Contributor contributor = contributorRepository.findByContributors(req.getContributors())
