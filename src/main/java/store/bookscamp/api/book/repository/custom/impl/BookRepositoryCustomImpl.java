@@ -76,6 +76,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
             case "high-view" -> book.viewCount.desc();
             case "low-price" -> book.salePrice.asc();
             case "high-price" -> book.salePrice.desc();
+            case "publishDate" -> book.publishDate.desc();
             default -> book.id.asc();
         };
     }

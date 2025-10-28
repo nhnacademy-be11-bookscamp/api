@@ -15,6 +15,7 @@ import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.service.BookService;
 import store.bookscamp.api.book.service.dto.BookSortDto;
+import store.bookscamp.api.common.pagination.RestPageImpl;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class BookController {
     }
 
     @GetMapping("/books")
-    public ResponseEntity<Page<BookSortResponse>> getBooks(
+    public ResponseEntity<RestPageImpl<BookSortResponse>> getBooks(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyWord,
             @RequestParam(defaultValue = "id") String sortType,
@@ -38,8 +39,9 @@ public class BookController {
     ){
         Page<BookSortDto> bookSortDtoPage = bookService.searchBooks(categoryId, keyWord, sortType, pageable);
 
-        // BookSortDto를 BookSortResponse로 변환, 계층분리
-        Page<BookSortResponse> responsePage = bookSortDtoPage.map(BookSortResponse::from);
+        Page<BookSortResponse> bookSortResponsePage = bookSortDtoPage.map(BookSortResponse::from);
+
+        RestPageImpl<BookSortResponse> responsePage = new RestPageImpl<>(bookSortResponsePage);
 
         return ResponseEntity.ok(responsePage);
     }
