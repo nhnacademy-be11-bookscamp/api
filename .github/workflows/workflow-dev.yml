@@ -1,4 +1,4 @@
-name: Spring Boot CI/CD (Maven)
+name: Spring Boot CI/CD Develop (Maven)
 
 on:
   push:

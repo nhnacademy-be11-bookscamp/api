@@ -9,16 +9,16 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import store.bookscamp.api.book.controller.dto.response.BookDetailResponse;
-import store.bookscamp.api.book.controller.dto.request.BookListRequest;
-import store.bookscamp.api.book.controller.dto.response.BookListResponse;
-import store.bookscamp.api.book.controller.dto.request.BookSearchRequest;
-import store.bookscamp.api.book.controller.dto.response.BookSummaryResponse;
+import store.bookscamp.api.book.controller.response.BookDetailResponse;
+import store.bookscamp.api.book.controller.request.BookListRequest;
+import store.bookscamp.api.book.controller.response.BookListResponse;
+import store.bookscamp.api.book.controller.request.BookSearchRequest;
+import store.bookscamp.api.book.controller.response.BookSummaryResponse;
 import store.bookscamp.api.book.service.AladinService;
 import store.bookscamp.api.book.service.dto.AladinResponse;
 
 @RestController
-@RequestMapping(value = "/aladin", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/admin/aladin", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Validated
 @Tag(name= "Aladin API")

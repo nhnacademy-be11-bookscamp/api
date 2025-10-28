@@ -6,7 +6,7 @@ import store.bookscamp.api.member.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Optional<Member> getByUserName(String id);
+    Optional<Member> getByUsername(String id);
 
-    boolean existsByUserName(String id);
+    boolean existsByUsername(String id);
 }

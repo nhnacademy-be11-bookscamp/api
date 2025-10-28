@@ -1,4 +1,4 @@
-package store.bookscamp.api.book.controller.dto.request;
+package store.bookscamp.api.book.controller.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

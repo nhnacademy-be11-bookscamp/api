@@ -1,4 +1,4 @@
-package store.bookscamp.api.book.controller.dto.request;
+package store.bookscamp.api.book.controller.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookRegisterRequest {
+public class BookCreateRequest {
 
     @NotBlank
     private String title;

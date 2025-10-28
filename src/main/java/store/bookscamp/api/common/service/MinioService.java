@@ -9,9 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
-import store.bookscamp.api.common.exception.MinioBucketNotFoundException;
-import store.bookscamp.api.common.exception.MinioUploadFailedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +49,7 @@ public class MinioService {
             String bucketName = switch (type.toLowerCase()) {
                 case "book" -> bookBucket;
                 case "review" -> reviewBucket;
-                default -> throw new MinioBucketNotFoundException(ErrorCode.MINIO_BUCKET_NOT_FOUND);
+                default -> throw new ApplicationException(ErrorCode.MINIO_BUCKET_NOT_FOUND);
             };
 
             // 미니오에 버킷이름 존재 확인, 없으면 생성
@@ -87,7 +86,7 @@ public class MinioService {
                 urls.add(url);
             }
         } catch (Exception e) {
-            throw new MinioUploadFailedException(ErrorCode.MINIO_UPLOAD_FAILED);
+            throw new ApplicationException(ErrorCode.MINIO_UPLOAD_FAILED);
         }
         return urls;
     }
