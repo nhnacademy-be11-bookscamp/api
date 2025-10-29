@@ -63,7 +63,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     private BooleanExpression inCategories(List<Long> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
-            return null; // 카테고리 필터 없음
+            return null;
         }
         return category.id.in(categoryIds);
     }
@@ -76,6 +76,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
             case "high-view" -> book.viewCount.desc();
             case "low-price" -> book.salePrice.asc();
             case "high-price" -> book.salePrice.desc();
+            case "publishDate" -> book.publishDate.desc();
             default -> book.id.asc();
         };
     }

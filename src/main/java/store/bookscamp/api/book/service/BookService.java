@@ -1,12 +1,16 @@
 package store.bookscamp.api.book.service;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
@@ -55,8 +59,8 @@ public class BookService {
                 0                          // viewCount
         );
         bookRepository.save(book);
-    
-  
+
+
       /*  // bookImg
         if (req.getImageUrls() != null) {
             for (String url : req.getImageUrls()) {
