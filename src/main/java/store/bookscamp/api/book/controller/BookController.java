@@ -9,17 +9,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.service.BookService;
 import store.bookscamp.api.book.service.dto.BookSortDto;
+import store.bookscamp.api.common.pagination.RestPageImpl;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
 public class BookController {
 
     private final BookService bookService;
@@ -32,7 +31,7 @@ public class BookController {
     }
 
     @GetMapping("/books")
-    public ResponseEntity<Page<BookSortResponse>> getBooks(
+    public ResponseEntity<RestPageImpl<BookSortResponse>> getBooks(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyWord,
             @RequestParam(defaultValue = "id") String sortType,
@@ -40,24 +39,9 @@ public class BookController {
     ){
         Page<BookSortDto> bookSortDtoPage = bookService.searchBooks(categoryId, keyWord, sortType, pageable);
 
-        // BookSortDto를 BookSortResponse로 변환, 계층분리
-        Page<BookSortResponse> responsePage = bookSortDtoPage.map(dto ->
-                new BookSortResponse(
-                        dto.id(),
-                        dto.title(),
-                        dto.explanation(),
-                        dto.content(),
-                        dto.publisher(),
-                        dto.publishDate(),
-                        dto.contributor(),
-                        dto.status(),
-                        dto.packable(),
-                        dto.regularPrice(),
-                        dto.salePrice(),
-                        dto.stock(),
-                        dto.viewCount()
-                )
-        );
+        Page<BookSortResponse> bookSortResponsePage = bookSortDtoPage.map(BookSortResponse::from);
+
+        RestPageImpl<BookSortResponse> responsePage = new RestPageImpl<>(bookSortResponsePage);
 
         return ResponseEntity.ok(responsePage);
     }
