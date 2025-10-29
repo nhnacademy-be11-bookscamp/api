@@ -1,3 +1,60 @@
 spring:
+  application:
+    name: api-server
   profiles:
-    active: dev
+    active: prod
+
+  datasource:
+    url: jdbc:mysql://s4.java21.net:13306/project_be11_team3
+    username: project_be11_team3
+    password: ${PASSWORD}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  session:
+    redis:
+      flush-mode: on_save
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+minio:
+  # 브라우저에서 접근 가능한 public base URL (리턴용)
+  url: http://storage.java21.net:8000
+  access-key: EvJ2FP8gy27lDYolEWGQ
+  secret-key: h9uzw85pZPDchOTHzslEOUlNd5cDPFLQnJCofZfH
+  bucket:
+    book: bookscamp-book-image
+    review: bookscamp-review-image
+
+aladin:
+  base-url: https://www.aladin.co.kr/ttb/api
+  ttb-key: ttbtvsqyfzvpj1722001
+  output: js
+  version: "20131101"
+
+springdoc:
+  api-docs:
+    path: /bookscamp
+    groups:
+      enabled: true
+  swagger-ui:
+    path: /swagger-ui-custom.html
+    enabled: true
+    groups-order: ASC
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  cache:
+    disabled: true
+  model-and-view-allowed: true
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG
+
+
