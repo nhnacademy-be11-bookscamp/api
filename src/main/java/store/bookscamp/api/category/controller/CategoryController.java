@@ -1,7 +1,7 @@
 package store.bookscamp.api.category.controller;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,18 +17,26 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping("/categories")
-    public ResponseEntity<List<CategoryListResponse>> getAllCategories(){
+    public ResponseEntity<List<CategoryListResponse>> getCategoryTree() {
 
-        List<CategoryListDto> allCategories = categoryService.getAllCategories();
-        List<CategoryListResponse> categoryListResponses = new ArrayList<>();
+        List<CategoryListDto> categoryDtoTree = categoryService.getCategoryTree();
 
-        for(CategoryListDto categoryListDto : allCategories){
-            Long id = categoryListDto.id();
-            String name = categoryListDto.name();
+        List<CategoryListResponse> categoryResponseTree = categoryDtoTree.stream()
+                .map(this::convertDtoToResponse)
+                .collect(Collectors.toList());
 
-            categoryListResponses.add(new CategoryListResponse(id, name));
-        }
+        return ResponseEntity.ok(categoryResponseTree);
+    }
 
-        return ResponseEntity.ok(categoryListResponses);
+    private CategoryListResponse convertDtoToResponse(CategoryListDto dto) {
+        List<CategoryListResponse> children = dto.children().stream()
+                .map(this::convertDtoToResponse)
+                .collect(Collectors.toList());
+
+        return new CategoryListResponse(
+                dto.id(),
+                dto.name(),
+                children
+        );
     }
 }

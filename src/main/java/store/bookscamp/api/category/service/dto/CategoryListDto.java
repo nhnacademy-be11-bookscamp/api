@@ -1,17 +1,14 @@
 package store.bookscamp.api.category.service.dto;
 
-import store.bookscamp.api.category.entity.Category;
+import java.util.ArrayList;
+import java.util.List;
 
 public record CategoryListDto(
-
         Long id,
-        String name
+        String name,
+        List<CategoryListDto> children
 ) {
-
-    public static CategoryListDto fromEntity(Category category){
-        return new CategoryListDto(
-                category.getId(),
-                category.getName()
-        );
+    public CategoryListDto(Long id, String name) {
+        this(id, name, new ArrayList<>());
     }
 }
