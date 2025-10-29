@@ -2,8 +2,11 @@ package store.bookscamp.api.category.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // (중요)
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.category.service.dto.CategoryListDto;
@@ -14,18 +17,34 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    public List<CategoryListDto> getAllCategories(){
+    @Transactional(readOnly = true)
+    public List<CategoryListDto> getCategoryTree() {
 
-        List<Category> categoryList = categoryRepository.findAll();
-        List<CategoryListDto> categoryListDtoList = new ArrayList<>();
+        List<Category> allCategories = categoryRepository.findAll();
 
-        for(Category category : categoryList){
-            Long id = category.getId();
-            String name = category.getName();
+        Map<Long, CategoryListDto> dtoMap = allCategories.stream()
+                .map(category -> new CategoryListDto(category.getId(), category.getName()))
+                .collect(Collectors.toMap(CategoryListDto::id, dto -> dto));
 
-            categoryListDtoList.add(new CategoryListDto(id, name));
+        List<CategoryListDto> rootCategories = new ArrayList<>();
+
+        for (Category category : allCategories) {
+
+            CategoryListDto currentDto = dtoMap.get(category.getId());
+
+            if (category.getParent() == null) {
+                rootCategories.add(currentDto);
+            } else {
+
+                CategoryListDto parentDto = dtoMap.get(category.getParent().getId());
+
+                if (parentDto != null) {
+
+                    parentDto.children().add(currentDto);
+                }
+            }
         }
 
-        return categoryListDtoList;
+        return rootCategories;
     }
 }
