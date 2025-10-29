@@ -4,6 +4,8 @@ import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +39,7 @@ public class MinioService {
      * @param type "book" or "review"
      * @return 프론트가 바로 쓸 수 있는 공개 URL 형태 (minioUrl/bucket/fileName)
      */
+    @Transactional
     public List<String> uploadFiles(List<MultipartFile> files, String type) {
 
         List<String> urls = new ArrayList<>();
@@ -89,5 +92,30 @@ public class MinioService {
             throw new ApplicationException(ErrorCode.MINIO_UPLOAD_FAILED);
         }
         return urls;
+    }
+
+    @Transactional
+    public void deleteFile(String imageUrl, String type) {
+
+        try {
+            String bucketName = switch (type.toLowerCase()) {
+                case "book" -> bookBucket;
+                case "review" -> reviewBucket;
+                default -> throw new ApplicationException(ErrorCode.MINIO_BUCKET_NOT_FOUND);
+            };
+
+            String objectName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build()
+            );
+
+            log.info("MinIO 파일 삭제 완료: {}", objectName);
+        } catch (Exception e){
+            throw new RuntimeException();
+        }
     }
 }
