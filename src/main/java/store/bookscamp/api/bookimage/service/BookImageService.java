@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
+import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.common.service.MinioService;
 
 import java.util.ArrayList;
@@ -19,21 +22,32 @@ public class BookImageService {
     private final BookImageRepository bookImageRepository;
 
     @Transactional
-    public List<String> uploadBookImages(BookImageCreateDto dto) {
+    public void createBookImage(BookImageCreateDto dto) {
+
+        if (dto.book() == null) {
+            throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
+        }
 
         List<String> urls = minioService.uploadFiles(dto.files(), "book");
-
-        // Book 없이 우선 URL만 저장
-        // → 나중에 Book 등록 후 연관관계(book_id) 세팅 가능
         List<BookImage> savedImages = new ArrayList<>();
+
         for (int i = 0; i < urls.size(); i++) {
             String url = urls.get(i);
             boolean isThumbnail = (i == 0);
-            BookImage image = new BookImage(null, url, isThumbnail); // todo: Book은 임시로 null
+            BookImage image = new BookImage(dto.book(), url, isThumbnail);
             savedImages.add(bookImageRepository.save(image));
         }
+    }
 
-        // URL 리스트 반환
-        return urls;
+    @Transactional
+    public void deleteBookImage(BookImageDeleteDto dto){
+
+        BookImage image = bookImageRepository.findById(dto.imageId())
+                .orElseThrow(() -> new ApplicationException(ErrorCode.IMAGE_NOT_FOUND));
+
+        minioService.deleteFile(dto.imageUrl(), "book");
+
+        bookImageRepository.delete(image);
+
     }
 }
