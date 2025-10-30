@@ -9,15 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // (중요)
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
+import store.bookscamp.api.category.service.dto.CategoryCreateDto;
 import store.bookscamp.api.category.service.dto.CategoryListDto;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    @Transactional(readOnly = true)
     public List<CategoryListDto> getCategoryTree() {
 
         List<Category> allCategories = categoryRepository.findAll();
@@ -47,4 +48,11 @@ public class CategoryService {
 
         return rootCategories;
     }
+
+//    @Transactional
+//    public CategoryCreateDto createCategory(){
+//
+//
+//        return ;
+//    }
 }

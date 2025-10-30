@@ -7,13 +7,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import store.bookscamp.api.book.controller.response.BookInfoResponse;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.service.BookService;
+import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.common.pagination.RestPageImpl;
 
@@ -44,6 +47,13 @@ public class BookController {
         RestPageImpl<BookSortResponse> responsePage = new RestPageImpl<>(bookSortResponsePage);
 
         return ResponseEntity.ok(responsePage);
+    }
+
+    @GetMapping("/bookDetail/{id}")
+    public ResponseEntity<BookInfoResponse> getBookDetail(@PathVariable Long id){
+        BookDetailDto bookDetail = bookService.getBookDetail(id);
+        BookInfoResponse from = BookInfoResponse.from(bookDetail);
+        return ResponseEntity.ok(from);
     }
 }
 

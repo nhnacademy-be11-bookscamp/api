@@ -5,7 +5,7 @@ spring:
     active: prod
 
   datasource:
-    url: jdbc:mysql://s4.java21.net:13306/project_be11_team3
+    url: jdbc:mysql://s4.java21.net:13306/project_be11_team3_dev
     username: project_be11_team3
     password: ${PASSWORD}
   servlet:
