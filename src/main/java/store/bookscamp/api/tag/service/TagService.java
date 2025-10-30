@@ -14,7 +14,6 @@ import store.bookscamp.api.tag.service.dto.TagGetDto;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class TagService {
 
     private final TagRepository tagRepository;
@@ -30,7 +29,7 @@ public class TagService {
         Tag tag = tagRepository.save(Tag.create(name));
         return TagGetDto.from(tag);
     }
-
+    @Transactional(readOnly = true)
     public TagGetDto getById(Long id) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException(
@@ -38,6 +37,7 @@ public class TagService {
         return TagGetDto.from(tag);
     }
 
+    @Transactional(readOnly = true)
     public List<TagGetDto> getAll() {
         return tagRepository.findAll().stream()
                 .map(TagGetDto::from)
