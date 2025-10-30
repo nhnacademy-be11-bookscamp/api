@@ -10,6 +10,7 @@ import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
@@ -26,7 +27,7 @@ import store.bookscamp.api.book.service.dto.BookSortDto;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class BookService {
 
     private final BookRepository bookRepository;
@@ -37,6 +38,7 @@ public class BookService {
     private final BookCategoryRepository bookCategoryRepository;
     private final BookTagRepository bookTagRepository;
 
+    @Transactional
     public void createBook(BookCreateRequest req) {
 
         // contributor
@@ -99,5 +101,10 @@ public class BookService {
         Page<BookSortDto> dtoPage = bookPage.map(BookSortDto::from);
 
         return dtoPage;
+    }
+
+    public BookDetailDto getBookDetail(Long id){
+        Book book = bookRepository.getBookById(id);
+        return BookDetailDto.from(book);
     }
 }
