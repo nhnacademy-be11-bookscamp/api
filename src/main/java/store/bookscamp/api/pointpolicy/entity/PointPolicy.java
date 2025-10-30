@@ -11,13 +11,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.bookscamp.api.common.entity.SoftDeleteEntity;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class PointPolicy {
+public class PointPolicy extends SoftDeleteEntity {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @Enumerated(STRING)
@@ -29,11 +31,17 @@ public class PointPolicy {
     private RewardType rewardType;
 
     @Column(nullable = false)
-    private Integer rewardPoint;
+    private Integer rewardValue;
 
-    public PointPolicy(PointPolicyType pointPolicyType, RewardType rewardType, Integer rewardPoint) {
+    public PointPolicy(PointPolicyType pointPolicyType, RewardType rewardType, Integer rewardValue) {
         this.pointPolicyType = pointPolicyType;
         this.rewardType = rewardType;
-        this.rewardPoint = rewardPoint;
+        this.rewardValue = rewardValue;
+    }
+
+    public void updatePointPolicy(PointPolicyType pointPolicyType, RewardType rewardType, Integer rewardValue) {
+        this.pointPolicyType = pointPolicyType;
+        this.rewardType = rewardType;
+        this.rewardValue = rewardValue;
     }
 }
