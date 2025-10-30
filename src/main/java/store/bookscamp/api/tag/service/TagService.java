@@ -29,6 +29,7 @@ public class TagService {
         Tag tag = tagRepository.save(Tag.create(name));
         return TagGetDto.from(tag);
     }
+
     @Transactional(readOnly = true)
     public TagGetDto getById(Long id) {
         Tag tag = tagRepository.findById(id)
