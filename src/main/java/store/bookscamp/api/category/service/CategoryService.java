@@ -6,10 +6,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // (중요)
+import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
-import store.bookscamp.api.category.service.dto.CategoryCreateDto;
 import store.bookscamp.api.category.service.dto.CategoryListDto;
 
 @Service
@@ -48,11 +47,4 @@ public class CategoryService {
 
         return rootCategories;
     }
-
-//    @Transactional
-//    public CategoryCreateDto createCategory(){
-//
-//
-//        return ;
-//    }
 }
