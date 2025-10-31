@@ -48,11 +48,4 @@ public class CategoryService {
 
         return rootCategories;
     }
-
-//    @Transactional
-//    public CategoryCreateDto createCategory(){
-//
-//
-//        return ;
-//    }
 }
