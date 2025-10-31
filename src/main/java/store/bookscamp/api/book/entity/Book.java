@@ -77,10 +77,9 @@ public class Book extends BaseEntity {
     @Column(nullable = false)
     private BookStatus status;
 
-    // 기여자아이디
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "contributor_id", nullable = false)
-    private Contributor contributor;
+    //기여자
+    @Column(nullable = false)
+    private String contributor;
 
     public Book(
 
@@ -90,7 +89,7 @@ public class Book extends BaseEntity {
             String publisher,
             LocalDate publishDate,
             String isbn,
-            Contributor contributor,
+            String contributor,
             BookStatus status,
             boolean packable,
             Integer regularPrice,

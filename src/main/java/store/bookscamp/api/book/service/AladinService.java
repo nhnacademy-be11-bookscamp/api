@@ -111,7 +111,7 @@ public class AladinService {
                 i.getPublisher(),
                 publishDate,
                 i.getIsbn13(),
-                contributor,
+                "contributor",
                 status,
                 packable,
                 i.getPriceStandard(),

@@ -28,11 +28,10 @@ public class BookImageService {
             throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
         }
 
-        List<String> urls = minioService.uploadFiles(dto.files(), "book");
         List<BookImage> savedImages = new ArrayList<>();
 
-        for (int i = 0; i < urls.size(); i++) {
-            String url = urls.get(i);
+        for (int i = 0; i < dto.files().size(); i++) {
+            String url = dto.files().get(i);
             boolean isThumbnail = (i == 0);
             BookImage image = new BookImage(dto.book(), url, isThumbnail);
             savedImages.add(bookImageRepository.save(image));

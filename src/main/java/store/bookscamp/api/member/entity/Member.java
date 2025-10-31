@@ -1,10 +1,12 @@
 package store.bookscamp.api.member.entity;
 
+import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import java.time.LocalDate;
@@ -41,6 +43,7 @@ public class Member extends SoftDeleteEntity {
     @Column(nullable = false)
     private int point;
 
+    @Enumerated(STRING)
     @Column(nullable = false)
     private MemberStatus status;
 

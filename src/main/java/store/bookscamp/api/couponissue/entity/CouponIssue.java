@@ -12,14 +12,18 @@ import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.bookscamp.api.common.entity.BaseEntity;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import store.bookscamp.api.common.entity.SoftDeleteEntity;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.member.entity.Member;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class CouponIssue extends BaseEntity {
+@SQLDelete(sql = "UPDATE `coupon_issue` SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
+public class CouponIssue extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)

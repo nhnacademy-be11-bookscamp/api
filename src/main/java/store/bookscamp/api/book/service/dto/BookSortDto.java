@@ -13,7 +13,7 @@ public record BookSortDto(
         String content,
         String publisher,
         LocalDate publishDate,
-        Contributor contributor,
+        String contributor,
         BookStatus status,
         boolean packable,
         Integer regularPrice,

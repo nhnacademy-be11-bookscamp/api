@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // (중요)
+import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.category.service.dto.CategoryCreateDto;

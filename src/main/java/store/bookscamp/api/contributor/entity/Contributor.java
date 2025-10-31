@@ -25,7 +25,12 @@ public class Contributor extends BaseEntity {
     @Column(nullable = false)
     private String contributors;
 
+    // void 고민
     public Contributor(String contributors) {
+        this.contributors = contributors;
+    }
+
+    public void changeContributors(String contributors) {
         this.contributors = contributors;
     }
 }
