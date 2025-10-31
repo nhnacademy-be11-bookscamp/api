@@ -1,4 +1,4 @@
-package store.bookcamp.api;
+package store.bookscamp.api;
 
 public class test {
 

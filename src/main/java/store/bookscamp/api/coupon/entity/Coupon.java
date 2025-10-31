@@ -11,11 +11,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import store.bookscamp.api.common.entity.SoftDeleteEntity;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class Coupon {
+@SQLDelete(sql = "UPDATE `coupon` SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
+public class Coupon extends SoftDeleteEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     private Long id;
