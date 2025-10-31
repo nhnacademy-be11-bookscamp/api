@@ -1,6 +1,5 @@
 package store.bookscamp.api.tag.controller;
 
-import feign.Response;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;

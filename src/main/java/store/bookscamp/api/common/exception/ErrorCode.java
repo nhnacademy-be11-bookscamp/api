@@ -21,6 +21,9 @@ public enum ErrorCode {
     CART_NOT_FOUND(NOT_FOUND, "장바구니를 찾을 수 없습니다."),
     CART_ITEM_NOT_FOUND(NOT_FOUND, "장바구니에 담긴 상품을 찾을 수 없습니다."),
 
+    CONTRIBUTOR_NOT_FOUND(NOT_FOUND, "기여자를 찾을 수 없습니다."),
+    CONTRIBUTOR_ALREADY_EXISTS(BAD_REQUEST, "이미 존재하는 기여자입니다."),
+
     TAG_NOT_FOUND(NOT_FOUND, "태그를 찾을 수 없습니다."),
     TAG_ALREADY_EXISTS(BAD_REQUEST, "이미 존재하는 태그입니다."),
 
