@@ -3,6 +3,7 @@ package store.bookscamp.api.category.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional; // (중요)
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.category.service.dto.CategoryCreateDto;
+import store.bookscamp.api.category.service.dto.CategoryDeleteDto;
 import store.bookscamp.api.category.service.dto.CategoryListDto;
+import store.bookscamp.api.category.service.dto.CategoryUpdateDto;
 
 @Service
 @RequiredArgsConstructor
@@ -49,10 +52,32 @@ public class CategoryService {
         return rootCategories;
     }
 
-//    @Transactional
-//    public CategoryCreateDto createCategory(){
-//
-//
-//        return ;
-//    }
+    @Transactional
+    public void createCategory(CategoryCreateDto dto) {
+
+        Category parentCategory = categoryRepository.findById(dto.parentId()).orElseThrow();
+        Category newCategory = new Category(parentCategory,dto.name());
+
+        categoryRepository.save(newCategory);
+    }
+
+    @Transactional
+    public void updateCategory(CategoryUpdateDto dto) {
+
+        Category category = categoryRepository.findById(dto.id()).orElseThrow();
+        category.updateName(dto.name());
+
+    }
+
+    @Transactional
+    public void deleteCategory(CategoryDeleteDto dto){
+        categoryRepository.deleteById(dto.id());
+    }
+
+    public CategoryListDto getCategory(Long id) {
+
+        Category category = categoryRepository.findById(id).get();
+
+        return new CategoryListDto(category.getId(), category.getName(), new ArrayList<>());
+    }
 }

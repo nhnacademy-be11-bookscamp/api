@@ -1,4 +1,4 @@
-package store.bookscamp.api.category.controller.dto;
+package store.bookscamp.api.category.controller.response;
 
 import java.util.List;
 import java.util.stream.Collectors;
