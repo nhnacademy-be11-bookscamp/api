@@ -19,7 +19,8 @@ import store.bookscamp.api.member.entity.Member;
 @NoArgsConstructor(access = PROTECTED)
 public class Address {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = LAZY)
@@ -36,6 +37,11 @@ public class Address {
 
     public Address(Member member, String label, String roadNameAddress, Integer zipCode) {
         this.member = member;
+        this.label = label;
+        this.roadNameAddress = roadNameAddress;
+        this.zipCode = zipCode;
+    }
+    public void updateAddress(String label, String roadNameAddress, Integer zipCode) {
         this.label = label;
         this.roadNameAddress = roadNameAddress;
         this.zipCode = zipCode;

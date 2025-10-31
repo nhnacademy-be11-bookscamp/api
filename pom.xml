@@ -88,11 +88,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
             <version>3.0.4</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>com.querydsl</groupId>
