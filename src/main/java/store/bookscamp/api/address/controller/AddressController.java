@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.address.controller.request.AddressCreateRequest;
 import store.bookscamp.api.address.controller.response.AddressListResponse;
-import store.bookscamp.api.address.controller.response.AddressUpdateRequest;
+import store.bookscamp.api.address.controller.request.AddressUpdateRequest;
 import store.bookscamp.api.address.service.AddressService;
 import store.bookscamp.api.address.service.dto.AddressCreateDto;
 import store.bookscamp.api.address.service.dto.AddressReadDto;
@@ -33,7 +33,6 @@ public class AddressController {
     public AddressController(AddressService addressService) {
         this.addressService = addressService;
     }
-
 
     @PostMapping
     @Tag(name = "Address API")

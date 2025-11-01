@@ -1,4 +1,4 @@
-package store.bookscamp.api.address.controller.response;
+package store.bookscamp.api.address.controller.request;
 
 import store.bookscamp.api.address.service.dto.AddressUpdateRequestDto;
 
