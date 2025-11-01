@@ -13,7 +13,7 @@ import store.bookscamp.api.book.entity.QBook;
 import store.bookscamp.api.book.repository.custom.BookRepositoryCustom;
 import store.bookscamp.api.bookcategory.entity.QBookCategory;
 import store.bookscamp.api.category.entity.QCategory;
-import store.bookscamp.api.contributor.entity.QContributor;
+
 
 @RequiredArgsConstructor
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
@@ -22,7 +22,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private final QBook book = QBook.book;
     private final QBookCategory bookCategory = QBookCategory.bookCategory;
     private final QCategory category = QCategory.category;
-    private final QContributor contributor = QContributor.contributor;
 
     @Override
     public Page<Book> getBooks(List<Long> categoryIds, String keyword, String sortType, Pageable pageable) {
@@ -32,7 +31,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         // where 조건에 만족하는 책의 정보를 가져오는 역할
         List<Book> results = queryFactory
                 .selectFrom(book)
-                .leftJoin(book.contributor, contributor).fetchJoin()
                 .leftJoin(bookCategory).on(book.id.eq(bookCategory.book.id))
                 .leftJoin(category).on(bookCategory.category.id.eq(category.id))
                 .where(
@@ -47,7 +45,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         Long totalCount = queryFactory
                 .select(book.count())
                 .from(book)
-                .leftJoin(book.contributor, contributor)
                 .leftJoin(bookCategory).on(book.id.eq(bookCategory.book.id))
                 .leftJoin(category).on(bookCategory.category.id.eq(category.id))
                 .where(

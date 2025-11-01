@@ -39,4 +39,10 @@ public class Category {
         this.parent = parent;
         this.name = name;
     }
+
+    public void updateName(String name){
+        if(name != null && !name.trim().isEmpty()){
+            this.name = name;
+        }
+    }
 }

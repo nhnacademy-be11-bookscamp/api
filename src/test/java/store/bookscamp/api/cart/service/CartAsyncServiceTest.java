@@ -21,8 +21,6 @@ import store.bookscamp.api.cart.entity.Cart;
 import store.bookscamp.api.cart.entity.CartItem;
 import store.bookscamp.api.cart.repository.CartItemRepository;
 import store.bookscamp.api.cart.repository.CartRepository;
-import store.bookscamp.api.contributor.entity.Contributor;
-import store.bookscamp.api.contributor.repository.ContributorRepository;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.repository.MemberRepository;
 
@@ -41,15 +39,15 @@ class CartAsyncServiceTest {
     private BookRepository bookRepository;
     @Autowired
     private MemberRepository memberRepository;
-    @Autowired
-    private ContributorRepository contributorRepository;
+//    @Autowired
+//    private ContributorRepository contributorRepository;
 
     private Cart cart;
     private CartItem cartItem;
 
     @BeforeEach
     void setUp() {
-        Contributor contributor = contributorRepository.save(new Contributor("기여자"));
+//        Contributor contributor = contributorRepository.save(new Contributor("기여자"));
         Member member = memberRepository.save(new Member(
                 "회원",
                 "1234",
@@ -71,7 +69,7 @@ class CartAsyncServiceTest {
                 "출판사",
                 LocalDate.of(2001, 1, 1),
                 "123456789012",
-                contributor,
+                "기여자",
                 AVAILABLE,
                 false,
                 20000,
@@ -87,7 +85,7 @@ class CartAsyncServiceTest {
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
         bookRepository.deleteAll();
-        contributorRepository.deleteAll();
+//        contributorRepository.deleteAll();
         memberRepository.deleteAll();
     }
 

@@ -1,7 +1,6 @@
 package store.bookscamp.api.book.entity;
 
 import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -10,9 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -78,7 +75,7 @@ public class Book extends BaseEntity {
 
     //기여자
     @Column(nullable = false)
-    private String contributor;
+    private String contributors;
 
     public Book(
 
@@ -88,7 +85,7 @@ public class Book extends BaseEntity {
             String publisher,
             LocalDate publishDate,
             String isbn,
-            String contributor,
+            String contributors,
             BookStatus status,
             boolean packable,
             Integer regularPrice,
@@ -102,7 +99,7 @@ public class Book extends BaseEntity {
         this.publisher = publisher;
         this.publishDate = publishDate;
         this.isbn = isbn;
-        this.contributor = contributor;
+        this.contributors = contributors;
         this.status = status;
         this.packable = packable;
         this.regularPrice = regularPrice;
