@@ -7,7 +7,6 @@ import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.AladinItem;
-import store.bookscamp.api.contributor.entity.Contributor;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +14,7 @@ public class BookImportService {
     private final AladinService aladinService;
     private final BookRepository bookRepository;
 
-    public Mono<Long> importByIsbn13(String isbn13, Contributor contributor, BookStatus status, boolean packable){
+    public Mono<Long> importByIsbn13(String isbn13, String contributor, BookStatus status, boolean packable){
         return aladinService.lookupByIsbn13(isbn13)
                 .map(resp -> resp.getItem() != null && !resp.getItem().isEmpty() ? resp.getItem().get(0) : null)
                 .map((AladinItem i) -> aladinService.toBookEntity(i, contributor, status, packable))

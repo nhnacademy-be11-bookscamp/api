@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.cart.entity.Cart;
@@ -33,6 +34,7 @@ public class CartService {
 
     private final CartAsyncService cartAsyncService;
 
+    @Transactional
     public Long addCartItem(CartItemAddDto dto) {
         Cart cart = cartRepository.findById(dto.cartId())
                 .orElseThrow(() -> new ApplicationException(CART_NOT_FOUND));

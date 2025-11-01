@@ -23,4 +23,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
         SELECT id FROM CategoryTree
         """, nativeQuery = true)
     List<Long> getAllDescendantIdsIncludingSelf(@Param("categoryId") Long categoryId);
+
+    Category getCategoryById(@Param("categoryId") Long categoryId);
 }

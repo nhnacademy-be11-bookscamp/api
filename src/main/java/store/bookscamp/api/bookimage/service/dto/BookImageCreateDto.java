@@ -7,5 +7,5 @@ import java.util.List;
 
 public record BookImageCreateDto(
         Book book,
-        List<MultipartFile> files
+        List<String> files
 ) {}

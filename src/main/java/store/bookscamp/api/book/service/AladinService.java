@@ -98,7 +98,7 @@ public class AladinService {
     }
 
     public Book toBookEntity(AladinItem i,
-                             store.bookscamp.api.contributor.entity.Contributor contributor,
+                             String contributor,
                              store.bookscamp.api.book.entity.BookStatus status,
                              boolean packable) {
         // Book 엔티티 필드 구조에 맞춘 매핑 (publishDate: yyyy-MM[-dd] 허용)
