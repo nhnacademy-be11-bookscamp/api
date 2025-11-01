@@ -25,8 +25,6 @@ import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.common.service.MinioService;
-import store.bookscamp.api.contributor.entity.Contributor;
-import store.bookscamp.api.contributor.repository.ContributorRepository;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
 

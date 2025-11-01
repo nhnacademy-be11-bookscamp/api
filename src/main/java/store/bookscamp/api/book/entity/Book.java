@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.bookscamp.api.common.entity.BaseEntity;
-import store.bookscamp.api.contributor.entity.Contributor;
 
 @Entity
 @Getter

@@ -3,7 +3,6 @@ package store.bookscamp.api.book.service.dto;
 import java.time.LocalDate;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
-import store.bookscamp.api.contributor.entity.Contributor;
 
 public record BookDetailDto(
 
@@ -13,7 +12,7 @@ public record BookDetailDto(
         String content,
         String publisher,
         LocalDate publishDate,
-        Contributor contributor,
+        String contributor,
         BookStatus status,
         boolean packable,
         Integer regularPrice,
