@@ -1,23 +1,20 @@
 package store.bookscamp.api.book.service;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.bookscamp.api.book.controller.request.BookCategoryCreateRequest;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
-import store.bookscamp.api.book.controller.request.BookTagCreateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
-import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
 import store.bookscamp.api.booktag.entity.BookTag;
@@ -43,42 +40,40 @@ public class BookService {
     private final MinioService minioService;
 
     @Transactional
-    public void createBook(BookCreateRequest req) {
+    public void createBook(BookCreateDto dto) {
 
         Book book = new Book(
-                req.getTitle(),
-                req.getExplanation(),
-                req.getContent(),
-                req.getPublisher(),
-                req.getPublishDate(),
-                req.getIsbn(),
-                req.getContributors(),
+                dto.title(),
+                dto.explanation(),
+                dto.content(),
+                dto.publisher(),
+                dto.publishDate(),
+                dto.isbn(),
+                dto.contributors(),
                 BookStatus.AVAILABLE,
-                req.isPackable(),
-                req.getRegularPrice(),
-                req.getSalePrice(),
-                req.getStock(),
+                dto.packable(),
+                dto.regularPrice(),
+                dto.salePrice(),
+                dto.stock(),
                 0                          // viewCount
         );
         bookRepository.save(book);
 
         //img insert
-        if (req.getImages() != null) {
-            List<String> imgUrls = minioService.uploadFiles(req.getImages(), "book");
-            BookImageCreateDto dto = new BookImageCreateDto(book, imgUrls);
-            bookImageService.createBookImage(dto);
+        if (dto.imgUrls() != null && !dto.imgUrls().isEmpty()) {
+            bookImageService.createBookImage(new BookImageCreateDto(book, dto.imgUrls()));
         }
 
         // category
-        if (req.getCategoryIds() != null) {
-            for (Long categoryId : req.getCategoryIds()) {
+        if (dto.categoryIds() != null) {
+            for (Long categoryId : dto.categoryIds()) {
                 Category categoryById = categoryRepository.getCategoryById(categoryId);
                 bookCategoryRepository.save(new BookCategory(book, categoryById));
             }
         }
         // tag
-        if (req.getTagIds() != null) {
-            for (Long tagId : req.getTagIds()) {
+        if (dto.tagIds() != null) {
+            for (Long tagId : dto.tagIds()) {
                 Tag tag = tagRepository.getTagById(tagId);
                 bookTagRepository.save(new BookTag(book, tag));
             }

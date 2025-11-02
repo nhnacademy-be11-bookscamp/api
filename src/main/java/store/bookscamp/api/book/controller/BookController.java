@@ -12,25 +12,34 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import store.bookscamp.api.book.controller.request.AladinCreateRequest;
 import store.bookscamp.api.book.controller.response.BookInfoResponse;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.service.BookService;
+import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.common.pagination.RestPageImpl;
+import store.bookscamp.api.common.service.MinioService;
 
 @RestController
 @RequiredArgsConstructor
 public class BookController {
 
     private final BookService bookService;
-
+    private final MinioService minioService;
 
     @PostMapping(value = "/admin/books/create", produces = "application/json")
     public ResponseEntity<?> createBook(@RequestBody @Valid BookCreateRequest req) {
-        bookService.createBook(req);
+        bookService.createBook(BookCreateDto.from(req, minioService));
         return ResponseEntity.ok().body("{\"message\":\"도서 등록이 완료되었습니다.\"}");
+    }
+
+    @PostMapping(value = "/admin/aladin/books", produces = "application/json")
+    public ResponseEntity<?> aladinCreateBook(@RequestBody @Valid AladinCreateRequest req) {
+        bookService.createBook(BookCreateDto.from(req));
+        return ResponseEntity.ok().body("{\"message\":\"알라딘 도서 등록이 완료되었습니다.\"}");
     }
 
     @GetMapping("/books")
