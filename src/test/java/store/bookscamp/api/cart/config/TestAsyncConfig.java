@@ -11,6 +11,6 @@ public class TestAsyncConfig {
 
     @Bean(name = "cartExecutor")
     public Executor cartExecutor() {
-        return Runnable::run; // 비동기 대신 동기로 실행
+        return Runnable::run;
     }
 }
