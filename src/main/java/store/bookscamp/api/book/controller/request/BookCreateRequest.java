@@ -1,6 +1,5 @@
 package store.bookscamp.api.book.controller.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -10,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.ISBN;
-import org.springframework.format.annotation.DateTimeFormat;
 
 
 @Data
@@ -32,8 +30,6 @@ public class BookCreateRequest {
     private String isbn;
 
     @NotNull
-    @DateTimeFormat(pattern = "yyyy-MM-dd") // 브라우저 -> String 매핑용
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") // JSON 직렬화용
     private LocalDate publishDate;
 
     @NotNull
