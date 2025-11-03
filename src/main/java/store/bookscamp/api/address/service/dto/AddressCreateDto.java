@@ -1,9 +1,9 @@
 package store.bookscamp.api.address.service.dto;
 
-public record AddressCreateDto(String Label, String roadNameAddress, Integer zipCode) {
+public record AddressCreateDto(String label, String roadNameAddress, Integer zipCode) {
     public AddressCreateDto {
-        if (Label != null) {
-            Label = Label.trim();
+        if (label != null) {
+            label = label.trim();
         }
         if (roadNameAddress != null) {
             roadNameAddress = roadNameAddress.trim();

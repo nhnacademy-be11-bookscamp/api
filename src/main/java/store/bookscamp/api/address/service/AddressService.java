@@ -28,7 +28,7 @@ public class AddressService {
 
         Address address = new Address(
                 member,
-                addressCreateDto.Label(),
+                addressCreateDto.label(),
                 addressCreateDto.roadNameAddress(),
                 addressCreateDto.zipCode()
 
@@ -36,9 +36,11 @@ public class AddressService {
 
         if (addressRepository.countByMemberUsername(username) >= 10) {
             throw new ApplicationException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
+        } else {
+            addressRepository.save(address);
+
         }
 
-        addressRepository.save(address);
     }
 
     public List<AddressReadDto> getMemberAddresses(String username) {

@@ -35,11 +35,15 @@ public class Address {
     @Column(nullable = false)
     private Integer zipCode;
 
+    @Column(nullable = false)
+    private boolean isDefault;
+
     public Address(Member member, String label, String roadNameAddress, Integer zipCode) {
         this.member = member;
         this.label = label;
         this.roadNameAddress = roadNameAddress;
         this.zipCode = zipCode;
+
     }
     public void updateAddress(String label, String roadNameAddress, Integer zipCode) {
         this.label = label;

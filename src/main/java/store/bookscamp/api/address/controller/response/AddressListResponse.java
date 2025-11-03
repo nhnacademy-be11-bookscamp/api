@@ -16,12 +16,14 @@ public record AddressListResponse(
     }
 
     public record AddressResponse(
+            Long id,
             String label,
             @JsonProperty("road_name_address") String roadNameAddress,
             @JsonProperty("zip_code") Integer zipCode
     ) {
         public static AddressResponse from(AddressReadDto dto) {
             return new AddressResponse(
+                    dto.id(),
                     dto.label(),
                     dto.roadNameAddress(),
                     dto.zipCode()
