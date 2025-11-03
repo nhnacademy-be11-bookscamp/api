@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,6 +56,7 @@ public class MemberController {
     @Operation(summary = "create Member", description = "회원가입 API")
     public ResponseEntity<Void> createMember(@Valid @RequestBody MemberCreateRequest memberCreateRequest){
         MemberCreateDto memberCreateDto = MemberCreateRequest.toDto(memberCreateRequest);
+        memberService.checkEmailPhoneDuplicate(memberCreateDto.email(),memberCreateDto.phone());
         memberService.createMember(memberCreateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -66,6 +66,7 @@ public class MemberController {
     @Operation(summary = "update Member", description = "회원정보 수정 API")
     public ResponseEntity<MemberGetResponse> updateMember(@PathVariable String id, @Valid @RequestBody MemberUpdateRequest memberUpdateRequest) {
         MemberUpdateDto memberUpdateDto = MemberUpdateRequest.toDto(memberUpdateRequest);
+        memberService.checkEmailPhoneDuplicate(memberUpdateDto.email(),memberUpdateDto.phone());
         memberService.updateMember(id, memberUpdateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }

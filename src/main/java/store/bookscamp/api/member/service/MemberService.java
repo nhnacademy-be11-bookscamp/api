@@ -1,13 +1,11 @@
 package store.bookscamp.api.member.service;
 
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
-import store.bookscamp.api.common.exception.MemberNotFoundException;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.entity.MemberStatus;
 import store.bookscamp.api.member.repository.MemberRepository;
@@ -21,8 +19,8 @@ import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
 
+    @Transactional(readOnly = true)
     public MemberGetDto getMember(String id){
 
         return MemberGetDto.fromEntity(memberRepository.getByUsername(id).orElseThrow(
@@ -32,15 +30,26 @@ public class MemberService {
         );
     }
 
+    @Transactional(readOnly = true)
     public boolean checkIdDuplicate(String id) {
         return memberRepository.existsByUsername(id);
     }
 
+    @Transactional(readOnly = true)
+    public void checkEmailPhoneDuplicate(String email, String phone){
+        if(memberRepository.existsByEmail(email)){
+            throw new ApplicationException(ErrorCode.EMAIL_DUPLICATE);
+        }
+        if(memberRepository.existsByPhone(phone)) {
+            throw new ApplicationException(ErrorCode.PHONE_DUPLICATE);
+        }
+    }
+
+    @Transactional
     public void createMember(MemberCreateDto member) {
-        String encodedPassword = passwordEncoder.encode(member.password());
         Member newMember = new Member(
                 member.name(),
-                encodedPassword,
+                member.password(),
                 member.email(),
                 member.phone(),
                 0,
@@ -57,7 +66,7 @@ public class MemberService {
     @Transactional
     public void updateMember(String id, MemberUpdateDto memberUpdateDto){
         Member member = memberRepository.getByUsername(id).orElseThrow(
-                () -> new MemberNotFoundException(
+                () -> new ApplicationException(
                         ErrorCode.MEMBER_NOT_FOUND)
         );
 
@@ -70,13 +79,11 @@ public class MemberService {
 
     @Transactional
     public void updateMemberPassoword(String id, MemberPasswordUpdateDto memberPasswordUpdateDto){
-        String encodedPassword = passwordEncoder.encode(memberPasswordUpdateDto.password());
         Member member = memberRepository.getByUsername(id).orElseThrow(
                 () -> new ApplicationException(
                         ErrorCode.MEMBER_NOT_FOUND)
         );
-
-        member.changePassword(encodedPassword);
+        member.changePassword(memberPasswordUpdateDto.password());
     }
 
     @Transactional
@@ -85,7 +92,6 @@ public class MemberService {
                 () -> new ApplicationException(
                         ErrorCode.MEMBER_NOT_FOUND)
         );
-
-        member.changeStatus(MemberStatus.WITHDRAWN);
+        memberRepository.delete(member);
     }
 }
