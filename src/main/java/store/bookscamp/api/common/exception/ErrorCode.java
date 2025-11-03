@@ -15,6 +15,8 @@ public enum ErrorCode {
     MINIO_BUCKET_NOT_FOUND(NOT_FOUND, "버킷을 찾을 수 없습니다."),
     MINIO_UPLOAD_FAILED(INTERNAL_SERVER_ERROR,"파일 업로드에 실패했습니다."),
 
+    EMAIL_DUPLICATE(CONFLICT, "이미 존재하는 이메일입니다."),
+    PHONE_DUPLICATE(CONFLICT, "이미 존재하는 전화번호입니다."),
     MEMBER_NOT_FOUND(NOT_FOUND, "회원을 찾을 수 없습니다."),
     ADDRESS_NOT_FOUND(NOT_FOUND, "주소를 찾을 수 없습니다."),
     ADDRESS_LIMIT_EXCEEDED(BAD_REQUEST, "주소는 최대 10개까지 등록할 수 있습니다."),
