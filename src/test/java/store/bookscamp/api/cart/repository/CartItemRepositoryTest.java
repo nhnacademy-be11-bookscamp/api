@@ -19,8 +19,6 @@ import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.cart.entity.Cart;
 import store.bookscamp.api.cart.entity.CartItem;
 import store.bookscamp.api.common.config.JpaConfig;
-import store.bookscamp.api.contributor.entity.Contributor;
-import store.bookscamp.api.contributor.repository.ContributorRepository;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.entity.MemberStatus;
 import store.bookscamp.api.member.repository.MemberRepository;
@@ -38,8 +36,8 @@ class CartItemRepositoryTest {
     private CartRepository cartRepository;
     @Autowired
     private BookRepository bookRepository;
-    @Autowired
-    private ContributorRepository contributorRepository;
+//    @Autowired
+//    private ContributorRepository contributorRepository;
     @Autowired
     private MemberRepository memberRepository;
 
@@ -50,7 +48,7 @@ class CartItemRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Contributor contributor = contributorRepository.save(new Contributor("저자"));
+//        Contributor contributor = contributorRepository.save(new Contributor("저자"));
         member = memberRepository.save(new Member(
                 "회원",
                 "1234",
@@ -72,7 +70,7 @@ class CartItemRepositoryTest {
                 "출판사",
                 LocalDate.of(2000, 1, 1),
                 "1234567890",
-                contributor,
+                "저자",
                 BookStatus.AVAILABLE,
                 false,
                 10000,
@@ -88,7 +86,7 @@ class CartItemRepositoryTest {
                 "출판사2",
                 LocalDate.of(2000, 1, 1),
                 "1234567891",
-                contributor,
+                "저자",
                 BookStatus.AVAILABLE,
                 false,
                 20000,

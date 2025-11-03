@@ -4,8 +4,14 @@ import store.bookscamp.api.category.entity.Category;
 
 public record CategoryCreateDto(
 
-        Long id,
-        Category parent,
+        Long parentId,
         String name
 ) {
+
+    public CategoryCreateDto fromEntity(Category category){
+        return new CategoryCreateDto(
+                category.getParent().getId(),
+                category.getName()
+        );
+    }
 }
