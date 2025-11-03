@@ -56,7 +56,7 @@ public class CategoryService {
     public void createCategory(CategoryCreateDto dto) {
 
         Category parentCategory = categoryRepository.findById(dto.parentId()).orElseThrow();
-        Category newCategory = new Category(parentCategory,dto.name());
+        Category newCategory = new Category(parentCategory, dto.name());
 
         categoryRepository.save(newCategory);
     }
@@ -70,7 +70,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public void deleteCategory(CategoryDeleteDto dto){
+    public void deleteCategory(CategoryDeleteDto dto) {
         categoryRepository.deleteById(dto.id());
     }
 

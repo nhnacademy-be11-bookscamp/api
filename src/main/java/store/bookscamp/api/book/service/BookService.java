@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
@@ -21,7 +20,6 @@ import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
-import store.bookscamp.api.common.service.MinioService;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
 
@@ -37,7 +35,6 @@ public class BookService {
     private final BookCategoryRepository bookCategoryRepository;
     private final BookTagRepository bookTagRepository;
     private final BookImageService bookImageService;
-    private final MinioService minioService;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
