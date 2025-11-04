@@ -5,7 +5,7 @@ import java.util.List;
 import store.bookscamp.api.address.service.dto.AddressReadDto;
 
 public record AddressListResponse(
-        @JsonProperty("addresses") List<AddressResponse> addresses
+        List<AddressResponse> addresses
 ) {
     public static AddressListResponse from(List<AddressReadDto> addressDtos) {
         List<AddressResponse> responses = addressDtos.stream()
@@ -18,15 +18,19 @@ public record AddressListResponse(
     public record AddressResponse(
             Long id,
             String label,
-            @JsonProperty("road_name_address") String roadNameAddress,
-            @JsonProperty("zip_code") Integer zipCode
-    ) {
+            String roadNameAddress,
+            Integer zipCode,
+            boolean isDefault,
+            String detailAddress) {
+
         public static AddressResponse from(AddressReadDto dto) {
             return new AddressResponse(
                     dto.id(),
                     dto.label(),
                     dto.roadNameAddress(),
-                    dto.zipCode()
+                    dto.zipCode(),
+                    dto.isDefault(),
+                    dto.detailAddress()
             );
         }
     }

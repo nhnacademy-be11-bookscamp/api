@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import store.bookscamp.api.member.entity.Member;
 
 @Entity
@@ -38,16 +39,27 @@ public class Address {
     @Column(nullable = false)
     private boolean isDefault;
 
-    public Address(Member member, String label, String roadNameAddress, Integer zipCode) {
+    private String detailAddress;
+
+    public Address(Member member, String label, String roadNameAddress, Integer zipCode, boolean isDefault,
+                   String detailAddress) {
         this.member = member;
         this.label = label;
         this.roadNameAddress = roadNameAddress;
         this.zipCode = zipCode;
-
+        this.isDefault = isDefault;
+        this.detailAddress = detailAddress;
     }
-    public void updateAddress(String label, String roadNameAddress, Integer zipCode) {
+
+    public void updateAddress(String label,
+                              String roadNameAddress,
+                              Integer zipCode,
+                              boolean isDefault,
+                              String detailAddress) {
         this.label = label;
         this.roadNameAddress = roadNameAddress;
         this.zipCode = zipCode;
+        this.isDefault = isDefault;
+        this.detailAddress = detailAddress;
     }
 }

@@ -24,21 +24,23 @@ public class AddressService {
     @Transactional
     public void createMemberAddress(AddressCreateDto addressCreateDto, String username) {
 
-        Member member = memberRepository.getByUsername(username).get();
+        Member member = memberRepository.getByUsername(username).orElseThrow(
+                () -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
+        );
 
         Address address = new Address(
                 member,
                 addressCreateDto.label(),
                 addressCreateDto.roadNameAddress(),
-                addressCreateDto.zipCode()
-
+                addressCreateDto.zipCode(),
+                addressCreateDto.isDefault(),
+                addressCreateDto.detailAddress()
         );
 
         if (addressRepository.countByMemberUsername(username) >= 10) {
             throw new ApplicationException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
         } else {
             addressRepository.save(address);
-
         }
 
     }
@@ -53,7 +55,10 @@ public class AddressService {
     @Transactional
     public void updateMemberAddress(String username, Integer addressId,
                                     AddressUpdateRequestDto addressUpdateRequestDto) {
-        Member member = memberRepository.getByUsername(username).get();
+
+        Member member = memberRepository.getByUsername(username).orElseThrow(
+                () -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
+        );
         Address address = addressRepository.getByIdAndMemberUserId(addressId, username).orElseThrow(
                 () -> new ApplicationException(ErrorCode.ADDRESS_NOT_FOUND)
         );
@@ -61,7 +66,9 @@ public class AddressService {
         address.updateAddress(
                 addressUpdateRequestDto.label(),
                 addressUpdateRequestDto.roadNameAddress(),
-                addressUpdateRequestDto.zipCode()
+                addressUpdateRequestDto.zipCode(),
+                addressUpdateRequestDto.isDefault(),
+                addressUpdateRequestDto.detailAddress()
         );
 
     }
