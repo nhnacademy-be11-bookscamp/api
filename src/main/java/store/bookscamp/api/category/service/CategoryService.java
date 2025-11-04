@@ -76,7 +76,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public void deleteCategory(CategoryDeleteDto dto){
+    public void deleteCategory(CategoryDeleteDto dto) {
         categoryRepository.deleteById(dto.id());
     }
 

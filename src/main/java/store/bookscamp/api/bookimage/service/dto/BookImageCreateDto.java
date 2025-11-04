@@ -7,5 +7,5 @@ import java.util.List;
 
 public record BookImageCreateDto(
         Book book,
-        List<String> files
+        List<String> imgUrls
 ) {}
