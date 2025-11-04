@@ -26,7 +26,6 @@ import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.common.pagination.RestPageImpl;
 import store.bookscamp.api.common.service.MinioService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -37,12 +36,10 @@ public class BookController {
     private final MinioService minioService;
 
     @PostMapping(value = "/admin/books/create", consumes = {"multipart/form-data"})
-    public ResponseEntity<?> createBook(
+    public ResponseEntity<String> createBook(
             @ModelAttribute BookCreateRequest req,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
-
-        System.out.println("출판일자: " +req.getPublishDate());
 
         bookService.createBook(BookCreateDto.from(req, files, minioService));
 
@@ -50,7 +47,7 @@ public class BookController {
     }
 
     @PostMapping(value = "/admin/aladin/books", produces = "application/json")
-    public ResponseEntity<?> aladinCreateBook(@RequestBody @Valid AladinCreateRequest req) {
+    public ResponseEntity<String> aladinCreateBook(@RequestBody @Valid AladinCreateRequest req) {
         bookService.createBook(BookCreateDto.from(req));
         return ResponseEntity.ok().body("{\"message\":\"알라딘 도서 등록이 완료되었습니다.\"}");
     }
