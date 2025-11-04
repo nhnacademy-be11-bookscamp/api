@@ -55,7 +55,13 @@ public class CategoryService {
     @Transactional
     public void createCategory(CategoryCreateDto dto) {
 
-        Category parentCategory = categoryRepository.findById(dto.parentId()).orElseThrow();
+        Category parentCategory = null;
+
+        if (dto.parentId() != null) {
+            parentCategory = categoryRepository.findById(dto.parentId())
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 부모 카테고리 ID입니다: " + dto.parentId()));
+        }
+
         Category newCategory = new Category(parentCategory, dto.name());
 
         categoryRepository.save(newCategory);
