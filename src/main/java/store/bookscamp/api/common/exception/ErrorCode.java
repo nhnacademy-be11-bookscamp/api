@@ -1,6 +1,7 @@
 package store.bookscamp.api.common.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -15,6 +16,8 @@ public enum ErrorCode {
     MINIO_UPLOAD_FAILED(INTERNAL_SERVER_ERROR,"파일 업로드에 실패했습니다."),
 
     MEMBER_NOT_FOUND(NOT_FOUND, "회원을 찾을 수 없습니다."),
+    EMAIL_DUPLICATE(CONFLICT, "이미 존재하는 이메일입니다."),
+    PHONE_DUPLICATE(CONFLICT, "이미 존재하는 전화번호입니다."),
 
     BOOK_NOT_FOUND(NOT_FOUND, "도서를 찾을 수 없습니다."),
 
@@ -32,6 +35,8 @@ public enum ErrorCode {
     POINT_POLICY_NOT_FOUND(NOT_FOUND, "포인트 정책을 찾을 수 없습니다."),
 
     COUPON_NOT_FOUND(NOT_FOUND, "쿠폰을 찾을 수 없습니다."),
+
+    COUPON_ISSUE_ALREADY_EXIST(CONFLICT, "이미 발급된 쿠폰이 존재합니다."),
     ;
 
 
