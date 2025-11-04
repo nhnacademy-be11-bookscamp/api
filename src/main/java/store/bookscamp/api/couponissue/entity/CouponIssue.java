@@ -43,12 +43,10 @@ public class CouponIssue extends SoftDeleteEntity {
 
     public CouponIssue(Coupon coupon,
                        Member member,
-                       LocalDateTime expiredAt,
-                       LocalDateTime usedAt
+                       LocalDateTime expiredAt
     ) {
         this.coupon = coupon;
         this.member = member;
         this.expiredAt = expiredAt;
-        this.usedAt = usedAt;
     }
 }

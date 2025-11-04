@@ -35,6 +35,8 @@ public enum ErrorCode {
     POINT_POLICY_NOT_FOUND(NOT_FOUND, "포인트 정책을 찾을 수 없습니다."),
 
     COUPON_NOT_FOUND(NOT_FOUND, "쿠폰을 찾을 수 없습니다."),
+
+    COUPON_ISSUE_ALREADY_EXIST(CONFLICT, "이미 발급된 쿠폰이 존재합니다."),
     ;
 
 
