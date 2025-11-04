@@ -22,7 +22,7 @@ public record BookCreateDto(
         String explanation,
         List<String> imgUrls,
         List<Long> tagIds,
-        List<Long> categoryIds
+        Long categoryId
 ) {
     public static BookCreateDto from(BookCreateRequest req, List<MultipartFile> files, MinioService minioService) {
 
@@ -46,7 +46,7 @@ public record BookCreateDto(
                 req.getExplanation(),
                 imgUrls,
                 req.getTagIds(),
-                req.getCategoryIds()
+                req.getCategoryId()
         );
     }
 
@@ -65,7 +65,7 @@ public record BookCreateDto(
                 req.getExplanation(),
                 req.getImgUrls(),
                 req.getTagIds(),
-                req.getCategoryIds()
+                req.getCategoryId()
         );
     }
 }

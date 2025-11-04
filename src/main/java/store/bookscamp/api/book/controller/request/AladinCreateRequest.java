@@ -3,7 +3,6 @@ package store.bookscamp.api.book.controller.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.ISBN;
@@ -48,5 +47,5 @@ public class AladinCreateRequest {
 
     private List<String> imgUrls;
     private List<Long>  tagIds;
-    private List<Long> categoryIds;
+    private Long categoryId;
 }

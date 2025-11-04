@@ -62,11 +62,9 @@ public class BookService {
         }
 
         // category
-        if (dto.categoryIds() != null) {
-            for (Long categoryId : dto.categoryIds()) {
-                Category categoryById = categoryRepository.getCategoryById(categoryId);
-                bookCategoryRepository.save(new BookCategory(book, categoryById));
-            }
+        if (dto.categoryId() != null) {
+            Category categoryById = categoryRepository.getCategoryById(dto.categoryId());
+            bookCategoryRepository.save(new BookCategory(book, categoryById));
         }
         // tag
         if (dto.tagIds() != null) {
@@ -75,8 +73,6 @@ public class BookService {
                 bookTagRepository.save(new BookTag(book, tag));
             }
         }
-
-
     }
 
     public Page<BookSortDto> searchBooks(Long categoryId, String keyword, String sortType, Pageable pageable) {

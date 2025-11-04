@@ -47,5 +47,5 @@ public class BookCreateRequest {
     private String explanation;
 
     private List<Long>  tagIds;
-    private List<Long> categoryIds;
+    private Long categoryId;
 }

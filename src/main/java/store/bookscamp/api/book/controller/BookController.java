@@ -10,14 +10,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import store.bookscamp.api.book.controller.request.AladinCreateRequest;
-import store.bookscamp.api.book.controller.request.BookUpdateRequest;
 import store.bookscamp.api.book.controller.response.BookInfoResponse;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
@@ -41,10 +39,10 @@ public class BookController {
     @PostMapping(value = "/admin/books/create", consumes = {"multipart/form-data"})
     public ResponseEntity<?> createBook(
             @ModelAttribute BookCreateRequest req,
-            @RequestParam LocalDate publishDate,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
-        System.out.println("출판일자: " + publishDate);
+
+        System.out.println("출판일자: " +req.getPublishDate());
 
         bookService.createBook(BookCreateDto.from(req, files, minioService));
 
@@ -57,6 +55,7 @@ public class BookController {
         return ResponseEntity.ok().body("{\"message\":\"알라딘 도서 등록이 완료되었습니다.\"}");
     }
 
+    // todo: 도서 수정
 //    @PutMapping(value = "/admin/books/{id}/update", consumes = {"multipart/form-data"})
 //    public ResponseEntity<?> updateBook(
 //            @PathVariable Long id,
