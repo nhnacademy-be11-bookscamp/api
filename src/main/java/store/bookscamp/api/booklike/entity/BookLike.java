@@ -41,4 +41,14 @@ public class BookLike {
 
     @Column(nullable = false)
     private boolean liked;
+
+    public BookLike(Book book, Member member,  boolean liked){
+        this.book = book;
+        this.member = member;
+        this.liked = liked;
+    }
+
+    public void updateLiked(boolean liked){
+        this.liked = liked;
+    }
 }
