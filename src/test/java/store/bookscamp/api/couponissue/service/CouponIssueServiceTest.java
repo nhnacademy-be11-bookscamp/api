@@ -6,12 +6,14 @@ import static store.bookscamp.api.common.exception.ErrorCode.COUPON_ISSUE_ALREAD
 import static store.bookscamp.api.common.exception.ErrorCode.COUPON_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static store.bookscamp.api.coupon.entity.DiscountType.AMOUNT;
+import static store.bookscamp.api.coupon.entity.TargetType.BIRTHDAY;
 import static store.bookscamp.api.coupon.entity.TargetType.WELCOME;
 import static store.bookscamp.api.member.entity.MemberStatus.NORMAL;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,50 @@ class CouponIssueServiceTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    private Member member;
+    private Coupon welcomeCoupon;
+    private Coupon birthdayCoupon;
+
+    @BeforeEach
+    void setUp() {
+        memberRepository.deleteAll();
+        couponRepository.deleteAll();
+        couponIssueRepository.deleteAll();
+
+        member = memberRepository.save(new Member(
+                "회원",
+                "1234",
+                "member@naver.com",
+                "01012345678",
+                0,
+                NORMAL,
+                LocalDate.now(),
+                "member",
+                LocalDateTime.now(),
+                LocalDate.of(2001, 1, 1)
+        ));
+
+        welcomeCoupon = couponRepository.save(new Coupon(
+                WELCOME,
+                null,
+                AMOUNT,
+                10000,
+                50000,
+                10000,
+                30)
+        );
+
+        birthdayCoupon = couponRepository.save(new Coupon(
+                BIRTHDAY,
+                null,
+                AMOUNT,
+                10000,
+                50000,
+                10000,
+                30
+        ));
+    }
+
     @Nested
     @DisplayName("issueWelcomeCoupon 통합 테스트")
     class IssueWelcomeCoupon {
@@ -49,29 +95,6 @@ class CouponIssueServiceTest {
         @Test
         @DisplayName("정상적으로 웰컴 쿠폰이 발급된다.")
         void issueWelcomeCoupon_success() {
-            // given
-            Member member = memberRepository.save(new Member(
-                    "회원",
-                    "1234",
-                    "member@naver.com",
-                    "01012345678",
-                    0,
-                    NORMAL,
-                    LocalDate.now(),
-                    "member",
-                    LocalDateTime.now(),
-                    LocalDate.of(2001, 1, 1)
-            ));
-
-             couponRepository.save(new Coupon(
-                    WELCOME,
-                    null,
-                    AMOUNT,
-                    10000,
-                    50000,
-                    10000,
-                    30)
-            );
 
             // when
             Long issueId = couponIssueService.issueWelcomeCoupon(member.getId());
@@ -89,28 +112,7 @@ class CouponIssueServiceTest {
         @DisplayName("이미 웰컴 쿠폰을 발급받은 회원이면 예외 발생")
         void issueWelcomeCoupon_alreadyIssued() {
             // given
-            Member member = memberRepository.save(new Member(
-                    "회원",
-                    "1234",
-                    "member@naver.com",
-                    "01012345678",
-                    0,
-                    NORMAL,
-                    LocalDate.now(),
-                    "member",
-                    LocalDateTime.now(),
-                    LocalDate.of(2001, 1, 1)
-            ));
-            Coupon coupon = couponRepository.save(new Coupon(
-                    WELCOME,
-                    null,
-                    AMOUNT,
-                    10000,
-                    50000,
-                    10000,
-                    30
-                    ));
-            couponIssueRepository.save(new CouponIssue(coupon, member, LocalDateTime.now().plusDays(coupon.getValidDays())));
+            couponIssueRepository.save(new CouponIssue(welcomeCoupon, member, LocalDateTime.now().plusDays(welcomeCoupon.getValidDays())));
 
             // when & then
             assertThatThrownBy(() -> couponIssueService.issueWelcomeCoupon(member.getId()))
@@ -131,23 +133,38 @@ class CouponIssueServiceTest {
         @DisplayName("웰컴 쿠폰이 존재하지 않으면 예외 발생")
         void issueWelcomeCoupon_couponNotFound() {
             // given
-            Member member = memberRepository.save(new Member(
-                    "회원",
-                    "1234",
-                    "member@naver.com",
-                    "01012345678",
-                    0,
-                    NORMAL,
-                    LocalDate.now(),
-                    "member",
-                    LocalDateTime.now(),
-                    LocalDate.of(2001, 1, 1)
-            ));
+            couponRepository.delete(welcomeCoupon);
 
             // when & then
             assertThatThrownBy(() -> couponIssueService.issueWelcomeCoupon(member.getId()))
                     .isInstanceOf(ApplicationException.class)
                     .hasMessageContaining(COUPON_NOT_FOUND.getMessage());
         }
+    }
+
+    @Test
+    @DisplayName("생일 쿠폰을 정상적으로 발급한다")
+    void issueBirthDayCoupon_success() {
+        // when
+        Long issueId = couponIssueService.issueBirthDayCoupon(birthdayCoupon, member);
+
+        // then
+        CouponIssue issue = couponIssueRepository.findById(issueId).orElseThrow();
+        assertThat(issue.getCoupon().getId()).isEqualTo(birthdayCoupon.getId());
+        assertThat(issue.getMember().getId()).isEqualTo(member.getId());
+    }
+
+    @Test
+    @DisplayName("이미 발급된 쿠폰이 있으면 예외가 발생한다")
+    void issueBirthDayCoupon_duplicate() {
+        // given
+        couponIssueRepository.save(new CouponIssue(birthdayCoupon, member, LocalDateTime.now().plusDays(30)));
+
+        // when & then
+        assertThatThrownBy(() ->
+                couponIssueService.issueBirthDayCoupon(birthdayCoupon, member)
+        )
+                .isInstanceOf(ApplicationException.class)
+                .hasMessageContaining(COUPON_ISSUE_ALREADY_EXIST.getMessage());
     }
 }
