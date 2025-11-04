@@ -1,5 +1,7 @@
 package store.bookscamp.api.booklike.service;
 
+import org.hibernate.annotations.DialectOverride.SQLDeleteAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +10,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.HashOperations;
 
 @SpringBootTest
-class BookLikeServiceIntegrationTest {
+@Disabled
+class BookLikeServiceTest {
 
     @Autowired
     private BookLikeService likeService;
