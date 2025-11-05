@@ -25,4 +25,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Long> getAllDescendantIdsIncludingSelf(@Param("categoryId") Long categoryId);
 
     Category getCategoryById(@Param("categoryId") Long categoryId);
+
+    boolean existsByNameAndParent(String name, Category parent);
 }

@@ -20,6 +20,8 @@ import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.common.service.MinioService;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
@@ -98,6 +100,11 @@ public class BookService {
 
     public BookDetailDto getBookDetail(Long id) {
         Book book = bookRepository.getBookById(id);
+
+        if (book==null){
+            throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
+        }
+
         return BookDetailDto.from(book);
     }
 }
