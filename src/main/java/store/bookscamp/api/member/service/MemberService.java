@@ -1,6 +1,7 @@
 package store.bookscamp.api.member.service;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,13 +26,12 @@ public class MemberService {
     private final MemberEventPublisher memberEventPublisher;
 
     @Transactional(readOnly = true)
-    public MemberGetDto getMember(String id){
-
-        return MemberGetDto.fromEntity(memberRepository.getByUsername(id).orElseThrow(
-                () -> new ApplicationException(
-                ErrorCode.MEMBER_NOT_FOUND)
-        )
-        );
+    public MemberGetDto getMember(Long id){
+        Member member = memberRepository.getById(id);
+        if (Objects.isNull(member)){
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+        return MemberGetDto.fromEntity(member);
     }
 
     @Transactional(readOnly = true)
@@ -69,11 +69,11 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMember(String id, MemberUpdateDto memberUpdateDto){
-        Member member = memberRepository.getByUsername(id).orElseThrow(
-                () -> new ApplicationException(
-                        ErrorCode.MEMBER_NOT_FOUND)
-        );
+    public void updateMember(Long id, MemberUpdateDto memberUpdateDto){
+        Member member = memberRepository.getById(id);
+        if(Objects.isNull(member)){
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
 
         member.changeInfo(
                 memberUpdateDto.name(),
@@ -83,20 +83,20 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMemberPassoword(String id, MemberPasswordUpdateDto memberPasswordUpdateDto){
-        Member member = memberRepository.getByUsername(id).orElseThrow(
-                () -> new ApplicationException(
-                        ErrorCode.MEMBER_NOT_FOUND)
-        );
+    public void updateMemberPassoword(Long id, MemberPasswordUpdateDto memberPasswordUpdateDto){
+        Member member = memberRepository.getById(id);
+        if(Objects.isNull(member)){
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
         member.changePassword(memberPasswordUpdateDto.password());
     }
 
     @Transactional
-    public void deleteMember(String id){
-        Member member = memberRepository.getByUsername(id).orElseThrow(
-                () -> new ApplicationException(
-                        ErrorCode.MEMBER_NOT_FOUND)
-        );
+    public void deleteMember(Long id){
+        Member member = memberRepository.getById(id);
+        if(Objects.isNull(member)){
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
         memberRepository.delete(member);
     }
 }
