@@ -37,12 +37,16 @@ public class AddressService {
                 addressCreateDto.detailAddress()
         );
 
-        if (addressRepository.countByMemberUsername(username) >= 10) {
+        long count = addressRepository.countByMemberUsername(username);
+        if (count >= 10) {
             throw new ApplicationException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
-        } else {
-            addressRepository.save(address);
         }
 
+        Address saved = addressRepository.save(address);
+
+        if (Boolean.TRUE.equals(addressCreateDto.isDefault())) {
+            addressRepository.clearDefaultForMember(member, saved.getId());
+        }
     }
 
     public List<AddressReadDto> getMemberAddresses(String username) {
@@ -53,7 +57,8 @@ public class AddressService {
     }
 
     @Transactional
-    public void updateMemberAddress(String username, Integer addressId,
+    public void updateMemberAddress(String username,
+                                    Long addressId,
                                     AddressUpdateRequestDto addressUpdateRequestDto) {
 
         Member member = memberRepository.getByUsername(username).orElseThrow(
@@ -71,10 +76,14 @@ public class AddressService {
                 addressUpdateRequestDto.detailAddress()
         );
 
+        if (addressUpdateRequestDto.isDefault()) {
+            addressRepository.clearDefaultForMember(address.getMember(), address.getId());
+        }
+
     }
 
     @Transactional
-    public void deleteMemberAddress(String username, Integer addressId) {
+    public void deleteMemberAddress(String username, Long addressId) {
         Address address = addressRepository.getByIdAndMemberUserId(addressId, username).orElseThrow(
                 () -> new ApplicationException(ErrorCode.ADDRESS_NOT_FOUND)
         );

@@ -61,7 +61,7 @@ public class AddressController {
     @Operation(summary = "update Address", description = "회원 주소 수정 API")
     public ResponseEntity<Void> updateAddress(
             @PathVariable String username,
-            @PathVariable Integer addressId,
+            @PathVariable Long addressId,
             @Valid @RequestBody AddressUpdateRequest addressUpdateRequest) {
 
         AddressUpdateRequestDto addressUpdateDto = AddressUpdateRequest.toDto(addressUpdateRequest);
@@ -77,7 +77,7 @@ public class AddressController {
     @Operation(summary = "delete Address", description = "회원 주소 삭제 API")
     public ResponseEntity<Void> deleteAddress(
             @PathVariable String username,
-            @PathVariable Integer addressId) {
+            @PathVariable Long addressId) {
 
         addressService.deleteMemberAddress(username, addressId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

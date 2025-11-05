@@ -18,10 +18,11 @@ public record AddressListResponse(
     public record AddressResponse(
             Long id,
             String label,
-            String roadNameAddress,
-            Integer zipCode,
-            boolean isDefault,
-            String detailAddress) {
+            @JsonProperty("road_name_address") String roadNameAddress,
+            @JsonProperty("zip_code") Integer zipCode,
+            @JsonProperty("is_default") boolean isDefault,
+            @JsonProperty("detail_address") String detailAddress
+    ) {
 
         public static AddressResponse from(AddressReadDto dto) {
             return new AddressResponse(
