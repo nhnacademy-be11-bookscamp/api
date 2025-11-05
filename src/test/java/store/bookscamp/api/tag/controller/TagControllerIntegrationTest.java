@@ -50,7 +50,7 @@ class TagControllerIntegrationTest {
                         .contentType(JSON_UTF8)
                         .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", matchesPattern("/admin/tags/\\d+"))) // TagController에 맞게 수정
+                .andExpect(header().string("Location", matchesPattern("/tags/\\d+")))
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.name").value("java"));
     }
