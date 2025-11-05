@@ -46,17 +46,13 @@ class CartServiceTest {
     private BookRepository bookRepository;
     @Autowired
     private MemberRepository memberRepository;
-//    @Autowired
-//    private ContributorRepository contributorRepository;
-//
-//    private Contributor contributor;
+
     private Member member;
     private Cart cart;
     private Book book;
 
     @BeforeEach
     void setUp() {
-//        contributor = contributorRepository.save(new Contributor("기여자"));
         member = memberRepository.save(new Member(
                 "회원",
                 "1234",
@@ -193,7 +189,7 @@ class CartServiceTest {
 
             // then
             List<CartItem> cartItems = cartItemRepository.findAllByCart(cart);
-            assertThat(cartItems.size()).isEqualTo(0);
+            assertThat(cartItems).isEmpty();
         }
     }
 }
