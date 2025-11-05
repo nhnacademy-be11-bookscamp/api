@@ -1,15 +1,12 @@
 package store.bookscamp.api.book.service;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.bookscamp.api.book.controller.request.BookCategoryCreateRequest;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
-import store.bookscamp.api.book.controller.request.BookTagCreateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
@@ -17,7 +14,6 @@ import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
-import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
 import store.bookscamp.api.booktag.entity.BookTag;
@@ -97,9 +93,7 @@ public class BookService {
 
         Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, keyword, sortType, pageable);
         // from 메서드를 통해 Dto로 변환
-        Page<BookSortDto> dtoPage = bookPage.map(BookSortDto::from);
-
-        return dtoPage;
+        return bookPage.map(BookSortDto::from);
     }
 
     public BookDetailDto getBookDetail(Long id) {

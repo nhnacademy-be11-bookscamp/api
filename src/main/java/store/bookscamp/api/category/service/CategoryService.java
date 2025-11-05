@@ -3,7 +3,6 @@ package store.bookscamp.api.category.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -46,7 +45,6 @@ public class CategoryService {
                 CategoryListDto parentDto = dtoMap.get(category.getParent().getId());
 
                 if (parentDto != null) {
-
                     parentDto.children().add(currentDto);
                 }
             }
@@ -84,12 +82,5 @@ public class CategoryService {
     @CacheEvict(value = "categories", allEntries = true)
     public void deleteCategory(CategoryDeleteDto dto){
         categoryRepository.deleteById(dto.id());
-    }
-
-    public CategoryListDto getCategory(Long id) {
-
-        Category category = categoryRepository.findById(id).get();
-
-        return new CategoryListDto(category.getId(), category.getName(), new ArrayList<>());
     }
 }
