@@ -1,7 +1,6 @@
 package store.bookscamp.api.category.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +34,7 @@ public class CategoryController {
 
         List<CategoryListResponse> categoryResponseTree = categoryDtoTree.stream()
                 .map(this::convertDtoToResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(categoryResponseTree);
     }
@@ -72,7 +71,7 @@ public class CategoryController {
     private CategoryListResponse convertDtoToResponse(CategoryListDto dto) {
         List<CategoryListResponse> children = dto.children().stream()
                 .map(this::convertDtoToResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return new CategoryListResponse(
                 dto.id(),
