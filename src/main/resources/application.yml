@@ -16,6 +16,24 @@ spring:
       host: localhost
       port: 6379
 
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
+  rabbitmq:
+    listener:
+      simple:
+        default-requeue-rejected: false  # 예외 시 DLQ로
+
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
+
+
 minio:
   # 브라우저에서 접근 가능한 public base URL (리턴용)
   url: http://storage.java21.net:8000

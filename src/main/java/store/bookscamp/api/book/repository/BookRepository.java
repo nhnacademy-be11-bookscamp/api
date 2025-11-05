@@ -1,6 +1,5 @@
 package store.bookscamp.api.book.repository;
 
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.repository.custom.BookRepositoryCustom;

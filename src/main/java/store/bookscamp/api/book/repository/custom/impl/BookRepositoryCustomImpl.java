@@ -12,6 +12,7 @@ import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.QBook;
 import store.bookscamp.api.book.repository.custom.BookRepositoryCustom;
 import store.bookscamp.api.bookcategory.entity.QBookCategory;
+import store.bookscamp.api.booklike.entity.QBookLike;
 import store.bookscamp.api.category.entity.QCategory;
 
 
@@ -22,34 +23,33 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private final QBook book = QBook.book;
     private final QBookCategory bookCategory = QBookCategory.bookCategory;
     private final QCategory category = QCategory.category;
+    private final QBookLike bookLike = QBookLike.bookLike;
 
     @Override
     public Page<Book> getBooks(List<Long> categoryIds, String keyword, String sortType, Pageable pageable) {
 
         OrderSpecifier<?> sortOrder = getSortSpecifier(sortType, book);
 
-        // where 조건에 만족하는 책의 정보를 가져오는 역할
         List<Book> results = queryFactory
-                .selectFrom(book)
+                .select(book)
+                .from(book)
                 .leftJoin(bookCategory).on(book.id.eq(bookCategory.book.id))
                 .leftJoin(category).on(bookCategory.category.id.eq(category.id))
-                .where(
-                        inCategories(categoryIds)
-                )
+                .leftJoin(bookLike).on(book.id.eq(bookLike.book.id).and(bookLike.liked.isTrue()))
+                .where(inCategories(categoryIds))
+                .groupBy(book.id)
                 .orderBy(sortOrder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // where 조건에 만족하는 책의 수량을 카운트 하는 역할
         Long totalCount = queryFactory
-                .select(book.count())
+                .select(book.countDistinct())
                 .from(book)
                 .leftJoin(bookCategory).on(book.id.eq(bookCategory.book.id))
                 .leftJoin(category).on(bookCategory.category.id.eq(category.id))
-                .where(
-                        inCategories(categoryIds)
-                )
+                .leftJoin(bookLike).on(book.id.eq(bookLike.book.id).and(bookLike.liked.isTrue()))
+                .where(inCategories(categoryIds))
                 .fetchOne();
 
         long total = (totalCount != null) ? totalCount : 0L;
@@ -74,6 +74,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
             case "low-price" -> book.salePrice.asc();
             case "high-price" -> book.salePrice.desc();
             case "publishDate" -> book.publishDate.desc();
+            case "bookLike" -> bookLike.id.count().desc();
             default -> book.id.asc();
         };
     }

@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.ISBN;
-import org.springframework.web.multipart.MultipartFile;
 
 
 @Data
@@ -39,17 +38,14 @@ public class BookCreateRequest {
     @NotNull
     private Integer salePrice;
 
-    @NotBlank
+    @NotNull
     private Integer stock;
 
-
     private boolean packable;
-
 
     private String content;
     private String explanation;
 
-    private List<MultipartFile> images;
     private List<Long>  tagIds;
-    private List<Long> categoryIds;
+    private Long categoryId;
 }

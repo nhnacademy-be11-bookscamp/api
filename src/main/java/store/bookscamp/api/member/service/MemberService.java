@@ -2,23 +2,27 @@ package store.bookscamp.api.member.service;
 
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.entity.MemberStatus;
+import store.bookscamp.api.member.publisher.MemberEventPublisher;
 import store.bookscamp.api.member.repository.MemberRepository;
 import store.bookscamp.api.member.service.dto.MemberCreateDto;
 import store.bookscamp.api.member.service.dto.MemberGetDto;
 import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
 import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final MemberEventPublisher memberEventPublisher;
 
     @Transactional(readOnly = true)
     public MemberGetDto getMember(String id){
@@ -60,7 +64,8 @@ public class MemberService {
                 member.birthDate()
         );
 
-        memberRepository.save(newMember);
+        Long memberId = memberRepository.save(newMember).getId();
+        memberEventPublisher.publishSignupEvent(memberId);
     }
 
     @Transactional
