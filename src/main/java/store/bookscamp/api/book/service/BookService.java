@@ -81,8 +81,6 @@ public class BookService {
                 bookTagRepository.save(new BookTag(book, tag));
             }
         }
-
-
     }
 
     public Page<BookSortDto> searchBooks(Long categoryId, String keyword, String sortType, Pageable pageable) {

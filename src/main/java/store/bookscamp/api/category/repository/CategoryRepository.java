@@ -9,7 +9,7 @@ import store.bookscamp.api.category.entity.Category;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query(value = """
-        WITH RECURSIVE CategoryTree AS (
+        WITH RECURSIVE CategoryTree (id) AS (
             SELECT id
             FROM category                
             WHERE id = :categoryId
