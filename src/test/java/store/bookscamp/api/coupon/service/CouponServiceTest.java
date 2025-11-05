@@ -42,14 +42,10 @@ class CouponServiceTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
-//    @Autowired
-//    private ContributorRepository contributorRepository;
-
     @Test
     @DisplayName("BOOK 타겟 쿠폰 생성 성공")
     void createCoupon_forBook_success() {
         // given
-//        Contributor contributor = contributorRepository.save(new Contributor("기여자"));
         Book book = bookRepository.save(new Book(
                 "책 제목",
                 "책 설명",
