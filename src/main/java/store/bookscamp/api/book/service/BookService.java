@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
@@ -27,10 +26,8 @@ import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
-import store.bookscamp.api.common.service.MinioService;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
-
 
 @Service
 @RequiredArgsConstructor
@@ -65,8 +62,8 @@ public class BookService {
         );
         bookRepository.save(book);
 
-        if (dto.imgUrls() != null && !dto.imgUrls().isEmpty()) {
-            bookImageService.createBookImage(new BookImageCreateDto(book, dto.imgUrls()));
+        if (dto.imageUrls() != null && !dto.imageUrls().isEmpty()) {
+            bookImageService.createBookImage(new BookImageCreateDto(book, dto.imageUrls()));
         }
 
         if (dto.categoryId() != null) {
@@ -82,12 +79,13 @@ public class BookService {
         }
     }
 
-    public void updateBook(Long id, BookUpdateRequest req, List<MultipartFile> files, MinioService minioService) {
+    @Transactional
+    public void updateBook(Long id, BookUpdateRequest req) {
 
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
 
-        BookUpdateDto dto = BookUpdateDto.from(req, files, minioService);
+        BookUpdateDto dto = BookUpdateDto.from(req);
 
         book.updateInfo(
                 dto.title(),
@@ -116,8 +114,8 @@ public class BookService {
             );
         }
 
-        if (dto.imgUrls() != null && !dto.imgUrls().isEmpty()) {
-            bookImageService.createBookImage(new BookImageCreateDto(book, dto.imgUrls()));
+        if (dto.imageUrls() != null && !dto.imageUrls().isEmpty()) {
+            bookImageService.createBookImage(new BookImageCreateDto(book, dto.imageUrls()));
         }
 
         if (dto.categoryId() != null) {
@@ -133,8 +131,6 @@ public class BookService {
                 bookTagRepository.save(new BookTag(book, tag));
             }
         }
-
-
     }
 
     public Page<BookSortDto> searchBooks(Long categoryId, String keyword, String sortType, Pageable pageable) {
