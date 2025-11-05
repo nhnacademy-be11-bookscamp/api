@@ -31,7 +31,7 @@ public class TagController {
     public ResponseEntity<TagGetResponse> create(@Valid @RequestBody TagCreateRequest request) {
         TagGetDto created = tagService.create(TagCreateRequest.toDto(request));
         TagGetResponse body = TagGetResponse.fromDto(created);
-        return ResponseEntity.created(URI.create("/tags/" + body.getId())).body(body);
+        return ResponseEntity.created(URI.create("/tags/" + body.getId())).body(body); // "/tags" -> "/admin/tags"
     }
 
     @GetMapping("/{id}")
