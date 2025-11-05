@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.category.entity.Category;
@@ -22,6 +24,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    @Cacheable("categories")
     public List<CategoryListDto> getCategoryTree() {
 
         List<Category> allCategories = categoryRepository.findAll();
@@ -53,15 +56,23 @@ public class CategoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void createCategory(CategoryCreateDto dto) {
 
-        Category parentCategory = categoryRepository.findById(dto.parentId()).orElseThrow();
-        Category newCategory = new Category(parentCategory,dto.name());
+        Category parentCategory = null;
+
+        if (dto.parentId() != null) {
+            parentCategory = categoryRepository.findById(dto.parentId())
+                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 부모 카테고리 ID입니다: " + dto.parentId()));
+        }
+
+        Category newCategory = new Category(parentCategory, dto.name());
 
         categoryRepository.save(newCategory);
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void updateCategory(CategoryUpdateDto dto) {
 
         Category category = categoryRepository.findById(dto.id()).orElseThrow();
@@ -70,6 +81,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void deleteCategory(CategoryDeleteDto dto){
         categoryRepository.deleteById(dto.id());
     }

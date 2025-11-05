@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
 
+    PARSE_ERROR(INTERNAL_SERVER_ERROR, "파싱할 수 없습니다."),
     IMAGE_NOT_FOUND(NOT_FOUND, "이미지를 찾을 수 없습니다."),
     MINIO_BUCKET_NOT_FOUND(NOT_FOUND, "버킷을 찾을 수 없습니다."),
     MINIO_UPLOAD_FAILED(INTERNAL_SERVER_ERROR,"파일 업로드에 실패했습니다."),
@@ -38,6 +39,8 @@ public enum ErrorCode {
     POINT_POLICY_NOT_FOUND(NOT_FOUND, "포인트 정책을 찾을 수 없습니다."),
 
     COUPON_NOT_FOUND(NOT_FOUND, "쿠폰을 찾을 수 없습니다."),
+
+    COUPON_ISSUE_ALREADY_EXIST(CONFLICT, "이미 발급된 쿠폰이 존재합니다."),
     ;
 
 
