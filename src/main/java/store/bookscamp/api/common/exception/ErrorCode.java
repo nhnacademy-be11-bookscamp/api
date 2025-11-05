@@ -20,6 +20,9 @@ public enum ErrorCode {
     EMAIL_DUPLICATE(CONFLICT, "이미 존재하는 이메일입니다."),
     PHONE_DUPLICATE(CONFLICT, "이미 존재하는 전화번호입니다."),
 
+    ADDRESS_NOT_FOUND(NOT_FOUND, "주소를 찾을 수 없습니다."),
+    ADDRESS_LIMIT_EXCEEDED(BAD_REQUEST, "주소는 최대 10개까지 등록할 수 있습니다."),
+
     BOOK_NOT_FOUND(NOT_FOUND, "도서를 찾을 수 없습니다."),
 
     CATEGORY_NOT_FOUND(NOT_FOUND, "카테고리를 찾을 수 없습니다."),
