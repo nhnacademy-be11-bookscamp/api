@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.ISBN;
-import org.springframework.web.multipart.MultipartFile;
+import store.bookscamp.api.book.entity.BookStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,7 +46,8 @@ public class BookUpdateRequest {
     private String content;
     private String explanation;
 
-    private List<MultipartFile> newFiles;
     private List<Long>  tagIds;
-    private List<Long> categoryIds;
+    private Long categoryId;
+    private List<String> removedUrls;
+    private BookStatus status;
 }
