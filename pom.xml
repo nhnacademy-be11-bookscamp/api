@@ -46,7 +46,10 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
         <!-- RabbitMQ -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -106,11 +109,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
             <version>3.0.4</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>com.querydsl</groupId>
