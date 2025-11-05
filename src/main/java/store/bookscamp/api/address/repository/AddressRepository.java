@@ -17,16 +17,9 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
             JOIN a.member m 
             WHERE m.username = :username
             """)
-    List<Address> getAllByMemberUserId(@Param("username") String username);
+    List<Address> getAllByMemberUserName(@Param("username") String username);
 
-    @Query("""
-            SELECT COUNT(a)
-            FROM Address a
-            JOIN a.member m
-            WHERE m.username = :username
-            """)
-    long countByMemberUsername(@Param("username") String username);
-
+    long countByMember(Member member);
 
     @Query("""
             SELECT a 
@@ -35,7 +28,7 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
             WHERE a.id = :addressId 
             AND m.username = :username
             """)
-    Optional<Address> getByIdAndMemberUserId(
+    Optional<Address> getByIdAndMemberUserName(
             @Param("addressId") Long addressId,
             @Param("username") String username);
 

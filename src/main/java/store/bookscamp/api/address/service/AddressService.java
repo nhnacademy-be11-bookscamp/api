@@ -2,6 +2,7 @@ package store.bookscamp.api.address.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.address.entity.Address;
@@ -14,6 +15,7 @@ import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.repository.MemberRepository;
 
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
@@ -37,7 +39,8 @@ public class AddressService {
                 addressCreateDto.detailAddress()
         );
 
-        long count = addressRepository.countByMemberUsername(username);
+        long count = addressRepository.countByMember(member);
+        log.info("{}", count);
         if (count >= 10) {
             throw new ApplicationException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
         }
@@ -50,7 +53,7 @@ public class AddressService {
     }
 
     public List<AddressReadDto> getMemberAddresses(String username) {
-        List<Address> addresses = addressRepository.getAllByMemberUserId(username);
+        List<Address> addresses = addressRepository.getAllByMemberUserName(username);
         return addresses.stream()
                 .map(AddressReadDto::from)
                 .toList();
@@ -64,7 +67,7 @@ public class AddressService {
         Member member = memberRepository.getByUsername(username).orElseThrow(
                 () -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
         );
-        Address address = addressRepository.getByIdAndMemberUserId(addressId, username).orElseThrow(
+        Address address = addressRepository.getByIdAndMemberUserName(addressId, username).orElseThrow(
                 () -> new ApplicationException(ErrorCode.ADDRESS_NOT_FOUND)
         );
 
@@ -84,7 +87,7 @@ public class AddressService {
 
     @Transactional
     public void deleteMemberAddress(String username, Long addressId) {
-        Address address = addressRepository.getByIdAndMemberUserId(addressId, username).orElseThrow(
+        Address address = addressRepository.getByIdAndMemberUserName(addressId, username).orElseThrow(
                 () -> new ApplicationException(ErrorCode.ADDRESS_NOT_FOUND)
         );
         addressRepository.delete(address);
