@@ -80,8 +80,23 @@ class BookControllerTest {
         // given
         long bookId = 1L;
         BookDetailDto bookDetail = new BookDetailDto(
-                bookId, "JPA 책 상세", "JPA 상세 설명", "JPA 상세 내용", "북스캠프", LocalDate.now(),
-                "저자 A, 역자 C", BookStatus.AVAILABLE, true, 40000, 36000, 100, 150L
+                bookId, // 1. id
+                "JPA 책 상세", // 2. title
+                "JPA 상세 설명", // 3. explanation
+                "JPA 상세 내용", // 4. content
+                "북스캠프", // 5. publisher
+                LocalDate.now(), // 6. publishDate
+                "저자 A, 역자 C", // 7. contributors
+                "9791168441234", // 8. isbn (String) - 누락된 값 추가 (임의의 값)
+                BookStatus.AVAILABLE, // 9. status
+                true, // 10. packable
+                40000, // 11. regularPrice
+                36000, // 12. salePrice
+                100, // 13. stock
+                150L, // 14. viewCount
+                7L, // 15. categoryId (Long 타입으로 변경)
+                null, // 16. tagIds
+                null // 17. imageUrls
         );
 
         when(bookService.getBookDetail(bookId)).thenReturn(bookDetail);
