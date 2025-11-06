@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,7 +51,7 @@ public class MemberController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/sign-up")
     @Tag(name = "Member API")
     @Operation(summary = "create Member", description = "회원가입 API")
     public ResponseEntity<Void> createMember(@Valid @RequestBody MemberCreateRequest memberCreateRequest){
@@ -65,20 +64,18 @@ public class MemberController {
     @PutMapping
     @Tag(name = "Member API")
     @Operation(summary = "update Member", description = "회원정보 수정 API")
-    public ResponseEntity<MemberGetResponse> updateMember(@Valid @RequestBody MemberUpdateRequest memberUpdateRequest,HttpServletRequest request) {
-
+    public ResponseEntity<MemberGetResponse> updateMember(
+            @Valid @RequestBody MemberUpdateRequest memberUpdateRequest,
+            HttpServletRequest request)
+    {
+        Long currentUserId = Long.parseLong(request.getHeader("X-User-ID"));
         MemberUpdateDto memberUpdateDto = MemberUpdateRequest.toDto(memberUpdateRequest);
-        memberService.checkEmailPhoneDuplicate(memberUpdateDto.email(),memberUpdateDto.phone());
-        memberService.updateMember(Long.parseLong(request.getHeader("X-User-ID")), memberUpdateDto);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PutMapping("/change-password")
-    @Tag(name = "Member API")
-    @Operation(summary = "update password", description = "비밀번호 수정 API")
-        public ResponseEntity<Void> updatePassword(@Valid @RequestBody MemberPasswordUpdateRequest memberPasswordUpdateRequest, HttpServletRequest request) {
-        MemberPasswordUpdateDto memberPasswordUpdateDto = MemberPasswordUpdateRequest.toDto(memberPasswordUpdateRequest);
-        memberService.updateMemberPassoword(Long.parseLong(request.getHeader("X-User-ID")),memberPasswordUpdateDto);
+        memberService.checkEmailPhoneDuplicateForUpdate(
+                currentUserId,
+                memberUpdateDto.email(),
+                memberUpdateDto.phone()
+        );
+        memberService.updateMember(currentUserId, memberUpdateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
