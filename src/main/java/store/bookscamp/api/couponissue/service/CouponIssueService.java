@@ -56,7 +56,12 @@ public class CouponIssueService {
         return couponIssueRepository.save(couponIssue).getId();
     }
 
-    public Long issueGeneralCoupon(Coupon coupon, Member member) {
+    public Long issueGeneralCoupon(Long couponId, Long memberId) {
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
+
         if (couponIssueRepository.existsByCouponAndMember(coupon, member)) {
             throw new ApplicationException(COUPON_ISSUE_ALREADY_EXIST);
         }
