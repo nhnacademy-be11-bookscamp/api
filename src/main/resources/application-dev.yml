@@ -27,7 +27,6 @@ spring:
       ddl-auto: update
     properties:
       hibernate.globally_quoted_identifiers: true
-
   rabbitmq:
     host: localhost
     port: 5672
