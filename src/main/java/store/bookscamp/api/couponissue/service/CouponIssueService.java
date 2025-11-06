@@ -7,6 +7,7 @@ import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static store.bookscamp.api.coupon.entity.TargetType.WELCOME;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
@@ -34,7 +35,7 @@ public class CouponIssueService {
     @Retryable(noRetryFor = ApplicationException.class, backoff = @Backoff(multiplier = 2.0, maxDelay = 10000), listeners = "customRetryListener")
     @Transactional
     public Long issueBirthDayCoupon(Coupon coupon, Member member) {
-        if (couponIssueRepository.existsCouponIssuesByCouponAndMember(coupon, member)) {
+        if (couponIssueRepository.existsByCouponAndMember(coupon, member)) {
             throw new ApplicationException(COUPON_ISSUE_ALREADY_EXIST);
         }
         CouponIssue couponIssue = new CouponIssue(coupon, member, getExpiredAt(now().lengthOfMonth()));
@@ -45,7 +46,7 @@ public class CouponIssueService {
     public Long issueWelcomeCoupon(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
-        if (couponIssueRepository.existsCouponIssueByCouponTargetTypeAndMember(WELCOME, member)) {
+        if (couponIssueRepository.existsByCouponTargetTypeAndMember(WELCOME, member)) {
             throw new ApplicationException(COUPON_ISSUE_ALREADY_EXIST);
         }
 
@@ -55,10 +56,28 @@ public class CouponIssueService {
         return couponIssueRepository.save(couponIssue).getId();
     }
 
-    public Long issueGeneralCoupon(Coupon coupon, Member member) {
+    public Long issueGeneralCoupon(Long couponId, Long memberId) {
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
+
+        if (couponIssueRepository.existsByCouponAndMember(coupon, member)) {
+            throw new ApplicationException(COUPON_ISSUE_ALREADY_EXIST);
+        }
         int validDays = coupon.getValidDays() != null ? coupon.getValidDays() : DEFAULT_COUPON_VALID_DAYS;
         CouponIssue couponIssue = new CouponIssue(coupon, member, getExpiredAt(validDays));
         return couponIssueRepository.save(couponIssue).getId();
+    }
+
+    public List<CouponIssue> listCouponIssue(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
+        return couponIssueRepository.findAllByMember(member);
+    }
+
+    public void deleteCouponIssue(Long couponIssueId) {
+        couponIssueRepository.deleteById(couponIssueId);
     }
 
     private static LocalDateTime getExpiredAt(Integer validDays) {
