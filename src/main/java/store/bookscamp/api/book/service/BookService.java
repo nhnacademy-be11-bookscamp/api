@@ -1,6 +1,7 @@
 package store.bookscamp.api.book.service;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
+
 
 @Service
 @RequiredArgsConstructor
@@ -143,14 +145,16 @@ public class BookService {
 
         Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, keyword, sortType, pageable);
         // from 메서드를 통해 Dto로 변환
-        Page<BookSortDto> dtoPage = bookPage.map(BookSortDto::from);
-
-        return dtoPage;
+        return bookPage.map(BookSortDto::from);
     }
 
     public BookDetailDto getBookDetail(Long id) {
 
         Book book = bookRepository.getBookById(id);
+
+        if (book==null){
+            throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
+        }
 
         book.increaseViewCount();
 

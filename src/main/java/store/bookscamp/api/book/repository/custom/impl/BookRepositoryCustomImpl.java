@@ -20,10 +20,10 @@ import store.bookscamp.api.category.entity.QCategory;
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-    private final QBook book = QBook.book;
-    private final QBookCategory bookCategory = QBookCategory.bookCategory;
-    private final QCategory category = QCategory.category;
-    private final QBookLike bookLike = QBookLike.bookLike;
+    private static final QBook book = QBook.book;
+    private static final QBookCategory bookCategory = QBookCategory.bookCategory;
+    private static final QCategory category = QCategory.category;
+    private static final QBookLike bookLike = QBookLike.bookLike;
 
     @Override
     public Page<Book> getBooks(List<Long> categoryIds, String keyword, String sortType, Pageable pageable) {
