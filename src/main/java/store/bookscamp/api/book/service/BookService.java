@@ -156,8 +156,6 @@ public class BookService {
             throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
         }
 
-        return BookDetailDto.from(book);
-
         book.increaseViewCount();
 
         Long categoryId = bookCategoryRepository.findByBook(book)
