@@ -82,6 +82,16 @@ public class MemberService {
         );
     }
 
+    public void checkEmailPhoneDuplicateForUpdate(Long currentUserId, String email, String phone) {
+        if (memberRepository.existsByEmailAndIdNot(email, currentUserId)) {
+            throw new ApplicationException(ErrorCode.EMAIL_DUPLICATE);
+        }
+
+        if (memberRepository.existsByPhoneAndIdNot(phone, currentUserId)) {
+            throw new ApplicationException(ErrorCode.PHONE_DUPLICATE);
+        }
+    }
+
     @Transactional
     public void updateMemberPassoword(Long id, MemberPasswordUpdateDto memberPasswordUpdateDto){
         Member member = memberRepository.getById(id);
