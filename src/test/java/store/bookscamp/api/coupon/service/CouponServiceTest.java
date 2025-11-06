@@ -22,8 +22,6 @@ import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.common.exception.ApplicationException;
-import store.bookscamp.api.contributor.entity.Contributor;
-import store.bookscamp.api.contributor.repository.ContributorRepository;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.coupon.repository.CouponRepository;
 import store.bookscamp.api.coupon.service.dto.CouponCreateDto;
@@ -44,14 +42,10 @@ class CouponServiceTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @Autowired
-    private ContributorRepository contributorRepository;
-
     @Test
     @DisplayName("BOOK 타겟 쿠폰 생성 성공")
     void createCoupon_forBook_success() {
         // given
-        Contributor contributor = contributorRepository.save(new Contributor("기여자"));
         Book book = bookRepository.save(new Book(
                 "책 제목",
                 "책 설명",
@@ -59,7 +53,7 @@ class CouponServiceTest {
                 "출판사",
                 LocalDate.of(2001, 1, 1),
                 "123456789012",
-                contributor,
+                "기여자",
                 AVAILABLE,
                 false,
                 20000,

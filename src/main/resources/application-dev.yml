@@ -22,4 +22,14 @@ spring:
     url: jdbc:mysql://s4.java21.net:13306/project_be11_team3_dev
     username: project_be11_team3
     password: ${PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.globally_quoted_identifiers: true
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: nhnacademy123!

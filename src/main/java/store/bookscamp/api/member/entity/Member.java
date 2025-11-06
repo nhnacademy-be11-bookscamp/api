@@ -20,7 +20,7 @@ import store.bookscamp.api.common.entity.SoftDeleteEntity;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-@SQLDelete(sql = "UPDATE `member` SET deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE `member` SET deleted_at = NOW(), status = 'WITHDRAWN' WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class Member extends SoftDeleteEntity {
 
@@ -84,10 +84,6 @@ public class Member extends SoftDeleteEntity {
         this.name= name;
         this.email=email;
         this.phone=phone;
-    }
-
-    public void changeStatus(MemberStatus memberStatus){
-        this.status = memberStatus;
     }
 
     public void changePassword(String password){

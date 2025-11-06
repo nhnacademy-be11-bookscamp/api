@@ -28,8 +28,6 @@ import store.bookscamp.api.cart.repository.CartRepository;
 import store.bookscamp.api.cart.service.dto.CartItemAddDto;
 import store.bookscamp.api.cart.service.dto.CartItemDto;
 import store.bookscamp.api.common.exception.ApplicationException;
-import store.bookscamp.api.contributor.entity.Contributor;
-import store.bookscamp.api.contributor.repository.ContributorRepository;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.repository.MemberRepository;
 
@@ -48,17 +46,13 @@ class CartServiceTest {
     private BookRepository bookRepository;
     @Autowired
     private MemberRepository memberRepository;
-    @Autowired
-    private ContributorRepository contributorRepository;
 
-    private Contributor contributor;
     private Member member;
     private Cart cart;
     private Book book;
 
     @BeforeEach
     void setUp() {
-        contributor = contributorRepository.save(new Contributor("기여자"));
         member = memberRepository.save(new Member(
                 "회원",
                 "1234",
@@ -79,7 +73,7 @@ class CartServiceTest {
                 "출판사",
                 LocalDate.of(2001, 1, 1),
                 "123456789012",
-                contributor,
+                "기여자",
                 AVAILABLE,
                 false,
                 20000,
@@ -195,7 +189,7 @@ class CartServiceTest {
 
             // then
             List<CartItem> cartItems = cartItemRepository.findAllByCart(cart);
-            assertThat(cartItems.size()).isEqualTo(0);
+            assertThat(cartItems).isEmpty();
         }
     }
 }

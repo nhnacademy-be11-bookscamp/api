@@ -2,14 +2,13 @@ package store.bookscamp.api.member.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,11 +32,11 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping("/{id}")
+    @GetMapping
     @Tag(name = "Member API")
     @Operation(summary = "read Member", description = "회원조희 API")
-    public MemberGetResponse getMember(@PathVariable String id){
-        return MemberGetResponse.fromDto(memberService.getMember(id));
+    public MemberGetResponse getMember(HttpServletRequest request){
+        return MemberGetResponse.fromDto(memberService.getMember(Long.parseLong(request.getHeader("X-User-ID"))));
     }
 
     @GetMapping("/check-id")
@@ -52,38 +51,39 @@ public class MemberController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/sign-up")
     @Tag(name = "Member API")
     @Operation(summary = "create Member", description = "회원가입 API")
     public ResponseEntity<Void> createMember(@Valid @RequestBody MemberCreateRequest memberCreateRequest){
         MemberCreateDto memberCreateDto = MemberCreateRequest.toDto(memberCreateRequest);
+        memberService.checkEmailPhoneDuplicate(memberCreateDto.email(),memberCreateDto.phone());
         memberService.createMember(memberCreateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping
     @Tag(name = "Member API")
     @Operation(summary = "update Member", description = "회원정보 수정 API")
-    public ResponseEntity<MemberGetResponse> updateMember(@PathVariable String id, @Valid @RequestBody MemberUpdateRequest memberUpdateRequest) {
+    public ResponseEntity<MemberGetResponse> updateMember(
+            @Valid @RequestBody MemberUpdateRequest memberUpdateRequest,
+            HttpServletRequest request)
+    {
+        Long currentUserId = Long.parseLong(request.getHeader("X-User-ID"));
         MemberUpdateDto memberUpdateDto = MemberUpdateRequest.toDto(memberUpdateRequest);
-        memberService.updateMember(id, memberUpdateDto);
+        memberService.checkEmailPhoneDuplicateForUpdate(
+                currentUserId,
+                memberUpdateDto.email(),
+                memberUpdateDto.phone()
+        );
+        memberService.updateMember(currentUserId, memberUpdateDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/change-password")
-    @Tag(name = "Member API")
-    @Operation(summary = "update password", description = "비밀번호 수정 API")
-        public ResponseEntity<Void> updatePassword(@PathVariable String id, @Valid @RequestBody MemberPasswordUpdateRequest memberPasswordUpdateRequest) {
-        MemberPasswordUpdateDto memberPasswordUpdateDto = MemberPasswordUpdateRequest.toDto(memberPasswordUpdateRequest);
-        memberService.updateMemberPassoword(id,memberPasswordUpdateDto);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}")
+    @DeleteMapping
     @Tag(name = "Member API")
     @Operation(summary = "delete Member", description = "회원탈퇴 API")
-    public ResponseEntity<Void> deleteMember(@PathVariable String id){
-        memberService.deleteMember(id);
+    public ResponseEntity<Void> deleteMember(HttpServletRequest request){
+        memberService.deleteMember(Long.parseLong(request.getHeader("X-User-ID")));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

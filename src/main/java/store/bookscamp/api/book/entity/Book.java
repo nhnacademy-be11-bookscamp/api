@@ -1,7 +1,6 @@
 package store.bookscamp.api.book.entity;
 
 import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -10,14 +9,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.bookscamp.api.common.entity.BaseEntity;
-import store.bookscamp.api.contributor.entity.Contributor;
 
 @Entity
 @Getter
@@ -77,10 +73,9 @@ public class Book extends BaseEntity {
     @Column(nullable = false)
     private BookStatus status;
 
-    // 기여자아이디
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "contributor_id", nullable = false)
-    private Contributor contributor;
+    //기여자
+    @Column(nullable = false)
+    private String contributors;
 
     public Book(
 
@@ -90,7 +85,7 @@ public class Book extends BaseEntity {
             String publisher,
             LocalDate publishDate,
             String isbn,
-            Contributor contributor,
+            String contributors,
             BookStatus status,
             boolean packable,
             Integer regularPrice,
@@ -104,12 +99,48 @@ public class Book extends BaseEntity {
         this.publisher = publisher;
         this.publishDate = publishDate;
         this.isbn = isbn;
-        this.contributor = contributor;
+        this.contributors = contributors;
         this.status = status;
         this.packable = packable;
         this.regularPrice = regularPrice;
         this.salePrice = salePrice;
         this.stock = stock;
         this.viewCount = viewCount;
+    }
+
+    public void updateInfo(
+
+            String title,
+            String contributors,
+            String publisher,
+            String isbn,
+            LocalDate publishDate,
+            Integer regularPrice,
+            Integer salePrice,
+            Integer stock,
+            boolean packable,
+            String content,
+            String explanation
+    ) {
+        this.title = title;
+        this.contributors = contributors;
+        this.publisher = publisher;
+        this.isbn = isbn;
+        this.publishDate = publishDate;
+        this.regularPrice = regularPrice;
+        this.salePrice = salePrice;
+        this.stock = stock;
+        this.packable = packable;
+        this.content = content;
+        this.explanation = explanation;
+    }
+
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
+    public void setStatus(BookStatus status) {
+        this.status = status;
     }
 }
