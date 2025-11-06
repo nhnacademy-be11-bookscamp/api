@@ -9,7 +9,6 @@ import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
 import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
-import store.bookscamp.api.common.service.MinioService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookImageService {
 
-    private final MinioService minioService;
     private final BookImageRepository bookImageRepository;
 
     @Transactional
@@ -43,8 +41,6 @@ public class BookImageService {
 
         BookImage image = bookImageRepository.findById(dto.imageId())
                 .orElseThrow(() -> new ApplicationException(ErrorCode.IMAGE_NOT_FOUND));
-
-        minioService.deleteFile(dto.imageUrl(), "book");
 
         bookImageRepository.delete(image);
 
