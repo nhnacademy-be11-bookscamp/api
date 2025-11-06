@@ -1,9 +1,7 @@
 package store.bookscamp.api.book.service.dto;
 
-import org.springframework.web.multipart.MultipartFile;
 import store.bookscamp.api.book.controller.request.AladinCreateRequest;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
-import store.bookscamp.api.common.service.MinioService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,18 +18,11 @@ public record BookCreateDto(
         boolean packable,
         String content,
         String explanation,
-        List<String> imgUrls,
+        List<String> imageUrls,
         List<Long> tagIds,
         Long categoryId
 ) {
-    public static BookCreateDto from(BookCreateRequest req, List<MultipartFile> files, MinioService minioService) {
-
-        List<String> imgUrls = null;
-
-        if (files != null && !files.isEmpty()) {
-            imgUrls = minioService.uploadFiles(files, "book");
-        }
-
+    public static BookCreateDto from(BookCreateRequest req) {
         return new BookCreateDto(
                 req.getTitle(),
                 req.getContributors(),
@@ -44,7 +35,7 @@ public record BookCreateDto(
                 req.isPackable(),
                 req.getContent(),
                 req.getExplanation(),
-                imgUrls,
+                req.getImageUrls(),
                 req.getTagIds(),
                 req.getCategoryId()
         );
@@ -63,7 +54,7 @@ public record BookCreateDto(
                 req.isPackable(),
                 req.getContent(),
                 req.getExplanation(),
-                req.getImgUrls(),
+                req.getImageUrls(),
                 req.getTagIds(),
                 req.getCategoryId()
         );
