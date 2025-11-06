@@ -24,6 +24,9 @@ public enum ErrorCode {
     BOOK_NOT_FOUND(NOT_FOUND, "도서를 찾을 수 없습니다."),
 
     CATEGORY_NOT_FOUND(NOT_FOUND, "카테고리를 찾을 수 없습니다."),
+    INVALID_PARENT_CATEGORY_ID(BAD_REQUEST,"유효하지 않은 부모 카테고리 ID입니다."),
+    CATEGORY_IN_USE(CONFLICT, "다른 도서에서 사용 중인 카테고리이므로 삭제할 수 없습니다."),
+    CATEGORY_NAME_DUPLICATE(CONFLICT, "이미 사용 중인 카테고리 이름입니다."),
 
     CART_NOT_FOUND(NOT_FOUND, "장바구니를 찾을 수 없습니다."),
     CART_ITEM_NOT_FOUND(NOT_FOUND, "장바구니에 담긴 상품을 찾을 수 없습니다."),
@@ -39,6 +42,9 @@ public enum ErrorCode {
     COUPON_NOT_FOUND(NOT_FOUND, "쿠폰을 찾을 수 없습니다."),
 
     COUPON_ISSUE_ALREADY_EXIST(CONFLICT, "이미 발급된 쿠폰이 존재합니다."),
+
+    REDIS_CONNECTION_FAILED(INTERNAL_SERVER_ERROR, "캐시 서버에 연결할 수 없습니다."),
+    CACHE_DATA_CORRUPTED(INTERNAL_SERVER_ERROR, "캐시 데이터가 손상되었습니다."),
     ;
 
 
