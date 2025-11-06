@@ -61,6 +61,7 @@ public class CategoryService {
     public void createCategory(CategoryCreateDto dto) {
 
         Category parentCategory = null;
+
         if (dto.parentId() != null) {
             parentCategory = categoryRepository.findById(dto.parentId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.INVALID_PARENT_CATEGORY_ID));
@@ -71,6 +72,7 @@ public class CategoryService {
         }
 
         Category newCategory = new Category(parentCategory, dto.name());
+
         categoryRepository.save(newCategory);
     }
 

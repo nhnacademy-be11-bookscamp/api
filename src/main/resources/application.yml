@@ -33,16 +33,6 @@ spring:
           multiplier: 2.0
           max-interval: 10000
 
-
-minio:
-  # 브라우저에서 접근 가능한 public base URL (리턴용)
-  url: http://storage.java21.net:8000
-  access-key: EvJ2FP8gy27lDYolEWGQ
-  secret-key: h9uzw85pZPDchOTHzslEOUlNd5cDPFLQnJCofZfH
-  bucket:
-    book: bookscamp-book-image
-    review: bookscamp-review-image
-
 aladin:
   base-url: https://www.aladin.co.kr/ttb/api
   ttb-key: ttbtvsqyfzvpj1722001

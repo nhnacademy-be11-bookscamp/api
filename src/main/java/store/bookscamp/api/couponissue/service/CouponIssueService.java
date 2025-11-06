@@ -9,6 +9,8 @@ import static store.bookscamp.api.coupon.entity.TargetType.WELCOME;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
@@ -21,7 +23,6 @@ import store.bookscamp.api.member.repository.MemberRepository;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CouponIssueService {
 
@@ -30,8 +31,13 @@ public class CouponIssueService {
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
 
+    @Retryable(noRetryFor = ApplicationException.class, backoff = @Backoff(multiplier = 2.0, maxDelay = 10000), listeners = "customRetryListener")
+    @Transactional
     public Long issueBirthDayCoupon(Coupon coupon, Member member) {
-        CouponIssue couponIssue = new CouponIssue(coupon, member, getExpiredAt(now().getDayOfMonth()));
+        if (couponIssueRepository.existsCouponIssuesByCouponAndMember(coupon, member)) {
+            throw new ApplicationException(COUPON_ISSUE_ALREADY_EXIST);
+        }
+        CouponIssue couponIssue = new CouponIssue(coupon, member, getExpiredAt(now().lengthOfMonth()));
         return couponIssueRepository.save(couponIssue).getId();
     }
 
@@ -56,7 +62,7 @@ public class CouponIssueService {
     }
 
     private static LocalDateTime getExpiredAt(Integer validDays) {
-        return LocalDateTime.of(now().getYear(), now().getMonth(), now().getDayOfMonth(), 23, 59, 59)
+        return LocalDateTime.of(now().getYear(), now().getMonth(), now().getDayOfMonth(), 0, 0, 0)
                 .plusDays(validDays);
     }
 }

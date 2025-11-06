@@ -13,6 +13,8 @@ import java.util.Optional;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.service.dto.AladinItem;
 import store.bookscamp.api.book.service.dto.AladinResponse;
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -93,10 +95,6 @@ public class AladinService {
         return v == null ? d : v;
     }
 
-    private String defaultStr(String v, String d) {
-        return (v == null || v.isBlank()) ? d : v;
-    }
-
     public Book toBookEntity(AladinItem i,
                              String contributor,
                              store.bookscamp.api.book.entity.BookStatus status,
@@ -136,7 +134,8 @@ public class AladinService {
             if (s.length() == 8) {
                 return LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
             }
-        } catch (Exception ignored) {
+        } catch (Exception ignored){
+            throw new ApplicationException(ErrorCode.PARSE_ERROR);
         }
         return LocalDate.now();
     }
