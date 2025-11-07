@@ -1,7 +1,6 @@
 package store.bookscamp.api.category.controller.response;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import store.bookscamp.api.category.service.dto.CategoryListDto;
 
 public record CategoryListResponse(
@@ -16,13 +15,13 @@ public record CategoryListResponse(
                 dto.name(),
                 dto.children().stream()
                         .map(CategoryListResponse::from)
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 
     public static List<CategoryListResponse> fromList(List<CategoryListDto> dtos) {
         return dtos.stream()
                 .map(CategoryListResponse::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

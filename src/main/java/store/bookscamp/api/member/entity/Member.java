@@ -86,10 +86,6 @@ public class Member extends SoftDeleteEntity {
         this.phone=phone;
     }
 
-    public void changeStatus(MemberStatus memberStatus){
-        this.status = memberStatus;
-    }
-
     public void changePassword(String password){
         this.password = password;
     }

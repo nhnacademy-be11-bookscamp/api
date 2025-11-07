@@ -5,6 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(value = "spring.data.redis")
 public record RedisProperty(
         String host,
-        int port
+        int port,
+        String password,
+        int database
 ) {
 }

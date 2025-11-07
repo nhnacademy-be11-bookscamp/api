@@ -26,7 +26,7 @@ public class CouponController {
     public ResponseEntity<Void> createCoupon(
             @RequestBody @Valid CouponCreateRequest request
     ) {
-        Long couponId = couponService.createCoupon(request.toDto());
+        couponService.createCoupon(request.toDto());
         return ResponseEntity.ok().build();
     }
 

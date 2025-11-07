@@ -1,7 +1,6 @@
 package store.bookscamp.api.category.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +10,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.category.controller.request.CategoryCreateRequest;
 import store.bookscamp.api.category.controller.request.CategoryDeleteRequest;
 import store.bookscamp.api.category.controller.request.CategoryUpdateRequest;
 import store.bookscamp.api.category.controller.response.CategoryListResponse;
-import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.service.CategoryService;
 import store.bookscamp.api.category.service.dto.CategoryCreateDto;
 import store.bookscamp.api.category.service.dto.CategoryDeleteDto;
@@ -37,7 +34,7 @@ public class CategoryController {
 
         List<CategoryListResponse> categoryResponseTree = categoryDtoTree.stream()
                 .map(this::convertDtoToResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(categoryResponseTree);
     }
@@ -74,7 +71,7 @@ public class CategoryController {
     private CategoryListResponse convertDtoToResponse(CategoryListDto dto) {
         List<CategoryListResponse> children = dto.children().stream()
                 .map(this::convertDtoToResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return new CategoryListResponse(
                 dto.id(),

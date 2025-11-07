@@ -107,4 +107,40 @@ public class Book extends BaseEntity {
         this.stock = stock;
         this.viewCount = viewCount;
     }
+
+    public void updateInfo(
+
+            String title,
+            String contributors,
+            String publisher,
+            String isbn,
+            LocalDate publishDate,
+            Integer regularPrice,
+            Integer salePrice,
+            Integer stock,
+            boolean packable,
+            String content,
+            String explanation
+    ) {
+        this.title = title;
+        this.contributors = contributors;
+        this.publisher = publisher;
+        this.isbn = isbn;
+        this.publishDate = publishDate;
+        this.regularPrice = regularPrice;
+        this.salePrice = salePrice;
+        this.stock = stock;
+        this.packable = packable;
+        this.content = content;
+        this.explanation = explanation;
+    }
+
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
+    public void setStatus(BookStatus status) {
+        this.status = status;
+    }
 }
