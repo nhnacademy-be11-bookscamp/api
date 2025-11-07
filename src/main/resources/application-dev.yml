@@ -37,3 +37,10 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+logging:
+  level:
+    root: INFO
+    store.bookscamp.api: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    reactor.netty.http.client: DEBUG
