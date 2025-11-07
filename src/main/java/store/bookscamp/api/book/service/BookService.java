@@ -1,7 +1,6 @@
 package store.bookscamp.api.book.service;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +24,7 @@ import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
+import store.bookscamp.api.category.service.CategoryService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.tag.entity.Tag;
@@ -43,6 +43,7 @@ public class BookService {
     private final BookTagRepository bookTagRepository;
     private final BookImageRepository bookImageRepository;
     private final BookImageService bookImageService;
+    private final CategoryService categoryService;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
@@ -122,8 +123,13 @@ public class BookService {
 
         if (dto.categoryId() != null) {
             bookCategoryRepository.deleteByBook(book);
-            Category category = categoryRepository.getCategoryById(dto.categoryId());
-            bookCategoryRepository.save(new BookCategory(book, category));
+            Category category = categoryRepository.findById(dto.categoryId())
+                            .orElseThrow(() -> new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND));
+
+            boolean exists = bookCategoryRepository.existsByBookAndCategory(book, category);
+            if (!exists) {
+                bookCategoryRepository.save(new BookCategory(book, category));
+            }
         }
 
         if (dto.tagIds() != null) {
@@ -140,7 +146,7 @@ public class BookService {
         List<Long> categoryIdsToSearch = null;
 
         if (categoryId != null) {
-            categoryIdsToSearch = categoryRepository.getAllDescendantIdsIncludingSelf(categoryId);
+            categoryIdsToSearch = categoryService.getDescendantIdsIncludingSelf(categoryId);
         }
 
         Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, keyword, sortType, pageable);

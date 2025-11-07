@@ -11,12 +11,15 @@ spring:
     url: jdbc:mysql://s4.java21.net:13306/project_be11_team3
     username: project_be11_team3
     password: ${PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
   data:
     redis:
       host: s4.java21.net
       port: 6379
       password: ${REDIS_PASSWORD}
-      database: 333
+      database: 331
   rabbitmq:
     host: s4.java21.net
     port: 5672

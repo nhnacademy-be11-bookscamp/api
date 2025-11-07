@@ -1,4 +1,4 @@
-package store.bookscamp.api.common.config;
+package store.bookscamp.api.common.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
