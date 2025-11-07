@@ -21,4 +21,4 @@ spring:
     host: http://s4.java21.net:15672
     port: 5672
     username: admin
-    password: nhnacademy123!
+    password: 1234
