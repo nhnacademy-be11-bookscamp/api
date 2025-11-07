@@ -1,6 +1,5 @@
 package store.bookscamp.api.book.service;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +9,16 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import store.bookscamp.api.book.controller.request.BookUpdateRequest;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
+import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
+import store.bookscamp.api.bookimage.repository.BookImageRepository;
+import store.bookscamp.api.bookimage.service.BookImageService;
+import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
@@ -26,12 +30,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@Disabled
 @SpringBootTest
 class BookServiceTest {
 
@@ -44,6 +44,14 @@ class BookServiceTest {
     private CategoryRepository categoryRepository;
     @MockitoBean
     private TagRepository tagRepository;
+    @MockitoBean
+    private BookImageRepository bookImageRepository;
+    @MockitoBean
+    private BookTagRepository bookTagRepository;
+    @MockitoBean
+    private BookImageService bookImageService;
+    @MockitoBean
+    private BookCategoryRepository bookCategoryRepository;
 
     @Test
     @DisplayName("searchBooks - categoryId가 null일 때 전체 검색")
@@ -141,9 +149,93 @@ class BookServiceTest {
         verify(bookRepository, times(1)).getBookById(nonExistentBookId);
     }
 
+    @Test
+    @DisplayName("updateBook - 책 정보 수정 성공")
+    void updateBook_Success() {
+        // given
+        Long bookId = 1L;
+        Book book = createMockBook(bookId, "JPA 책");
+
+        BookUpdateRequest updateRequest = new BookUpdateRequest(
+                "JPA 책 수정",                // 제목
+                "저자 B",                     // 저자
+                "출판사 B",                   // 출판사
+                "1234567890124",              // ISBN
+                LocalDate.now(),              // 출판일자
+                42000,                        // 정가
+                38000,                        // 판매가
+                120,                          // 재고
+                true,                         // 포장 가능 여부
+                "새로운 내용",                 // 내용
+                "새로운 설명",                 // 설명
+                List.of(1L, 2L),              // 태그 ID
+                1L,
+                List.of("imageUrl1", "imageUrl2"), // 이미지 URL
+                List.of("imageUrlToRemove1"), // 제거할 이미지 URL
+                BookStatus.DISCONTINUED      // 상태 (UNAVAILABLE 대신 DISCONTINUED)
+        );
+
+        when(bookRepository.findById(bookId)).thenReturn(java.util.Optional.of(book));
+
+        // when
+        bookService.updateBook(bookId, updateRequest);
+
+        // then
+        assertThat(book.getTitle()).isEqualTo("JPA 책 수정");
+        assertThat(book.getContributors()).isEqualTo("저자 B");
+        assertThat(book.getPublisher()).isEqualTo("출판사 B");
+        assertThat(book.getIsbn()).isEqualTo("1234567890124");
+        assertThat(book.getRegularPrice()).isEqualTo(42000);
+        assertThat(book.getSalePrice()).isEqualTo(38000);
+        assertThat(book.getStock()).isEqualTo(120);
+        assertThat(book.getStatus()).isEqualTo(BookStatus.DISCONTINUED);  // 상태 확인
+        assertThat(book.getContent()).isEqualTo("새로운 내용");
+        assertThat(book.getExplanation()).isEqualTo("새로운 설명");
+
+        verify(bookRepository, times(1)).findById(bookId);
+        verify(bookCategoryRepository, times(1)).deleteByBook(book);
+        verify(bookTagRepository, times(1)).deleteByBook(book);
+        verify(bookImageService, times(1)).createBookImage(any());
+    }
+
+    @Test
+    @DisplayName("updateBook - 책이 없으면 BOOK_NOT_FOUND 예외 발생")
+    void updateBook_Fail_BookNotFound() {
+        // given
+        Long nonExistentBookId = 999L;
+        BookUpdateRequest updateRequest = new BookUpdateRequest(
+                "책 제목",
+                "저자 A",
+                "출판사 A",
+                "1234567890123",
+                LocalDate.now(),
+                40000,
+                35000,
+                100,
+                true,
+                "책 내용",
+                "책 설명",
+                List.of(1L),
+                1L,
+                List.of("imageUrl1"),
+                List.of("imageUrlToRemove1"),
+                BookStatus.AVAILABLE  // AVAILABLE 상태
+        );
+
+        when(bookRepository.findById(nonExistentBookId)).thenReturn(java.util.Optional.empty());
+
+        // when
+        ApplicationException exception = assertThrows(ApplicationException.class, () -> {
+            bookService.updateBook(nonExistentBookId, updateRequest);
+        });
+
+        // then
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.BOOK_NOT_FOUND);
+        verify(bookRepository, times(1)).findById(nonExistentBookId);
+    }
 
     private Book createMockBook(Long id, String title) {
-        Book mockBook = org.mockito.Mockito.mock(Book.class);
+        Book mockBook = mock(Book.class);
         when(mockBook.getId()).thenReturn(id);
         when(mockBook.getTitle()).thenReturn(title);
         when(mockBook.getExplanation()).thenReturn(title + " 설명");
