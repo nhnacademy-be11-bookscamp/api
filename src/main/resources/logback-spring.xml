@@ -8,16 +8,12 @@
     <!--로그 저장 경로-->
     <property name="LOG_PATH" value="./logs/${APP_NAME:-api}-${PROFILE:-local}"/>
 
-    <!--MDC 패턴: 값 없으면 기본값-->
-    <property name="MDC_PATTERN"
-              value="traceId=%X{traceID:-} reqId=%X{reqId:-} user=%X{username:-anon} ip=%X{clientIp:-}"/>
-
     <!--콘솔 로그 패턴-->
     <property name="CONSOLE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} | ${MDC_PATTERN} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) %msg%n"/>
     <!--파일 로그 패턴-->
     <property name="FILE_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} | ${MDC_PATTERN} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} %msg%n"/>
 
     <!--dev-->
     <springProfile name="dev">
