@@ -16,7 +16,7 @@ spring:
       host: s4.java21.net
       port: 6379
       password: ${REDIS_PASSWORD}
-      database: 333
+      database: 331
   rabbitmq:
     host: s4.java21.net
     port: 5672
