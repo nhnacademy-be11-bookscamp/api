@@ -24,6 +24,7 @@ import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
+import store.bookscamp.api.category.service.CategoryService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.tag.entity.Tag;
@@ -42,6 +43,7 @@ public class BookService {
     private final BookTagRepository bookTagRepository;
     private final BookImageRepository bookImageRepository;
     private final BookImageService bookImageService;
+    private final CategoryService categoryService;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
@@ -144,7 +146,7 @@ public class BookService {
         List<Long> categoryIdsToSearch = null;
 
         if (categoryId != null) {
-            categoryIdsToSearch = categoryRepository.getAllDescendantIdsIncludingSelf(categoryId);
+            categoryIdsToSearch = categoryService.getDescendantIdsIncludingSelf(categoryId);
         }
 
         Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, keyword, sortType, pageable);
