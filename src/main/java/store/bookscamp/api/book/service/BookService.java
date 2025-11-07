@@ -1,7 +1,6 @@
 package store.bookscamp.api.book.service;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -124,8 +123,13 @@ public class BookService {
 
         if (dto.categoryId() != null) {
             bookCategoryRepository.deleteByBook(book);
-            Category category = categoryRepository.getCategoryById(dto.categoryId());
-            bookCategoryRepository.save(new BookCategory(book, category));
+            Category category = categoryRepository.findById(dto.categoryId())
+                            .orElseThrow(() -> new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND));
+
+            boolean exists = bookCategoryRepository.existsByBookAndCategory(book, category);
+            if (!exists) {
+                bookCategoryRepository.save(new BookCategory(book, category));
+            }
         }
 
         if (dto.tagIds() != null) {
