@@ -122,8 +122,13 @@ public class BookService {
 
         if (dto.categoryId() != null) {
             bookCategoryRepository.deleteByBook(book);
-            Category category = categoryRepository.getCategoryById(dto.categoryId());
-            bookCategoryRepository.save(new BookCategory(book, category));
+            Category category = categoryRepository.findById(dto.categoryId())
+                            .orElseThrow(() -> new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND));
+
+            boolean exists = bookCategoryRepository.existsByBookAndCategory(book, category);
+            if (!exists) {
+                bookCategoryRepository.save(new BookCategory(book, category));
+            }
         }
 
         if (dto.tagIds() != null) {
