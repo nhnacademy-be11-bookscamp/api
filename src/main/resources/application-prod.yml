@@ -11,6 +11,9 @@ spring:
     url: jdbc:mysql://s4.java21.net:13306/project_be11_team3
     username: project_be11_team3
     password: ${PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
   data:
     redis:
       host: s4.java21.net

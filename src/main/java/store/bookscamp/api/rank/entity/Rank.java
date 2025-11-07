@@ -10,11 +10,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 
 @Entity
+@Table(name = "member_rank")
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 public class Rank {
