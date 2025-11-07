@@ -45,7 +45,7 @@ public class AladinCreateRequest {
     private String content;
     private String explanation;
 
-    private List<String> imgUrls;
+    private List<String> imageUrls;
     private List<Long>  tagIds;
     private Long categoryId;
 }
