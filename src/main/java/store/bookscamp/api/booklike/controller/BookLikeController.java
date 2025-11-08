@@ -1,5 +1,6 @@
 package store.bookscamp.api.booklike.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import store.bookscamp.api.booklike.service.dto.BookLikeStatusDto;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "좋아요 API", description = "BookLike API입니다")
 public class BookLikeController {
 
     private final BookLikeService bookLikeService;
