@@ -23,7 +23,7 @@ import store.bookscamp.api.common.exception.ErrorCode;
 @RequestMapping(value = "/admin/aladin", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Validated
-@Tag(name = "Aladin API")
+@Tag(name = "알라딘 API", description = "Aladin API 입니다.")
 public class AladinController {
 
     private final AladinService aladinService;

@@ -1,5 +1,6 @@
 package store.bookscamp.api.pointpolicy.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import store.bookscamp.api.pointpolicy.service.PointPolicyService;
 @RestController
 @RequestMapping("/point-policies")
 @RequiredArgsConstructor
+@Tag(name = "포인트정책 API", description = "PointPolicy API입니다.")
 public class PointPolicyController {
 
     private final PointPolicyService pointPolicyService;

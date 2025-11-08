@@ -1,5 +1,6 @@
 package store.bookscamp.api.book.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import store.bookscamp.api.common.pagination.RestPageImpl;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "책 API", description = "Book API입니다")
 public class BookController {
 
     private final BookService bookService;
