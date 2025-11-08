@@ -26,7 +26,7 @@ import store.bookscamp.api.address.service.dto.AddressUpdateRequestDto;
 
 @RestController
 @RequestMapping("/member/{username}/address")
-@Tag(name = "Address API", description = "Address CRUD API입니다")
+@Tag(name = "주소 API", description = "Address CRUD API입니다")
 public class AddressController {
 
     private final AddressService addressService;
@@ -36,7 +36,6 @@ public class AddressController {
     }
 
     @PostMapping
-    @Tag(name = "Address API")
     @Operation(summary = "create Address", description = "회원 주소 생성 API")
     public ResponseEntity<Void> createAddress(
             @Valid @RequestBody AddressCreateRequest addressCreateRequest,
@@ -48,7 +47,6 @@ public class AddressController {
     }
 
     @GetMapping
-    @Tag(name = "Address API")
     @Operation(summary = "get Address List", description = "회원 주소 리스트 조회 API")
     public ResponseEntity<AddressListResponse> getAddresses(@PathVariable String username) {
         List<AddressReadDto> addressDtos = addressService.getMemberAddresses(username);
@@ -57,7 +55,6 @@ public class AddressController {
     }
 
     @PutMapping("/{addressId}")
-    @Tag(name = "Address API")
     @Operation(summary = "update Address", description = "회원 주소 수정 API")
     public ResponseEntity<Void> updateAddress(
             @PathVariable String username,
@@ -73,7 +70,6 @@ public class AddressController {
     }
 
     @DeleteMapping("/{addressId}")
-    @Tag(name = "Address API")
     @Operation(summary = "delete Address", description = "회원 주소 삭제 API")
     public ResponseEntity<Void> deleteAddress(
             @PathVariable String username,

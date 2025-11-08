@@ -22,14 +22,25 @@ public class SwaggerConfig {
 
     @Bean
     public GroupedOpenApi api(){
-        return null;
+        return GroupedOpenApi.builder()
+                .group("api")
+                .pathsToMatch("/**")
+                .build();
     }
 
     @Bean
     public GroupedOpenApi aladinApi(){
         return GroupedOpenApi.builder()
-                .group("aladin")
-                .pathsToMatch("/api/aladin/**")
+                .group("admin")
+                .pathsToMatch("/admin/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi memberApi(){
+        return GroupedOpenApi.builder()
+                .group("member")
+                .pathsToMatch("/member/**")
                 .build();
     }
 
