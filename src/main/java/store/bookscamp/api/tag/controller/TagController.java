@@ -1,5 +1,6 @@
 package store.bookscamp.api.tag.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -23,6 +24,7 @@ import store.bookscamp.api.tag.service.dto.TagGetDto;
 @RestController
 @RequestMapping("/admin/tags")
 @RequiredArgsConstructor
+@Tag(name = "태그 API", description = "Tag API입니다.")
 public class TagController {
 
     private final TagService tagService;

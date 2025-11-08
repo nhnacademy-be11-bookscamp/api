@@ -26,13 +26,12 @@ import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/member")
-@Tag(name = "Member API", description = "Member CRUD API입니다")
+@Tag(name = "회원 API", description = "Member CRUD API입니다")
 public class MemberController {
 
     private final MemberService memberService;
 
     @GetMapping
-    @Tag(name = "Member API")
     @Operation(summary = "read Member", description = "회원조희 API")
     @RequiredRole("USER")
     public MemberGetResponse getMember(HttpServletRequest request){
@@ -40,7 +39,6 @@ public class MemberController {
     }
 
     @GetMapping("/check-id")
-    @Tag(name = "Member API")
     @Operation(summary = "check id", description = "회원중복검사")
     public ResponseEntity<String> checkIdDuplicate(@RequestParam("id")String id){
         boolean isDuplicate = memberService.checkIdDuplicate(id);
@@ -52,7 +50,6 @@ public class MemberController {
     }
 
     @PostMapping("/sign-up")
-    @Tag(name = "Member API")
     @Operation(summary = "create Member", description = "회원가입 API")
     public ResponseEntity<Void> createMember(@Valid @RequestBody MemberCreateRequest memberCreateRequest){
         MemberCreateDto memberCreateDto = MemberCreateRequest.toDto(memberCreateRequest);
@@ -62,7 +59,6 @@ public class MemberController {
     }
 
     @PutMapping
-    @Tag(name = "Member API")
     @Operation(summary = "update Member", description = "회원정보 수정 API")
     public ResponseEntity<MemberGetResponse> updateMember(
             @Valid @RequestBody MemberUpdateRequest memberUpdateRequest,
@@ -80,7 +76,6 @@ public class MemberController {
     }
 
     @DeleteMapping
-    @Tag(name = "Member API")
     @Operation(summary = "delete Member", description = "회원탈퇴 API")
     public ResponseEntity<Void> deleteMember(HttpServletRequest request){
         memberService.deleteMember(Long.parseLong(request.getHeader("X-User-ID")));
