@@ -1,5 +1,6 @@
 package store.bookscamp.api.booklike.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +26,14 @@ public class BookLikeController {
     private final BookLikeService bookLikeService;
 
     @PutMapping("/books/like/{bookId}")
-    public ResponseEntity<Void> toggleLike(@PathVariable Long bookId, @RequestBody BookLikeRequest request){
+    public ResponseEntity<Void> toggleLike(
+            HttpServletRequest servletRequest,
+            @PathVariable Long bookId,
+            @RequestBody BookLikeRequest request){
 
-        bookLikeService.toggleLike(4L, bookId, request.liked());
+        Long memberId = Long.valueOf(servletRequest.getHeader("X-User-ID"));
+
+        bookLikeService.toggleLike(memberId, bookId, request.liked());
 
         return ResponseEntity.ok().build();
     }
@@ -42,9 +48,14 @@ public class BookLikeController {
     }
 
     @GetMapping("/books/{bookId}/like/status")
-    public ResponseEntity<BookLikeStatusResponse> getLikeStatus(@PathVariable Long bookId){
+    public ResponseEntity<BookLikeStatusResponse> getLikeStatus(
+            HttpServletRequest servletRequest,
+            @PathVariable Long bookId
+    ){
 
-        BookLikeStatusDto likeStatus = bookLikeService.getLikeStatus(4L, bookId);
+        Long memberId = Long.valueOf(servletRequest.getHeader("X-User-ID"));
+
+        BookLikeStatusDto likeStatus = bookLikeService.getLikeStatus(memberId, bookId);
         BookLikeStatusResponse bookLikeStatusResponse = BookLikeStatusDto.toDto(likeStatus);
 
         return ResponseEntity.ok(bookLikeStatusResponse);
