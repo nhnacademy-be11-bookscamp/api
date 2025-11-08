@@ -15,12 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import store.bookscamp.api.common.annotation.RequiredRole;
 import store.bookscamp.api.member.controller.request.MemberCreateRequest;
-import store.bookscamp.api.member.controller.request.MemberPasswordUpdateRequest;
 import store.bookscamp.api.member.controller.request.MemberUpdateRequest;
 import store.bookscamp.api.member.controller.response.MemberGetResponse;
 import store.bookscamp.api.member.service.dto.MemberCreateDto;
-import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
 import store.bookscamp.api.member.service.MemberService;
 import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 
@@ -35,6 +34,7 @@ public class MemberController {
     @GetMapping
     @Tag(name = "Member API")
     @Operation(summary = "read Member", description = "회원조희 API")
+    @RequiredRole("USER")
     public MemberGetResponse getMember(HttpServletRequest request){
         return MemberGetResponse.fromDto(memberService.getMember(Long.parseLong(request.getHeader("X-User-ID"))));
     }
