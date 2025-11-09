@@ -8,33 +8,25 @@ public record BookSortDto(
 
         Long id,
         String title,
-        String explanation,
-        String content,
         String publisher,
         LocalDate publishDate,
         String contributors,
-        BookStatus status,
         boolean packable,
         Integer regularPrice,
         Integer salePrice,
-        Integer stock,
-        long viewCount
+        Integer stock
 ) {
     public static BookSortDto from(Book book) {
         return new BookSortDto(
                 book.getId(),
                 book.getTitle(),
-                book.getExplanation(),
-                book.getContent(),
                 book.getPublisher(),
                 book.getPublishDate(),
                 book.getContributors(),
-                book.getStatus(),
                 book.isPackable(),
                 book.getRegularPrice(),
                 book.getSalePrice(),
-                book.getStock(),
-                book.getViewCount()
+                book.getStock()
         );
     }
 }

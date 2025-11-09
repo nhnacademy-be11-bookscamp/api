@@ -1,8 +1,11 @@
 package store.bookscamp.api.book.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +15,12 @@ import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
+import store.bookscamp.api.book.service.dto.BookIndexDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.book.service.dto.BookUpdateDto;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
+import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
@@ -141,7 +146,7 @@ public class BookService {
         }
     }
 
-    public Page<BookSortDto> searchBooks(Long categoryId, String keyword, String sortType, Pageable pageable) {
+    public Page<BookSortDto> getBooks(Long categoryId, String sortType, Pageable pageable) {
 
         List<Long> categoryIdsToSearch = null;
 
@@ -149,7 +154,7 @@ public class BookService {
             categoryIdsToSearch = categoryService.getDescendantIdsIncludingSelf(categoryId);
         }
 
-        Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, keyword, sortType, pageable);
+        Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, sortType, pageable);
         // from 메서드를 통해 Dto로 변환
         return bookPage.map(BookSortDto::from);
     }
@@ -177,5 +182,29 @@ public class BookService {
                 .toList();
 
         return BookDetailDto.from(book, categoryId, tagIds, imageUrls);
+    }
+
+    public List<BookIndexDto> getAllBooks() {
+
+        List<Book> allBooksList = bookRepository.findAll();
+
+        return allBooksList.stream().map(book -> {
+
+            String thumbnailUrl = bookImageRepository.findByBook(book).stream()
+                    .filter(BookImage::isThumbnail)
+                    .map(BookImage::getImageUrl)
+                    .findFirst()
+                    .orElse(null);
+
+            return new BookIndexDto(
+                    book.getId(),
+                    book.getTitle(),
+                    book.getPublisher(),
+                    book.getContributors(),
+                    book.getRegularPrice(),
+                    book.getSalePrice(),
+                    thumbnailUrl
+            );
+        }).toList();
     }
 }
