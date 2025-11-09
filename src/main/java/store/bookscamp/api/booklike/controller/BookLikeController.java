@@ -29,8 +29,7 @@ public class BookLikeController {
     public ResponseEntity<Void> toggleLike(
             HttpServletRequest servletRequest,
             @PathVariable Long bookId,
-            @RequestBody BookLikeRequest request
-    ){
+            @RequestBody BookLikeRequest request){
 
         Long memberId = Long.valueOf(servletRequest.getHeader("X-User-ID"));
 
