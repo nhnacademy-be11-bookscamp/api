@@ -70,6 +70,14 @@ public class CouponIssueService {
         return couponIssueRepository.save(couponIssue).getId();
     }
 
+    public Long issueBookCoupon(){
+
+    }
+
+    public Long issueCategoryCoupon(){
+
+    }
+
     public List<CouponIssue> listCouponIssue(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
