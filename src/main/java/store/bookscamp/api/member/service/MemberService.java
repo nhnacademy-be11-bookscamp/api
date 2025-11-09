@@ -65,7 +65,7 @@ public class MemberService {
         );
 
         Long memberId = memberRepository.save(newMember).getId();
-//        memberEventPublisher.publishSignupEvent(memberId);
+        memberEventPublisher.publishSignupEvent(memberId);
     }
 
     @Transactional

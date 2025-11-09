@@ -53,7 +53,15 @@ public class BookLikeController {
             @PathVariable Long bookId
     ){
 
-        Long memberId = Long.valueOf(servletRequest.getHeader("X-User-ID"));
+        String userIdHeader = servletRequest.getHeader("X-User-ID");
+        log.info("X-User-ID header value: {}", servletRequest.getHeader("X-User-ID"));
+
+        if (userIdHeader == null || userIdHeader.isBlank()) {
+            throw new IllegalStateException("X-User-ID header is missing or empty");
+        }
+
+        Long memberId = Long.valueOf(userIdHeader);
+
 
         BookLikeStatusDto likeStatus = bookLikeService.getLikeStatus(memberId, bookId);
         BookLikeStatusResponse bookLikeStatusResponse = BookLikeStatusDto.toDto(likeStatus);
