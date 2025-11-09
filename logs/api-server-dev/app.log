@@ -542,3 +542,47 @@
 2025-11-10 01:10:41.576 [AsyncResolver-bootstrap-executor-%d] INFO  c.n.d.s.r.aws.ConfigClusterResolver Resolving eureka endpoints via configuration
 2025-11-10 01:15:41.598 [AsyncResolver-bootstrap-executor-%d] INFO  c.n.d.s.r.aws.ConfigClusterResolver Resolving eureka endpoints via configuration
 2025-11-10 01:20:41.605 [AsyncResolver-bootstrap-executor-%d] INFO  c.n.d.s.r.aws.ConfigClusterResolver Resolving eureka endpoints via configuration
+2025-11-10 01:25:41.618 [AsyncResolver-bootstrap-executor-%d] INFO  c.n.d.s.r.aws.ConfigClusterResolver Resolving eureka endpoints via configuration
+2025-11-10 01:26:54.233 [lettuce-nioEventLoop-6-1] INFO  i.l.core.protocol.CommandHandler null Unexpected exception during request: java.net.SocketException: Connection reset
+java.net.SocketException: Connection reset
+	at java.base/sun.nio.ch.SocketChannelImpl.throwConnectionReset(SocketChannelImpl.java:399)
+	at java.base/sun.nio.ch.SocketChannelImpl.implRead(SocketChannelImpl.java:431)
+	at java.base/sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:489)
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:255)
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132)
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:356)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:796)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:732)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:658)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+2025-11-10 01:26:55.391 [lettuce-eventExecutorLoop-1-1] INFO  i.l.core.protocol.ConnectionWatchdog Reconnecting, last destination was localhost/127.0.0.1:6379
+2025-11-10 01:26:55.959 [lettuce-nioEventLoop-6-2] WARN  i.l.core.protocol.ConnectionWatchdog Cannot reconnect to [localhost/<unresolved>:6379]: Connection refused: getsockopt: localhost/127.0.0.1:6379
+2025-11-10 01:27:00.961 [lettuce-eventExecutorLoop-1-4] INFO  i.l.core.protocol.ConnectionWatchdog Reconnecting, last destination was localhost/<unresolved>:6379
+2025-11-10 01:27:00.977 [lettuce-nioEventLoop-6-5] WARN  i.l.core.protocol.ConnectionWatchdog Cannot reconnect to [localhost/<unresolved>:6379]: Connection refused: getsockopt: localhost/127.0.0.1:6379
+2025-11-10 01:27:13.459 [lettuce-eventExecutorLoop-1-6] INFO  i.l.core.protocol.ConnectionWatchdog Reconnecting, last destination was localhost/<unresolved>:6379
+2025-11-10 01:27:13.517 [lettuce-nioEventLoop-6-7] INFO  i.l.c.protocol.ReconnectionHandler Reconnected to localhost/<unresolved>:6379
+2025-11-10 01:27:28.091 [http-nio-8081-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-11-10 01:27:28.101 [http-nio-8081-exec-2] INFO  o.s.web.servlet.DispatcherServlet Initializing Servlet 'dispatcherServlet'
+2025-11-10 01:27:28.342 [http-nio-8081-exec-2] INFO  o.s.web.servlet.DispatcherServlet Completed initialization in 238 ms
+2025-11-10 01:30:41.647 [AsyncResolver-bootstrap-executor-%d] INFO  c.n.d.s.r.aws.ConfigClusterResolver Resolving eureka endpoints via configuration
+2025-11-10 01:35:41.933 [AsyncResolver-bootstrap-executor-%d] INFO  c.n.d.s.r.aws.ConfigClusterResolver Resolving eureka endpoints via configuration
+2025-11-10 01:38:04.897 [SpringApplicationShutdownHook] INFO  o.s.c.n.e.s.EurekaServiceRegistry Unregistering application API-SERVER with eureka with status DOWN
+2025-11-10 01:38:04.902 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient Saw local status change event StatusChangeEvent [timestamp=1762706284901, current=DOWN, previous=UP]
+2025-11-10 01:38:04.906 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient DiscoveryClient_API-SERVER/api-server:8081: registering service...
+2025-11-10 01:38:05.166 [DiscoveryClient-InstanceInfoReplicator-%d] INFO  c.netflix.discovery.DiscoveryClient DiscoveryClient_API-SERVER/api-server:8081 - registration status: 204
+2025-11-10 01:38:05.487 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-2] INFO  o.s.a.r.l.SimpleMessageListenerContainer Waiting for workers to finish.
+2025-11-10 01:38:05.492 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-2] INFO  o.s.a.r.l.SimpleMessageListenerContainer Successfully waited for workers to finish.
+2025-11-10 01:38:05.569 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown Commencing graceful shutdown. Waiting for active requests to complete
+2025-11-10 01:38:05.668 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown Graceful shutdown complete
+2025-11-10 01:38:06.884 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-11-10 01:38:06.970 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource HikariPool-1 - Shutdown initiated...
+2025-11-10 01:38:06.994 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource HikariPool-1 - Shutdown completed.
+2025-11-10 01:38:07.003 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient Shutting down DiscoveryClient ...
+2025-11-10 01:38:10.020 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient Unregistering ...
+2025-11-10 01:38:10.140 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient DiscoveryClient_API-SERVER/api-server:8081 - deregister  status: 200
+2025-11-10 01:38:10.147 [SpringApplicationShutdownHook] INFO  c.netflix.discovery.DiscoveryClient Completed shut down of DiscoveryClient
