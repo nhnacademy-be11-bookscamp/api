@@ -60,6 +60,7 @@ public class MemberController {
 
     @PutMapping
     @Operation(summary = "update Member", description = "회원정보 수정 API")
+    @RequiredRole("USER")
     public ResponseEntity<MemberGetResponse> updateMember(
             @Valid @RequestBody MemberUpdateRequest memberUpdateRequest,
             HttpServletRequest request)
@@ -77,6 +78,7 @@ public class MemberController {
 
     @DeleteMapping
     @Operation(summary = "delete Member", description = "회원탈퇴 API")
+    @RequiredRole("USER")
     public ResponseEntity<Void> deleteMember(HttpServletRequest request){
         memberService.deleteMember(Long.parseLong(request.getHeader("X-User-ID")));
         return new ResponseEntity<>(HttpStatus.OK);
