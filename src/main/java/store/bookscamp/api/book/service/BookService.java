@@ -148,19 +148,6 @@ public class BookService {
         }
     }
 
-    public Page<BookSortDto> getBooks(Long categoryId, String sortType, Pageable pageable) {
-
-        List<Long> categoryIdsToSearch = null;
-
-        if (categoryId != null) {
-            categoryIdsToSearch = categoryService.getDescendantIdsIncludingSelf(categoryId);
-        }
-
-        Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, sortType, pageable);
-        // from 메서드를 통해 Dto로 변환
-        return bookPage.map(BookSortDto::from);
-    }
-
     public BookDetailDto getBookDetail(Long id) {
 
         Book book = bookRepository.getBookById(id);
