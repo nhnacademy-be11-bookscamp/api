@@ -28,4 +28,11 @@ public class DeliveryPolicy {
         this.freeDeliveryThreshold = freeDeliveryThreshold;
         this.baseDeliveryFee = baseDeliveryFee;
     }
+
+    // DeliveryPolicy.java
+    public void update(int freeDeliveryThreshold, int baseDeliveryFee) {
+        this.freeDeliveryThreshold = freeDeliveryThreshold;
+        this.baseDeliveryFee = baseDeliveryFee;
+    }
+
 }
