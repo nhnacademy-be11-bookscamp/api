@@ -49,6 +49,7 @@ public class BookService {
     private final BookImageRepository bookImageRepository;
     private final BookImageService bookImageService;
     private final CategoryService categoryService;
+    private final BookIndexService bookIndexService;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
@@ -68,7 +69,8 @@ public class BookService {
                 dto.stock(),
                 0                          // viewCount
         );
-        bookRepository.save(book);
+        bookRepository.saveAndFlush(book);
+        bookIndexService.indexBook(book);
 
         if (dto.imageUrls() != null && !dto.imageUrls().isEmpty()) {
             bookImageService.createBookImage(new BookImageCreateDto(book, dto.imageUrls()));

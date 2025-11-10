@@ -1,15 +1,9 @@
 package store.bookscamp.api.book.controller;
 
-import static java.util.stream.Collectors.toList;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -22,18 +16,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.book.controller.request.AladinCreateRequest;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
-import store.bookscamp.api.book.controller.response.BookIndexResponse;
 import store.bookscamp.api.book.controller.response.BookInfoResponse;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
+import store.bookscamp.api.book.service.BookSearchService;
 import store.bookscamp.api.book.service.BookService;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
-import store.bookscamp.api.book.service.dto.BookIndexDto;
+import store.bookscamp.api.book.service.dto.BookSearchRequest;
 import store.bookscamp.api.book.service.dto.BookSortDto;
-import store.bookscamp.api.bookimage.entity.BookImage;
-import store.bookscamp.api.bookimage.service.BookImageService;
-import store.bookscamp.api.bookimage.service.dto.BookImageDto;
 import store.bookscamp.api.common.pagination.RestPageImpl;
 
 
@@ -43,7 +34,7 @@ import store.bookscamp.api.common.pagination.RestPageImpl;
 public class BookController {
 
     private final BookService bookService;
-    private final BookImageService bookImageService;
+    private final BookSearchService bookSearchService;
 
     @PostMapping(value = "/admin/books/create", produces = "application/json")
     public ResponseEntity<String> createBook(
@@ -78,28 +69,15 @@ public class BookController {
     @GetMapping("/books")
     public ResponseEntity<RestPageImpl<BookSortResponse>> getBooks(
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String keyWord,
             @RequestParam(defaultValue = "id") String sortType,
             @PageableDefault(size = 10, page = 0) Pageable pageable
     ) {
-        Page<BookSortDto> bookSortDtoPage = bookService.getBooks(categoryId, sortType, pageable);
-        List<BookSortResponse> bookSortResponses = new ArrayList<>();
-        for(BookSortDto dto : bookSortDtoPage){
-            String thumbnailUrl = bookImageService.getThumbnailUrl(dto.id());
-            bookSortResponses.add(new BookSortResponse(
-                    dto.id(),
-                    dto.title(),
-                    dto.publisher(),
-                    dto.publishDate(),
-                    dto.contributors(),
-                    dto.packable(),
-                    dto.regularPrice(),
-                    dto.salePrice(),
-                    dto.stock(),
-                    thumbnailUrl
-            ));
-        }
+        BookSearchRequest searchRequest = new BookSearchRequest(categoryId, keyWord, sortType, pageable);
+        Page<BookSortDto> bookSortDtoPage = bookSearchService.searchBooks(searchRequest);
+        //Page<BookSortDto> bookSortDtoPage = bookService.searchBooks(categoryId, keyWord, sortType, pageable);
 
-        Page<BookSortResponse> bookSortResponsePage = new PageImpl<>(bookSortResponses);
+        Page<BookSortResponse> bookSortResponsePage = bookSortDtoPage.map(BookSortResponse::from);
 
         RestPageImpl<BookSortResponse> responsePage = new RestPageImpl<>(bookSortResponsePage);
 
@@ -112,16 +90,5 @@ public class BookController {
         BookInfoResponse from = BookInfoResponse.from(bookDetail);
         return ResponseEntity.ok(from);
     }
-
-    @GetMapping("/allBooks")
-    public ResponseEntity<List<BookIndexResponse>> getAllBooks() {
-
-        List<BookIndexDto> allBooksDtoList = bookService.getAllBooks();
-
-        List<BookIndexResponse> bookResponseList = allBooksDtoList.stream()
-                .map(BookIndexResponse::from)
-                .toList();
-
-        return ResponseEntity.ok(bookResponseList);
-    }
 }
+
