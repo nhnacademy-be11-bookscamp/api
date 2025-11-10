@@ -3,7 +3,12 @@ spring:
     name: api-server
   profiles:
     active: prod
-
+  elasticsearch:
+    uris: http://s4.java21.net:9200
+    username: elastic
+    password: nhnacademy123!
+    ssl:
+      verification-mode: none
   servlet:
     multipart:
       max-file-size: 5MB

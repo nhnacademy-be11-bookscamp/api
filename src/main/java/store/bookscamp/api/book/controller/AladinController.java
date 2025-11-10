@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import store.bookscamp.api.book.controller.request.AladinSearchRequest;
 import store.bookscamp.api.book.controller.response.BookDetailResponse;
 import store.bookscamp.api.book.controller.request.BookListRequest;
 import store.bookscamp.api.book.controller.response.BookListResponse;
-import store.bookscamp.api.book.controller.request.BookSearchRequest;
 import store.bookscamp.api.book.controller.response.BookSummaryResponse;
 import store.bookscamp.api.book.service.AladinService;
 import store.bookscamp.api.book.service.dto.AladinResponse;
@@ -47,7 +47,7 @@ public class AladinController {
 
     // 3) 검색
     @GetMapping(value = "/search", produces = "application/json")
-    public BookListResponse search(@Valid @ModelAttribute BookSearchRequest req) {
+    public BookListResponse search(@Valid @ModelAttribute AladinSearchRequest req) {
         AladinResponse resp = null;
 
         resp = aladinService
