@@ -30,10 +30,12 @@ import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.category.service.CategoryService;
+import store.bookscamp.api.category.service.dto.CategoryDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
+import store.bookscamp.api.tag.service.dto.TagDto;
 
 
 @Service
@@ -148,9 +150,9 @@ public class BookService {
         }
     }
 
-    public BookDetailDto getBookDetail(Long id) {
+    public BookDetailDto getBookDetail(Long bookId) {
 
-        Book book = bookRepository.getBookById(id);
+        Book book = bookRepository.getBookById(bookId);
 
         if (book==null){
             throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
@@ -158,19 +160,34 @@ public class BookService {
 
         book.increaseViewCount();
 
-        Long categoryId = bookCategoryRepository.findByBook(book)
-                .map(bc -> bc.getCategory().getId())
-                .orElse(null);
+        List<CategoryDto> categoryList = new ArrayList<>();
+        List<BookCategory> bookCategoryList = bookCategoryRepository.findByBook_Id(bookId);
 
-        List<Long> tagIds = bookTagRepository.findAllByBook(book).stream()
-                .map(bt -> bt.getTag().getId())
-                .toList();
+        for(BookCategory bookCategory : bookCategoryList){
+            categoryList.add(new CategoryDto(
+                    bookCategory.getCategory().getId(),
+                    bookCategory.getCategory().getName()
+            ));
+        }
 
-        List<String> imageUrls = bookImageRepository.findAllByBook(book).stream()
-                .map(bi -> bi.getImageUrl())
-                .toList();
+        List<TagDto> tagList = new ArrayList<>();
+        List<BookTag> bookTagList = bookTagRepository.findByBook_Id(bookId);
 
-        return BookDetailDto.from(book, categoryId, tagIds, imageUrls);
+        for(BookTag bookTag : bookTagList){
+            tagList.add(new TagDto(
+                    bookTag.getTag().getId(),
+                    bookTag.getTag().getName()
+            ));
+        }
+
+        List<String> imageUrlList = new ArrayList<>();
+        List<BookImage> bookImageList = bookImageRepository.findByBook_Id(bookId);
+
+        for(BookImage bookImage : bookImageList){
+            imageUrlList.add(bookImage.getImageUrl());
+        }
+
+        return BookDetailDto.from(book, categoryList, tagList, imageUrlList);
     }
 
     public List<BookIndexDto> getAllBooks() {
