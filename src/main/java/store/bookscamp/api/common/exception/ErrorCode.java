@@ -2,8 +2,10 @@ package store.bookscamp.api.common.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,10 @@ public enum ErrorCode {
 
     REDIS_CONNECTION_FAILED(INTERNAL_SERVER_ERROR, "캐시 서버에 연결할 수 없습니다."),
     CACHE_DATA_CORRUPTED(INTERNAL_SERVER_ERROR, "캐시 데이터가 손상되었습니다."),
+
+    UNAUTHORIZED_USER(UNAUTHORIZED,"권한이 없습니다."),
+    FORBIDDEN_USER(FORBIDDEN,"잘못된 권한입니다.")
+
     ;
 
 

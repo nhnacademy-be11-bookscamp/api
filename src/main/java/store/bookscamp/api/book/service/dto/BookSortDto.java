@@ -1,11 +1,14 @@
 package store.bookscamp.api.book.service.dto;
 
 import java.time.LocalDate;
+import lombok.Builder;
 import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.book.entity.BookDocument;
 import store.bookscamp.api.book.entity.BookStatus;
 
-public record BookSortDto(
 
+@Builder
+public record BookSortDto(
         Long id,
         String title,
         String explanation,
@@ -18,8 +21,12 @@ public record BookSortDto(
         Integer regularPrice,
         Integer salePrice,
         Integer stock,
-        long viewCount
+        long viewCount,
+        String isbn,
+        double averageRating,
+        long reviewCount
 ) {
+
     public static BookSortDto from(Book book) {
         return new BookSortDto(
                 book.getId(),
@@ -34,7 +41,32 @@ public record BookSortDto(
                 book.getRegularPrice(),
                 book.getSalePrice(),
                 book.getStock(),
-                book.getViewCount()
+                book.getViewCount(),
+                null,
+                0.0,
+                0L
         );
     }
+
+    public static BookSortDto fromDocument(BookDocument doc) {
+        return BookSortDto.builder()
+                .id(doc.getId())
+                .title(doc.getTitle())
+                .explanation(doc.getExplanation())
+                .content(doc.getContent())
+                .publisher(doc.getPublisher())
+                .publishDate(doc.getPublishDate())
+                .contributors(doc.getContributors())
+                .salePrice(doc.getSalePrice())
+                .stock(doc.getStock())
+                .viewCount(doc.getViewCount())
+                .isbn(doc.getIsbn())
+                .averageRating(doc.getAverageRating())
+                .reviewCount(doc.getReviewCount())
+                .packable(doc.isPackable())
+                .status(null) // ES에는 enum이 없을 수 있으니 null로
+                .regularPrice(doc.getRegularPrice())
+                .build();
+    }
 }
+

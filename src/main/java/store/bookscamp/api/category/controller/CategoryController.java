@@ -1,5 +1,6 @@
 package store.bookscamp.api.category.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import store.bookscamp.api.category.service.dto.CategoryUpdateDto;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "카테고리 API", description = "Category API입니다")
 public class CategoryController {
 
     private final CategoryService categoryService;

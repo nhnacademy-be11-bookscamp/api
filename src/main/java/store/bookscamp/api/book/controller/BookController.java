@@ -1,5 +1,6 @@
 package store.bookscamp.api.book.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,18 +19,22 @@ import store.bookscamp.api.book.controller.request.BookUpdateRequest;
 import store.bookscamp.api.book.controller.response.BookInfoResponse;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
+import store.bookscamp.api.book.service.BookSearchService;
 import store.bookscamp.api.book.service.BookService;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
+import store.bookscamp.api.book.service.dto.BookSearchRequest;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.common.pagination.RestPageImpl;
 
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "책 API", description = "Book API입니다")
 public class BookController {
 
     private final BookService bookService;
+    private final BookSearchService bookSearchService;
 
     @PostMapping(value = "/admin/books/create", produces = "application/json")
     public ResponseEntity<String> createBook(
@@ -68,7 +73,9 @@ public class BookController {
             @RequestParam(defaultValue = "id") String sortType,
             @PageableDefault(size = 10, page = 0) Pageable pageable
     ) {
-        Page<BookSortDto> bookSortDtoPage = bookService.searchBooks(categoryId, keyWord, sortType, pageable);
+        BookSearchRequest searchRequest = new BookSearchRequest(categoryId, keyWord, sortType, pageable);
+        Page<BookSortDto> bookSortDtoPage = bookSearchService.searchBooks(searchRequest);
+        //Page<BookSortDto> bookSortDtoPage = bookService.searchBooks(categoryId, keyWord, sortType, pageable);
 
         Page<BookSortResponse> bookSortResponsePage = bookSortDtoPage.map(BookSortResponse::from);
 
