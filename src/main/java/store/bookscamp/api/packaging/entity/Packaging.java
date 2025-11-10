@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.bookscamp.api.member.service.dto.MemberCreateDto;
 
 @Entity
 @Getter
@@ -24,8 +25,18 @@ public class Packaging {
     @Column(nullable = false)
     private Integer price;
 
-    public Packaging(String name, Integer price) {
+    @Column(nullable = false)
+    private String imageUrl;
+
+    public Packaging(String name, Integer price,  String imageUrl) {
         this.name = name;
         this.price = price;
+        this.imageUrl = imageUrl;
+    }
+
+    public void change(String name, Integer price, String imageUrl) {
+        if (name != null) this.name = name;
+        if (price != null) this.price = price;
+        if (imageUrl != null) this.imageUrl = imageUrl;
     }
 }
