@@ -15,6 +15,10 @@ public record BookSortResponse(
         Integer regularPrice,
         Integer salePrice,
         Integer stock,
+        long viewCount,
+        String isbn,
+        double averageRating,
+        long reviewCount,
         String thumbnailUrl
 ) {
 
@@ -29,6 +33,10 @@ public record BookSortResponse(
                 bookSortDto.regularPrice(),
                 bookSortDto.salePrice(),
                 bookSortDto.stock(),
+                bookSortDto.viewCount(),
+                bookSortDto.isbn(),
+                bookSortDto.averageRating(),
+                bookSortDto.reviewCount(),
                 thumbnailUrl
         );
     }
