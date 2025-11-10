@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class BookSearchRequest {
+public class AladinSearchRequest {
     @NotBlank
     private String query;
     private String queryType;   // Title/Author/Publisher/Keyword (기본 Keyword)
