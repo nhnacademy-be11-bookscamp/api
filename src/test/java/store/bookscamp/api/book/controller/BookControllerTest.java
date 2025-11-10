@@ -45,11 +45,11 @@ class BookControllerTest {
         // given
         BookSortDto book1 = new BookSortDto(
                 1L, "JPA 책", "JPA 설명", "JPA 내용", "북스캠프", LocalDate.now(),
-                "저자 A", BookStatus.AVAILABLE, true, 40000, 36000, 100, 50L
+                "저자 A", BookStatus.AVAILABLE, true, 40000, 36000, 100, 50L,"1234567891012",0,0
         );
         BookSortDto book2 = new BookSortDto(
                 2L, "Spring 책", "Spring 설명", "Spring 내용", "북스캠프", LocalDate.now(),
-                "저자 B", BookStatus.AVAILABLE, true, 45000, 40000, 100, 120L
+                "저자 B", BookStatus.AVAILABLE, true, 45000, 40000, 100, 120L,"1234567891012",0,0
         );
         List<BookSortDto> dtoList = List.of(book1, book2);
 
