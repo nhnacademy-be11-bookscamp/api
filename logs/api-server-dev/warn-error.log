@@ -9,3 +9,201 @@
 2025-11-10 00:45:40.948 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
 2025-11-10 01:26:55.959 [lettuce-nioEventLoop-6-2] WARN  i.l.core.protocol.ConnectionWatchdog Cannot reconnect to [localhost/<unresolved>:6379]: Connection refused: getsockopt: localhost/127.0.0.1:6379
 2025-11-10 01:27:00.977 [lettuce-nioEventLoop-6-5] WARN  i.l.core.protocol.ConnectionWatchdog Cannot reconnect to [localhost/<unresolved>:6379]: Connection refused: getsockopt: localhost/127.0.0.1:6379
+2025-11-10 10:04:15.808 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-11-10 10:04:17.402 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2025-11-10 10:04:18.612 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-1] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+	at org.springframework.amqp.rabbit.support.RabbitExceptionTranslator.convertRabbitAccessException(RabbitExceptionTranslator.java:61)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.createBareConnection(AbstractConnectionFactory.java:632)
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory.createConnection(CachingConnectionFactory.java:726)
+	at org.springframework.amqp.rabbit.connection.ConnectionFactoryUtils.createConnection(ConnectionFactoryUtils.java:257)
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.doExecute(RabbitTemplate.java:2261)
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.execute(RabbitTemplate.java:2234)
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.execute(RabbitTemplate.java:2214)
+	at org.springframework.amqp.rabbit.core.RabbitAdmin.getQueueInfo(RabbitAdmin.java:467)
+	at org.springframework.amqp.rabbit.core.RabbitAdmin.getQueueProperties(RabbitAdmin.java:451)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.attemptDeclarations(AbstractMessageListenerContainer.java:1972)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.redeclareElementsIfNecessary(AbstractMessageListenerContainer.java:1936)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.initialize(SimpleMessageListenerContainer.java:1489)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1328)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:628)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:533)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:583)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:282)
+	at java.base/java.net.Socket.connect(Socket.java:665)
+	at com.rabbitmq.client.impl.SocketFrameHandlerFactory.create(SocketFrameHandlerFactory.java:61)
+	at com.rabbitmq.client.ConnectionFactory.newConnection(ConnectionFactory.java:1249)
+	at com.rabbitmq.client.ConnectionFactory.newConnection(ConnectionFactory.java:1198)
+	at com.rabbitmq.client.ConnectionFactory.newConnection(ConnectionFactory.java:1369)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.connectHostPort(AbstractConnectionFactory.java:695)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.connect(AbstractConnectionFactory.java:650)
+	at org.springframework.amqp.rabbit.connection.AbstractConnectionFactory.createBareConnection(AbstractConnectionFactory.java:593)
+	... 12 common frames omitted
+2025-11-10 10:04:19.306 [scheduling-1] ERROR o.s.s.s.TaskUtils$LoggingErrorHandler Unexpected error occurred in scheduled task
+org.springframework.data.redis.RedisConnectionFailureException: Unable to connect to Redis
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory$ExceptionTranslatingConnectionProvider.translateException(LettuceConnectionFactory.java:1866)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory$ExceptionTranslatingConnectionProvider.getConnection(LettuceConnectionFactory.java:1797)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory$SharedConnection.getNativeConnection(LettuceConnectionFactory.java:1594)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory$SharedConnection.lambda$getConnection$0(LettuceConnectionFactory.java:1574)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory.doInLock(LettuceConnectionFactory.java:1535)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory$SharedConnection.getConnection(LettuceConnectionFactory.java:1571)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory.getSharedConnection(LettuceConnectionFactory.java:1257)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory.getConnection(LettuceConnectionFactory.java:1063)
+	at org.springframework.data.redis.core.RedisConnectionUtils.fetchConnection(RedisConnectionUtils.java:195)
+	at org.springframework.data.redis.core.RedisConnectionUtils.doGetConnection(RedisConnectionUtils.java:144)
+	at org.springframework.data.redis.core.RedisConnectionUtils.getConnection(RedisConnectionUtils.java:105)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:400)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:380)
+	at org.springframework.data.redis.core.AbstractOperations.execute(AbstractOperations.java:117)
+	at org.springframework.data.redis.core.DefaultHashOperations.entries(DefaultHashOperations.java:323)
+	at store.bookscamp.api.booklike.scheduler.BookLikeBatchScheduler.flushLikesToDatabase(BookLikeBatchScheduler.java:35)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.runInternal(ScheduledMethodRunnable.java:130)
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.lambda$run$2(ScheduledMethodRunnable.java:124)
+	at io.micrometer.observation.Observation.observe(Observation.java:498)
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:124)
+	at org.springframework.scheduling.config.Task$OutcomeTrackingRunnable.run(Task.java:85)
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
+	at java.base/java.util.concurrent.FutureTask.runAndReset$$$capture(FutureTask.java:369)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1095)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:619)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+Caused by: io.lettuce.core.RedisConnectionException: Unable to connect to localhost/<unresolved>:6379
+	at io.lettuce.core.RedisConnectionException.create(RedisConnectionException.java:63)
+	at io.lettuce.core.RedisConnectionException.create(RedisConnectionException.java:41)
+	at io.lettuce.core.AbstractRedisClient.getConnection(AbstractRedisClient.java:354)
+	at io.lettuce.core.RedisClient.connect(RedisClient.java:220)
+	at org.springframework.data.redis.connection.lettuce.StandaloneConnectionProvider.lambda$getConnection$1(StandaloneConnectionProvider.java:112)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at org.springframework.data.redis.connection.lettuce.StandaloneConnectionProvider.getConnection(StandaloneConnectionProvider.java:112)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory$ExceptionTranslatingConnectionProvider.getConnection(LettuceConnectionFactory.java:1795)
+	... 29 common frames omitted
+Caused by: io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: localhost/127.0.0.1:6379
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:628)
+	at java.base/sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:1046)
+	at io.netty.channel.socket.nio.NioSocketChannel.doFinishConnect(NioSocketChannel.java:336)
+	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe.finishConnect(AbstractNioChannel.java:339)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:784)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:732)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:658)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+2025-11-10 10:04:23.637 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-1] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:23.658 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-2] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:04:28.693 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-2] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:28.710 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-3] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:04:33.749 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-3] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:33.755 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-4] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:04:38.799 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-4] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:38.827 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-5] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:04:43.991 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-5] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:44.008 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-6] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:04:49.036 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-6] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:49.053 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-7] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:04:54.084 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-7] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:54.099 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-8] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:04:59.178 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-8] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:04:59.193 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-9] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:04.287 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-9] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:04.304 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-10] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:09.333 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-10] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:09.359 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-11] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:14.409 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-11] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:14.473 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-12] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:19.563 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-12] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:19.579 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-13] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:24.659 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-13] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:24.673 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-14] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:29.684 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-14] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:29.758 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-15] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:34.796 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-15] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:34.824 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-16] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:39.890 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-16] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:39.900 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-17] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:44.918 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-17] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:44.935 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-18] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:49.979 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-18] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:49.990 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-19] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:05:55.018 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-19] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:05:55.024 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-20] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:06:00.072 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-20] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:06:00.084 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-21] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:06:05.102 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-21] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:06:05.109 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-22] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:06:10.125 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-22] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:06:10.141 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-23] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:06:15.162 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-23] WARN  o.s.a.r.l.SimpleMessageListenerContainer Consumer raised exception, processing can restart if the connection factory supports it. Exception summary: org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused: getsockopt
+2025-11-10 10:06:15.166 [org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#0-24] ERROR o.s.a.r.l.SimpleMessageListenerContainer Failed to check/redeclare auto-delete queue(s).
+2025-11-10 10:06:21.031 [DiscoveryClient-%d] WARN  c.n.discovery.TimedSupervisorTask task supervisor shutting down, can't accept the task
+2025-11-10 10:07:15.475 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-11-10 10:07:17.162 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2025-11-10 10:43:58.826 [http-nio-8081-exec-6] ERROR o.a.c.c.C.[.[.[.[dispatcherServlet] Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: java.lang.NumberFormatException: Cannot parse null string] with root cause
+java.lang.NumberFormatException: Cannot parse null string
+	at java.base/java.lang.Long.parseLong(Long.java:556)
+	at java.base/java.lang.Long.valueOf(Long.java:950)
+	at store.bookscamp.api.booklike.controller.BookLikeController.getLikeStatus(BookLikeController.java:56)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1776)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:975)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:493)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+2025-11-10 10:47:07.909 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-11-10 10:47:10.117 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
