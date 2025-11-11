@@ -69,7 +69,7 @@ class BookRepositoryCustomImplTest {
         when(countQuery.fetchOne()).thenReturn(mockTotalCount);
 
         // When
-        Page<Book> resultPage = bookRepository.getBooks(categoryIds, null, sortType, pageable);
+        Page<Book> resultPage = bookRepository.getBooks(categoryIds, sortType, pageable);
 
         // Then
         assertNotNull(resultPage);
@@ -105,7 +105,7 @@ class BookRepositoryCustomImplTest {
         when(countQuery.fetchOne()).thenReturn(mockTotalCount);
 
         // When
-        Page<Book> resultPage = bookRepository.getBooks(categoryIds, null, sortType, pageable);
+        Page<Book> resultPage = bookRepository.getBooks(categoryIds, sortType, pageable);
 
         // Then
         assertEquals(mockTotalCount, resultPage.getTotalElements());
@@ -131,7 +131,7 @@ class BookRepositoryCustomImplTest {
         when(countQuery.fetchOne()).thenReturn(0L);
 
         // When
-        bookRepository.getBooks(null, null, sortType, pageable);
+        bookRepository.getBooks(null, sortType, pageable);
 
         // Then
         verify(bookQuery).orderBy(book.id.asc());
@@ -147,7 +147,7 @@ class BookRepositoryCustomImplTest {
         when(countQuery.fetchOne()).thenReturn(null);
 
         // When
-        Page<Book> resultPage = bookRepository.getBooks(null, null, "title", pageable);
+        Page<Book> resultPage = bookRepository.getBooks(null,"title", pageable);
 
         // Then
         assertNotNull(resultPage);
