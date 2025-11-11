@@ -21,6 +21,7 @@ import store.bookscamp.api.category.service.dto.CategoryCreateDto;
 import store.bookscamp.api.category.service.dto.CategoryDeleteDto;
 import store.bookscamp.api.category.service.dto.CategoryListDto;
 import store.bookscamp.api.category.service.dto.CategoryUpdateDto;
+import store.bookscamp.api.common.annotation.RequiredRole;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,6 +42,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryResponseTree);
     }
 
+    @RequiredRole("ADMIN")
     @PostMapping("/admin/category/create")
     public ResponseEntity<Void> createCategory(@RequestBody CategoryCreateRequest request){
 
@@ -50,6 +52,7 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @RequiredRole("ADMIN")
     @PutMapping("/admin/category/update/{id}")
     public ResponseEntity<Void> updateCategory(@PathVariable Long id, @RequestBody CategoryUpdateRequest request) {
 
@@ -59,6 +62,7 @@ public class CategoryController {
         return ResponseEntity.ok().build();
     }
 
+    @RequiredRole("ADMIN")
     @DeleteMapping("/admin/category/delete/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id){
 
