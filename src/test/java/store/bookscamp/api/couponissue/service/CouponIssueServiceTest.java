@@ -74,7 +74,9 @@ class CouponIssueServiceTest {
                 10000,
                 50000,
                 10000,
-                30)
+                30,
+                "테스트 쿠폰"
+                )
         );
 
         birthdayCoupon = couponRepository.save(new Coupon(
@@ -84,7 +86,8 @@ class CouponIssueServiceTest {
                 10000,
                 50000,
                 10000,
-                30
+                30,
+                "테스트 쿠폰"
         ));
     }
 
@@ -112,7 +115,7 @@ class CouponIssueServiceTest {
         @DisplayName("이미 웰컴 쿠폰을 발급받은 회원이면 예외 발생")
         void issueWelcomeCoupon_alreadyIssued() {
             // given
-            couponIssueRepository.save(new CouponIssue(welcomeCoupon, member, LocalDateTime.now().plusDays(welcomeCoupon.getValidDays())));
+            couponIssueRepository.save(new CouponIssue(welcomeCoupon, member, LocalDateTime.now().plusDays(welcomeCoupon.getValidDays()), LocalDateTime.now().plusDays(40)));
 
             // when & then
             assertThatThrownBy(() -> couponIssueService.issueWelcomeCoupon(member.getId()))
@@ -158,7 +161,7 @@ class CouponIssueServiceTest {
     @DisplayName("이미 발급된 쿠폰이 있으면 예외가 발생한다")
     void issueBirthDayCoupon_duplicate() {
         // given
-        couponIssueRepository.save(new CouponIssue(birthdayCoupon, member, LocalDateTime.now().plusDays(30)));
+        couponIssueRepository.save(new CouponIssue(birthdayCoupon, member, LocalDateTime.now().plusDays(30),LocalDateTime.now().plusDays(40)));
 
         // when & then
         assertThatThrownBy(() ->

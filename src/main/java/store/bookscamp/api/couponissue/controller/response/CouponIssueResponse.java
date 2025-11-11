@@ -2,6 +2,7 @@ package store.bookscamp.api.couponissue.controller.response;
 
 import java.time.LocalDateTime;
 import store.bookscamp.api.coupon.entity.Coupon;
+import store.bookscamp.api.couponissue.controller.status.CouponIssueStatus;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 
 public record CouponIssueResponse(
@@ -12,17 +13,27 @@ public record CouponIssueResponse(
         Integer minOrderAmount,
         Integer maxDiscountAmount,
         LocalDateTime expiredAt,
-        boolean isUsed,
-        LocalDateTime usedAt
+        CouponIssueStatus status,
+        LocalDateTime usedAt,
+        String name
 ) {
 
     /**
      * CouponIssue Entity를 CouponIssueResponse 레코드로 변환하는 정적 팩토리 메서드
      */
     public static CouponIssueResponse from(CouponIssue couponIssue) {
+        CouponIssueStatus status;
         Coupon coupon = couponIssue.getCoupon();
 
-        boolean usedStatus = (couponIssue.getUsedAt() != null);
+        if (couponIssue.getUsedAt() != null) {
+            status = CouponIssueStatus.USED;
+        }
+        else if (couponIssue.getExpiredAt() != null && couponIssue.getExpiredAt().isBefore(LocalDateTime.now())) {
+            status = CouponIssueStatus.EXPIRED;
+        }
+        else {
+            status = CouponIssueStatus.AVAILABLE;
+        }
 
         return new CouponIssueResponse(
                 couponIssue.getId(),
@@ -32,8 +43,9 @@ public record CouponIssueResponse(
                 coupon.getMinOrderAmount(),
                 coupon.getMaxDiscountAmount(),
                 couponIssue.getExpiredAt(),
-                usedStatus,
-                couponIssue.getUsedAt()
+                status,
+                couponIssue.getUsedAt(),
+                coupon.getName()
         );
     }
 }

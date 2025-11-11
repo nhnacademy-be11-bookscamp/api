@@ -1,6 +1,7 @@
 package store.bookscamp.api.couponissue.service;
 
 import static java.time.LocalDate.now;
+import static store.bookscamp.api.common.exception.ErrorCode.BOOK_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.COUPON_ISSUE_ALREADY_EXIST;
 import static store.bookscamp.api.common.exception.ErrorCode.COUPON_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
@@ -14,9 +15,11 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.coupon.repository.CouponRepository;
+import store.bookscamp.api.couponissue.controller.status.CouponFilterStatus;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.repository.CouponIssueRepository;
 import store.bookscamp.api.member.entity.Member;
@@ -31,6 +34,7 @@ public class CouponIssueService {
     private final CouponIssueRepository couponIssueRepository;
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
+    private final BookRepository bookRepository;
 
     @Retryable(noRetryFor = ApplicationException.class, backoff = @Backoff(multiplier = 2.0, maxDelay = 10000), listeners = "customRetryListener")
     @Transactional
@@ -52,10 +56,12 @@ public class CouponIssueService {
 
         Coupon coupon = couponRepository.findByTargetType(WELCOME)
                 .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
+
         CouponIssue couponIssue = new CouponIssue(coupon, member, getExpiredAt(coupon.getValidDays()));
         return couponIssueRepository.save(couponIssue).getId();
     }
 
+    @Transactional
     public Long issueGeneralCoupon(Long couponId, Long memberId) {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
@@ -70,13 +76,27 @@ public class CouponIssueService {
         return couponIssueRepository.save(couponIssue).getId();
     }
 
-    public List<CouponIssue> listCouponIssue(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
-        return couponIssueRepository.findAllByMember(member);
+    public List<CouponIssue> listCouponIssue(Long memberId, CouponFilterStatus status) {
+        if(!memberRepository.existsById(memberId)){
+            throw new ApplicationException(MEMBER_NOT_FOUND);
+        }
 
+        return couponIssueRepository.findByMemberIdAndFilterStatus(memberId, status);
     }
 
+    @Transactional(readOnly = true)
+    public List<Coupon> findDownloadableCoupons(Long memberId, Long bookId) {
+        if (!memberRepository.existsById(memberId)) {
+            throw new ApplicationException(MEMBER_NOT_FOUND);
+        }
+        if (!bookRepository.existsById(bookId)) {
+            throw new ApplicationException(BOOK_NOT_FOUND);
+        }
+
+        return couponIssueRepository.findDownloadableCoupons(memberId, bookId);
+    }
+
+    @Transactional
     public void deleteCouponIssue(Long memberId, Long couponIssueId) {
         couponIssueRepository.deleteByMember_IdAndId(memberId,couponIssueId);
     }
