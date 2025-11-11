@@ -26,7 +26,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private static final QBookLike bookLike = QBookLike.bookLike;
 
     @Override
-    public Page<Book> getBooks(List<Long> categoryIds, String keyword, String sortType, Pageable pageable) {
+    public Page<Book> getBooks(List<Long> categoryIds, String sortType, Pageable pageable) {
 
         OrderSpecifier<?> sortOrder = getSortSpecifier(sortType, book);
 

@@ -11,12 +11,9 @@ import store.bookscamp.api.book.entity.BookStatus;
 public record BookSortDto(
         Long id,
         String title,
-        String explanation,
-        String content,
         String publisher,
         LocalDate publishDate,
         String contributors,
-        BookStatus status,
         boolean packable,
         Integer regularPrice,
         Integer salePrice,
@@ -31,12 +28,9 @@ public record BookSortDto(
         return new BookSortDto(
                 book.getId(),
                 book.getTitle(),
-                book.getExplanation(),
-                book.getContent(),
                 book.getPublisher(),
                 book.getPublishDate(),
                 book.getContributors(),
-                book.getStatus(),
                 book.isPackable(),
                 book.getRegularPrice(),
                 book.getSalePrice(),
@@ -52,8 +46,6 @@ public record BookSortDto(
         return BookSortDto.builder()
                 .id(doc.getId())
                 .title(doc.getTitle())
-                .explanation(doc.getExplanation())
-                .content(doc.getContent())
                 .publisher(doc.getPublisher())
                 .publishDate(doc.getPublishDate())
                 .contributors(doc.getContributors())
@@ -64,7 +56,6 @@ public record BookSortDto(
                 .averageRating(doc.getAverageRating())
                 .reviewCount(doc.getReviewCount())
                 .packable(doc.isPackable())
-                .status(null) // ES에는 enum이 없을 수 있으니 null로
                 .regularPrice(doc.getRegularPrice())
                 .build();
     }

@@ -47,7 +47,7 @@ public class BookLikeController {
         return ResponseEntity.ok(bookLikeCountResponse);
     }
 
-    @GetMapping("/books/{bookId}/like/status")
+    @GetMapping("/like/status/{bookId}")
     public ResponseEntity<BookLikeStatusResponse> getLikeStatus(
             HttpServletRequest servletRequest,
             @PathVariable Long bookId
