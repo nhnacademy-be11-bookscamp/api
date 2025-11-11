@@ -89,4 +89,12 @@ public class Member extends SoftDeleteEntity {
     public void changePassword(String password){
         this.password = password;
     }
+
+    public void earnPoint(int pointAmount) {
+        this.point += pointAmount;
+    }
+
+    public void usePoint(int pointAmount) {
+        this.point -= pointAmount;
+    }
 }

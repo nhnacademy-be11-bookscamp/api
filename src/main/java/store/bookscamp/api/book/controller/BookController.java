@@ -1,5 +1,6 @@
 package store.bookscamp.api.book.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookSearchRequest;
 import store.bookscamp.api.book.service.dto.BookSortDto;
+import store.bookscamp.api.common.annotation.RequiredRole;
 import store.bookscamp.api.common.pagination.RestPageImpl;
 
 
@@ -37,6 +39,8 @@ public class BookController {
     private final BookSearchService bookSearchService;
 
     @PostMapping(value = "/admin/books/create", produces = "application/json")
+    @Operation(summary = "create book", description = "수동도서등록 API")
+    @RequiredRole("ADMIN")
     public ResponseEntity<String> createBook(
             @RequestBody BookCreateRequest req
     ) {
@@ -47,6 +51,8 @@ public class BookController {
     }
 
     @PostMapping(value = "/admin/aladin/books", produces = "application/json")
+    @Operation(summary = "create aladin book", description = "알라딘도서등록 API")
+    @RequiredRole("ADMIN")
     public ResponseEntity<String> aladinCreateBook(@RequestBody @Valid AladinCreateRequest req) {
 
         bookService.createBook(BookCreateDto.from(req));
@@ -56,6 +62,8 @@ public class BookController {
 
     // 도서 수정
     @PutMapping(value = "/admin/books/{id}/update", produces = "application/json")
+    @Operation(summary = "update book", description = "도서수정 API")
+    @RequiredRole("ADMIN")
     public ResponseEntity<String> updateBook(
             @PathVariable Long id,
             @RequestBody BookUpdateRequest req

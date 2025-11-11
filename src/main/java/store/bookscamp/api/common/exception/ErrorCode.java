@@ -49,8 +49,11 @@ public enum ErrorCode {
     CACHE_DATA_CORRUPTED(INTERNAL_SERVER_ERROR, "캐시 데이터가 손상되었습니다."),
 
     UNAUTHORIZED_USER(UNAUTHORIZED,"권한이 없습니다."),
-    FORBIDDEN_USER(FORBIDDEN,"잘못된 권한입니다.")
+    FORBIDDEN_USER(FORBIDDEN,"잘못된 권한입니다."),
 
+    ORDER_NOT_FOUND(NOT_FOUND, "주문을 찾을 수 없습니다."),
+
+    POINT_NOT_ENOUGH(BAD_REQUEST, "사용 가능한 포인트가 부족합니다.")
     ;
 
 
