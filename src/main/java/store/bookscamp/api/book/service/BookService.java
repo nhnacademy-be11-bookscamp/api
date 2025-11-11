@@ -1,8 +1,11 @@
 package store.bookscamp.api.book.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +15,12 @@ import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
+import store.bookscamp.api.book.service.dto.BookIndexDto;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.book.service.dto.BookUpdateDto;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
+import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
@@ -25,10 +30,12 @@ import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 import store.bookscamp.api.category.service.CategoryService;
+import store.bookscamp.api.category.service.dto.CategoryDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
+import store.bookscamp.api.tag.service.dto.TagDto;
 
 
 @Service
@@ -44,6 +51,7 @@ public class BookService {
     private final BookImageRepository bookImageRepository;
     private final BookImageService bookImageService;
     private final CategoryService categoryService;
+    private final BookIndexService bookIndexService;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
@@ -63,7 +71,8 @@ public class BookService {
                 dto.stock(),
                 0                          // viewCount
         );
-        bookRepository.save(book);
+        bookRepository.saveAndFlush(book);
+        bookIndexService.indexBook(book);
 
         if (dto.imageUrls() != null && !dto.imageUrls().isEmpty()) {
             bookImageService.createBookImage(new BookImageCreateDto(book, dto.imageUrls()));
@@ -141,22 +150,9 @@ public class BookService {
         }
     }
 
-    public Page<BookSortDto> searchBooks(Long categoryId, String keyword, String sortType, Pageable pageable) {
+    public BookDetailDto getBookDetail(Long bookId) {
 
-        List<Long> categoryIdsToSearch = null;
-
-        if (categoryId != null) {
-            categoryIdsToSearch = categoryService.getDescendantIdsIncludingSelf(categoryId);
-        }
-
-        Page<Book> bookPage = bookRepository.getBooks(categoryIdsToSearch, keyword, sortType, pageable);
-        // from 메서드를 통해 Dto로 변환
-        return bookPage.map(BookSortDto::from);
-    }
-
-    public BookDetailDto getBookDetail(Long id) {
-
-        Book book = bookRepository.getBookById(id);
+        Book book = bookRepository.getBookById(bookId);
 
         if (book==null){
             throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
@@ -164,18 +160,57 @@ public class BookService {
 
         book.increaseViewCount();
 
-        Long categoryId = bookCategoryRepository.findByBook(book)
-                .map(bc -> bc.getCategory().getId())
-                .orElse(null);
+        List<CategoryDto> categoryList = new ArrayList<>();
+        List<BookCategory> bookCategoryList = bookCategoryRepository.findByBook_Id(bookId);
 
-        List<Long> tagIds = bookTagRepository.findAllByBook(book).stream()
-                .map(bt -> bt.getTag().getId())
-                .toList();
+        for(BookCategory bookCategory : bookCategoryList){
+            categoryList.add(new CategoryDto(
+                    bookCategory.getCategory().getId(),
+                    bookCategory.getCategory().getName()
+            ));
+        }
 
-        List<String> imageUrls = bookImageRepository.findAllByBook(book).stream()
-                .map(bi -> bi.getImageUrl())
-                .toList();
+        List<TagDto> tagList = new ArrayList<>();
+        List<BookTag> bookTagList = bookTagRepository.findByBook_Id(bookId);
 
-        return BookDetailDto.from(book, categoryId, tagIds, imageUrls);
+        for(BookTag bookTag : bookTagList){
+            tagList.add(new TagDto(
+                    bookTag.getTag().getId(),
+                    bookTag.getTag().getName()
+            ));
+        }
+
+        List<String> imageUrlList = new ArrayList<>();
+        List<BookImage> bookImageList = bookImageRepository.findByBook_Id(bookId);
+
+        for(BookImage bookImage : bookImageList){
+            imageUrlList.add(bookImage.getImageUrl());
+        }
+
+        return BookDetailDto.from(book, categoryList, tagList, imageUrlList);
+    }
+
+    public List<BookIndexDto> getAllBooks() {
+
+        List<Book> allBooksList = bookRepository.findAll();
+
+        return allBooksList.stream().map(book -> {
+
+            String thumbnailUrl = bookImageRepository.findByBook(book).stream()
+                    .filter(BookImage::isThumbnail)
+                    .map(BookImage::getImageUrl)
+                    .findFirst()
+                    .orElse(null);
+
+            return new BookIndexDto(
+                    book.getId(),
+                    book.getTitle(),
+                    book.getPublisher(),
+                    book.getContributors(),
+                    book.getRegularPrice(),
+                    book.getSalePrice(),
+                    thumbnailUrl
+            );
+        }).toList();
     }
 }
