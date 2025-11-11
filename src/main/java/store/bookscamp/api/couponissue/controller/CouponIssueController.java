@@ -63,7 +63,7 @@ public class CouponIssueController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/download/{bookId}")
+    @GetMapping("/downloadable/{bookId}")
     @RequiredRole("USER")
     public ResponseEntity<List<CouponIssueDownloadResponse>> getDownloadableCoupons(
             HttpServletRequest request,
