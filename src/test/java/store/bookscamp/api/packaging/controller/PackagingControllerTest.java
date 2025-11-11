@@ -19,11 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Mock을 전혀 사용하지 않는 Controller 통합 테스트.
- * 실제 빈들이 모두 올라오며, DB(H2)까지 접근합니다.
- */
-
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
@@ -37,11 +32,9 @@ class PackagingControllerTest {
     private static final MediaType JSON_UTF8 =
             new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8);
 
-    // 프로젝트의 RequiredRole가 확인하는 실제 헤더 키로 바꾸세요.
     private static final String ROLE_HEADER = "X-User-Role";
     private static final String ADMIN = "ADMIN";
 
-    // 공통 헤더 헬퍼
     private org.springframework.test.web.servlet.request.RequestPostProcessor adminHeaders() {
         return request -> {
             request.addHeader(ROLE_HEADER, ADMIN);
@@ -82,7 +75,6 @@ class PackagingControllerTest {
                         .content("""
                             {"name":"중복","price":2000,"imageUrls":["u2"]}
                         """))
-                // 전역 예외 처리 정책에 맞춰 조정하세요.
                 .andExpect(status().isConflict()); // ApplicationException -> 409 가정
     }
 
