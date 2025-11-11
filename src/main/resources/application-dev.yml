@@ -44,3 +44,8 @@ logging:
     store.bookscamp.api: DEBUG
     org.springframework.web.reactive.function.client: DEBUG
     reactor.netty.http.client: DEBUG
+
+
+elasticsearch:
+  index:
+    name: bookscamp-dev
