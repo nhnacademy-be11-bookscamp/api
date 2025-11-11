@@ -74,7 +74,4 @@ springdoc:
     disabled: true
   model-and-view-allowed: true
 
-logging:
-  level:
-    org.springframework.web.reactive.function.client: DEBUG
-    reactor.netty.http.client: DEBUG
+
