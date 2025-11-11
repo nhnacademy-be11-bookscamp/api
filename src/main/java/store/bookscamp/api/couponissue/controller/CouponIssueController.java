@@ -21,7 +21,7 @@ import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.service.CouponIssueService;
 
 @RestController
-@RequestMapping("/coupon-issues")
+@RequestMapping("/coupon-issue")
 @RequiredArgsConstructor
 public class CouponIssueController {
 
@@ -37,7 +37,7 @@ public class CouponIssueController {
         Long issuedCouponId = couponIssueService.issueGeneralCoupon(
                 couponIssueRequest.couponId(),
                 Long.valueOf(httpServletRequest.getHeader("X-User-ID"))
-                );
+        );
 
         return ResponseEntity.ok(issuedCouponId);
     }
@@ -45,7 +45,7 @@ public class CouponIssueController {
     @GetMapping("/my")
     @RequiredRole("USER")
     public ResponseEntity<List<CouponIssueResponse>> getMyCoupons(HttpServletRequest request) {
-        Long memberId = Long.valueOf(request.getHeader("X-User_ID"));
+        Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
         List<CouponIssue> couponIssues = couponIssueService.listCouponIssue(memberId);
 
         List<CouponIssueResponse> response = couponIssues.stream()
@@ -58,9 +58,11 @@ public class CouponIssueController {
     @DeleteMapping("/{couponIssueId}")
     @RequiredRole("USER")
     public ResponseEntity<Void> deleteCouponIssue(
+            HttpServletRequest request,
             @PathVariable Long couponIssueId
-            ) {
-        couponIssueService.deleteCouponIssue(couponIssueId);
+    ) {
+        Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
+        couponIssueService.deleteCouponIssue(memberId, couponIssueId);
 
         return ResponseEntity.ok().build();
     }

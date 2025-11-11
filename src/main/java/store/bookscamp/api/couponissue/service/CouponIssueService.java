@@ -74,10 +74,11 @@ public class CouponIssueService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
         return couponIssueRepository.findAllByMember(member);
+
     }
 
-    public void deleteCouponIssue(Long couponIssueId) {
-        couponIssueRepository.deleteById(couponIssueId);
+    public void deleteCouponIssue(Long memberId, Long couponIssueId) {
+        couponIssueRepository.deleteByMember_IdAndId(memberId,couponIssueId);
     }
 
     private static LocalDateTime getExpiredAt(Integer validDays) {
