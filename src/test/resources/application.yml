@@ -38,3 +38,8 @@ aladin:
   ttb-key: ttbtvsqyfzvpj1722001
   output: js
   version: "20131101"
+
+
+elasticsearch:
+  index:
+    name: bookscamp-dev
