@@ -17,11 +17,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DeliveryPolicyUpdateRequest {
 
-    @Schema(description = "무료배송 기준 금액(원)", example = "30000")
+    @Schema(description = "무료배송 기준 금액(원)")
     @PositiveOrZero
     private Integer freeDeliveryThreshold;
 
-    @Schema(description = "기본 배송비(원)", example = "5000")
+    @Schema(description = "기본 배송비(원)")
     @PositiveOrZero
     private Integer baseDeliveryFee;
 

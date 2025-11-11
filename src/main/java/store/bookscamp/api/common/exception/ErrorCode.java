@@ -54,7 +54,11 @@ public enum ErrorCode {
     CACHE_DATA_CORRUPTED(INTERNAL_SERVER_ERROR, "캐시 데이터가 손상되었습니다."),
 
     UNAUTHORIZED_USER(UNAUTHORIZED,"권한이 없습니다."),
-    FORBIDDEN_USER(FORBIDDEN,"잘못된 권한입니다.")
+    FORBIDDEN_USER(FORBIDDEN,"잘못된 권한입니다."),
+
+    DELIVERY_POLICY_NOT_CONFIGURED(BAD_REQUEST, "배송비 정책이 설정되지 않았습니다.")
+
+
 
     ;
 
