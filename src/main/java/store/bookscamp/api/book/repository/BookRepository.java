@@ -4,7 +4,6 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import store.bookscamp.api.book.entity.Book;
-import store.bookscamp.api.book.entity.BookDocument;
 import store.bookscamp.api.book.entity.BookProjection;
 import store.bookscamp.api.book.repository.custom.BookRepositoryCustom;
 
