@@ -1,5 +1,6 @@
 package store.bookscamp.api.bookcategory.repository;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
@@ -15,4 +16,5 @@ public interface BookCategoryRepository extends JpaRepository<BookCategory, Long
 
     boolean existsByBookAndCategory(Book book, Category category);
 
+    List<BookCategory> findByBook_Id(Long bookId);
 }

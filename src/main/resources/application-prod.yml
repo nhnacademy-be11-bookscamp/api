@@ -32,3 +32,7 @@ logging:
     store.bookscamp.api: INFO
     org.springframework.web.reactive.function.client: WARN
     reactor.netty.http.client: WARN
+
+elasticsearch:
+  index:
+    name: bookscamp-prod

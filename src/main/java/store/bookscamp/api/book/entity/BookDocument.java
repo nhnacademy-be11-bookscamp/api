@@ -28,11 +28,11 @@ public class BookDocument {
     private Integer regularPrice;
     private Integer salePrice;
     private Integer stock;
-    private long viewCount;
+    private long viewCount; // 인기도 정렬용
     private boolean packable;
     private String status;
-    private double averageRating;
-    private long reviewCount;
-    private String tags;
-    private String reviews;
+    private double averageRating; // 평점 정렬용
+    private long reviewCount; // 리뷰 정렬용
+    //private String tags;
+    //private String reviews;
 }
