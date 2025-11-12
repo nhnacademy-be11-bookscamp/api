@@ -19,6 +19,7 @@ eureka:
 
 spring:
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://s4.java21.net:13306/project_be11_team3_dev
     username: project_be11_team3
     password: ${PASSWORD}
@@ -29,10 +30,10 @@ spring:
       hibernate.globally_quoted_identifiers: true
 
   rabbitmq:
-    host: localhost
+    host: s4.java21.net
     port: 5672
     username: admin
-    password: 1234
+    password: nhnacademy123!
   data:
     redis:
       host: localhost
@@ -41,6 +42,7 @@ spring:
 logging:
   level:
     root: INFO
+    org.apache.commons.dbcp2: DEBUG
     store.bookscamp.api: DEBUG
     org.springframework.web.reactive.function.client: DEBUG
     reactor.netty.http.client: DEBUG

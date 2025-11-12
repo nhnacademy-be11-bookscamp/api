@@ -186,15 +186,14 @@ public class BookService {
         for(BookImage bookImage : bookImageList){
             imageUrlList.add(bookImage.getImageUrl());
         }
-
         return BookDetailDto.from(book, categoryList, tagList, imageUrlList);
     }
 
-    public List<BookIndexDto> getAllBooks() {
+    public List<BookIndexDto> getRecommendBooks() {
 
-        List<Book> allBooksList = bookRepository.findAll();
+        List<Book> recommendBooks = bookRepository.getRecommendBooks();
 
-        return allBooksList.stream().map(book -> {
+        return recommendBooks.stream().map(book -> {
 
             String thumbnailUrl = bookImageRepository.findByBook(book).stream()
                     .filter(BookImage::isThumbnail)
