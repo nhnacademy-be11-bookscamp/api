@@ -3,9 +3,7 @@ package store.bookscamp.api.couponissue.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +19,6 @@ import store.bookscamp.api.couponissue.controller.request.CouponIssueRequest;
 import store.bookscamp.api.couponissue.controller.response.CouponIssueDownloadResponse;
 import store.bookscamp.api.couponissue.controller.response.CouponIssueResponse;
 import store.bookscamp.api.couponissue.controller.status.CouponFilterStatus;
-import store.bookscamp.api.couponissue.controller.status.CouponIssueStatus;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.service.CouponIssueService;
 
