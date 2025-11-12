@@ -60,8 +60,12 @@ public class BookController {
     @PostMapping(value = "/admin/aladin/books", produces = "application/json")
     @Operation(summary = "create aladin book", description = "알라딘도서등록 API")
     @RequiredRole("ADMIN")
-    public ResponseEntity<String> aladinCreateBook(@RequestBody @Valid AladinCreateRequest req) {
+    public ResponseEntity<String> aladinCreateBook(
+            @RequestBody @Valid AladinCreateRequest req,
+            @RequestParam List<String> imgUrls
+    ) {
 
+        req.setImageUrls(imgUrls);
         bookService.createBook(BookCreateDto.from(req));
 
         return ResponseEntity.ok().body("{\"message\":\"알라딘 도서 등록이 완료되었습니다.\"}");

@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-@Document(indexName = "bookscamp", createIndex = false)
+@Document(indexName = "#{@environment.getProperty('elasticsearch.index.name')}", createIndex = false)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
