@@ -14,6 +14,8 @@ import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.bookscamp.api.common.entity.BaseEntity;
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
 
 @Entity
 @Getter
@@ -142,5 +144,16 @@ public class Book extends BaseEntity {
 
     public void setStatus(BookStatus status) {
         this.status = status;
+    }
+
+    public void decreaseStock(int quantity) {
+        if (this.stock < quantity) {
+            throw new ApplicationException(ErrorCode.INSUFFICIENT_STOCK);
+        }
+        this.stock -= quantity;
+    }
+
+    public void increaseStock(int quantity) {
+        this.stock += quantity;
     }
 }
