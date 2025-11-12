@@ -30,9 +30,9 @@ public class NonMember {
     private OrderInfo orderInfo;
 
     @Column(name = "password", nullable = false)
-    private Integer password; // 암호화된 비밀번호
+    private String password; // 주문 조회용 비밀번호
 
-    public NonMember(OrderInfo orderInfo, Integer password) {
+    public NonMember(OrderInfo orderInfo, String password) {
         this.orderInfo = orderInfo;
         this.password = password;
     }
