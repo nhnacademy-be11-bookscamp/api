@@ -44,13 +44,9 @@ public class PointHistoryService {
         Member member = getMember(dto.memberId());
         OrderInfo orderInfo = getOrderInfo(dto.orderId());
 
-        if (member.getPoint() < dto.pointAmount()) {
-            throw new ApplicationException(ErrorCode.POINT_NOT_ENOUGH);
-        }
-
         member.usePoint(dto.pointAmount());
-        PointHistory history = PointHistory.use(orderInfo, member, dto.pointAmount());
 
+        PointHistory history = PointHistory.use(orderInfo, member, dto.pointAmount());
         pointHistoryRepository.save(history);
     }
 
