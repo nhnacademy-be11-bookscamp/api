@@ -115,9 +115,9 @@ public class BookController {
         return ResponseEntity.ok(from);
     }
 
-    @GetMapping("/books/allBooks")
-    public ResponseEntity<List<BookIndexResponse>> getAllBooks(){
-        List<BookIndexDto> allBooks = bookService.getAllBooks();
+    @GetMapping("/books/indexBooks")
+    public ResponseEntity<List<BookIndexResponse>> getRecommendBooks(){
+        List<BookIndexDto> allBooks = bookService.getRecommendBooks();
         List<BookIndexResponse> allBooksResponse = allBooks.stream()
                 .map(BookIndexResponse::from)
                 .toList();
