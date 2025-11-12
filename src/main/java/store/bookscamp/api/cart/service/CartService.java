@@ -3,6 +3,7 @@ package store.bookscamp.api.cart.service;
 import static store.bookscamp.api.common.exception.ErrorCode.BOOK_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_ITEM_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_NOT_FOUND;
+import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,15 @@ import store.bookscamp.api.cart.repository.CartRepository;
 import store.bookscamp.api.cart.service.dto.CartItemAddDto;
 import store.bookscamp.api.cart.service.dto.CartItemDto;
 import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.member.entity.Member;
+import store.bookscamp.api.member.repository.MemberRepository;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CartService {
 
+    private final MemberRepository memberRepository;
     private final CartItemRepository cartItemRepository;
     private final BookRepository bookRepository;
     private final CartRepository cartRepository;
@@ -74,5 +78,20 @@ public class CartService {
                 .map((it) -> new CartItemDto(
                         Long.parseLong(it.getKey().toString()), Integer.parseInt(it.getValue().toString())))
                 .toList();
+    }
+
+    @Transactional
+    public Long createOrGetCart(Long memberId) {
+        if (memberId == null) {
+                return cartRepository.save(new Cart(null)).getId();
+        }
+
+        return cartRepository.findByMemberId(memberId)
+                .orElseGet(() -> {
+                    log.info("새 카트 생성. memberId = {}", memberId);
+                    Member member = memberRepository.findById(memberId)
+                            .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
+                    return cartRepository.save(new Cart(member));
+                }).getId();
     }
 }

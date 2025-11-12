@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import store.bookscamp.api.cart.session.CartSessionService;
+import store.bookscamp.api.cart.cookie.CartCookieService;
 import store.bookscamp.api.pointpolicy.controller.request.PointPolicyCreateRequest;
 import store.bookscamp.api.pointpolicy.controller.response.PointPolicyUpdateRequest;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
@@ -45,7 +45,7 @@ class PointPolicyControllerTest {
     private PointPolicyService pointPolicyService;
 
     @MockitoBean
-    private CartSessionService cartSessionService;
+    private CartCookieService cartCookieService;
 
     @Test
     @DisplayName("포인트 정책 생성 성공")
