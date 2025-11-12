@@ -78,5 +78,13 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
             default -> book.id.asc();
         };
     }
+
+    public List<Book> getRecommendBooks() {
+        return queryFactory
+                .selectFrom(book)
+                .orderBy(book.viewCount.desc())
+                .limit(12)
+                .fetch();
+    }
 }
 
