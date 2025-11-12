@@ -2,12 +2,12 @@ package store.bookscamp.api.common.config.diagnostics;
 
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-@Profile("dev")
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataSourceInspector implements CommandLineRunner {
@@ -16,23 +16,25 @@ public class DataSourceInspector implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("=== [DataSource 확인] ===");
-        System.out.println("DataSource 타입: " + dataSource.getClass().getName());
+        log.info("======== [DataSource 확인] ========");
+        log.info("DataSource 타입: {}", dataSource.getClass().getName());
 
         if (dataSource instanceof BasicDataSource ds) {
-            System.out.printf("""
-                            initialSize = %d
-                            maxTotal = %d
-                            minIdle = %d
-                            maxIdle = %d
-                            maxWaitMillis = %d
-                            validationQuery = %s
-                            testOnBorrow = %s
-                            testWhileIdle = %s
-                            timeBetweenEviction(ms) = %d
-                            minEvictableIdle(ms) = %d
-                            removeAbandonedOnBorrow = %s
-                            removeAbandonedTimeout = %d
+            log.info("""
+                            
+                            =========== DBCP 설정 정보 ===========
+                            initialSize = {}
+                            maxTotal = {}
+                            minIdle = {}
+                            maxIdle = {}
+                            maxWaitMillis = {}
+                            validationQuery = {}
+                            testOnBorrow = {}
+                            testWhileIdle = {}
+                            timeBetweenEviction(ms) = {}
+                            minEvictableIdle(ms) = {}
+                            removeAbandonedOnBorrow = {}
+                            removeAbandonedTimeout = {}
                             """,
                     ds.getInitialSize(),
                     ds.getMaxTotal(),
@@ -48,6 +50,5 @@ public class DataSourceInspector implements CommandLineRunner {
                     ds.getRemoveAbandonedTimeout()
             );
         }
-        System.out.println("=========================================");
     }
 }

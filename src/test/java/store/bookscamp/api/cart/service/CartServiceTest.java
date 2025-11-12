@@ -59,6 +59,7 @@ class CartServiceTest {
                 "member@naver.com",
                 "01012345678",
                 0,
+                null,
                 NORMAL,
                 LocalDate.now(),
                 "member",

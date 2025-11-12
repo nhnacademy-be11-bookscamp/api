@@ -10,4 +10,6 @@ import store.bookscamp.api.book.entity.Book;
 public interface BookRepositoryCustom {
 
     Page<Book> getBooks(List<Long> categoryIds, String sortType, Pageable pageable);
+
+    List<Book> getRecommendBooks();
 }

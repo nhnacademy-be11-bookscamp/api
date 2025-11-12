@@ -55,6 +55,7 @@ class CartItemRepositoryTest {
                 "test@naver.com",
                 "01012345678",
                 0,
+                null,
                 MemberStatus.NORMAL,
                 LocalDate.now(),
                 "member",

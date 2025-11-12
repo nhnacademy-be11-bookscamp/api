@@ -32,21 +32,40 @@ public class Delivery {
     private LocalDate desiredDeliveryDate;
 
     @Column(nullable = false)
-    private String deliveryAddress;
+    private String recipientName;
 
     @Column(nullable = false)
-    private String recipientName;
+    private String recipientPhone;
+
+    @Column(nullable = false)
+    private Integer zipCode;
+
+    @Column(nullable = false)
+    private String roadNameAddress;
+
+    @Column(nullable = false)
+    private String detailAddress;
+
+    private String deliveryMemo;
 
     public Delivery(DeliveryPolicy deliveryPolicy,
                     LocalDate shippingDate,
                     LocalDate desiredDeliveryDate,
-                    String deliveryAddress,
-                    String recipientName
+                    String recipientName,
+                    String recipientPhone,
+                    Integer zipCode,
+                    String roadNameAddress,
+                    String detailAddress,
+                    String deliveryMemo
     ) {
         this.deliveryPolicy = deliveryPolicy;
         this.shippingDate = shippingDate;
         this.desiredDeliveryDate = desiredDeliveryDate;
-        this.deliveryAddress = deliveryAddress;
         this.recipientName = recipientName;
+        this.recipientPhone = recipientPhone;
+        this.zipCode = zipCode;
+        this.roadNameAddress = roadNameAddress;
+        this.detailAddress = detailAddress;
+        this.deliveryMemo = deliveryMemo;
     }
 }
