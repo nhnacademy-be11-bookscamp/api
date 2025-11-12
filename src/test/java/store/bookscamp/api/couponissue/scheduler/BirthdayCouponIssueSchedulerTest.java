@@ -54,7 +54,8 @@ class BirthdayCouponIssueSchedulerTest {
                 10000,
                 50000,
                 10000,
-                30
+                30,
+                "테스트 쿠폰"
         ));
 
         int thisMonth = LocalDate.now().getMonthValue();
