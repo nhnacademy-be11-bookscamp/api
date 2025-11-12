@@ -37,7 +37,7 @@ public class BookSearchService {
             qb.withQuery(q -> q.matchAll(m -> m));
         }
 
-        applySort(qb, request.sortType());
+       // applySort(qb, request.sortType());
 
         qb.withPageable(request.pageable());
         Query query = qb.build();
@@ -75,6 +75,7 @@ public class BookSearchService {
             documents = reordered;
 
         }
+        documents = applySortAfterRerank(documents, request.sortType());
 
         return new PageImpl<>(documents.stream().map(BookSortDto::fromDocument).toList(), request.pageable(),
                 hits.getTotalHits());
@@ -93,6 +94,30 @@ public class BookSearchService {
             case "review" -> qb.withSort(Sort.by(Sort.Order.desc("reviewCount")));
             default -> qb.withSort(Sort.by(Sort.Order.desc("_score")));
         }
+    }
+
+    private List<BookDocument> applySortAfterRerank(List<BookDocument> docs, String sortType) {
+        return switch (sortType) {
+            case "bookLike" -> docs.stream()
+                    .sorted(Comparator.comparingLong(BookDocument::getViewCount).reversed())
+                    .toList();
+            case "publishDate" -> docs.stream()
+                    .sorted(Comparator.comparing(BookDocument::getPublishDate).reversed())
+                    .toList();
+            case "low-price" -> docs.stream()
+                    .sorted(Comparator.comparingInt(BookDocument::getSalePrice))
+                    .toList();
+            case "high-price" -> docs.stream()
+                    .sorted(Comparator.comparingInt(BookDocument::getSalePrice).reversed())
+                    .toList();
+            case "rating" -> docs.stream()
+                    .sorted(Comparator.comparingDouble(BookDocument::getAverageRating).reversed())
+                    .toList();
+            case "review" -> docs.stream()
+                    .sorted(Comparator.comparingLong(BookDocument::getReviewCount).reversed())
+                    .toList();
+            default -> docs; // 기본은 rerank 결과 그대로 사용
+        };
     }
 }
 
