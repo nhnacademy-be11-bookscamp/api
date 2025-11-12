@@ -26,6 +26,8 @@ public enum ErrorCode {
     ADDRESS_LIMIT_EXCEEDED(BAD_REQUEST, "주소는 최대 10개까지 등록할 수 있습니다."),
 
     BOOK_NOT_FOUND(NOT_FOUND, "도서를 찾을 수 없습니다."),
+    INSUFFICIENT_STOCK(BAD_REQUEST, "재고가 부족합니다."),
+    BOOK_NOT_AVAILABLE(BAD_REQUEST, "현재 판매 불가능한 도서입니다."),
 
     CATEGORY_NOT_FOUND(NOT_FOUND, "카테고리를 찾을 수 없습니다."),
     INVALID_PARENT_CATEGORY_ID(BAD_REQUEST,"유효하지 않은 부모 카테고리 ID입니다."),
@@ -43,9 +45,15 @@ public enum ErrorCode {
 
     POINT_POLICY_NOT_FOUND(NOT_FOUND, "포인트 정책을 찾을 수 없습니다."),
 
-    COUPON_NOT_FOUND(NOT_FOUND, "쿠폰을 찾을 수 없습니다."),
+    INSUFFICIENT_POINT(BAD_REQUEST, "포인트가 부족합니다."),
 
+    RANK_NOT_FOUND(NOT_FOUND, "등급을 찾을 수 없습니다."),
+
+    COUPON_NOT_FOUND(NOT_FOUND, "쿠폰을 찾을 수 없습니다."),
+    COUPON_ISSUE_NOT_FOUND(NOT_FOUND, "발급된 쿠폰을 찾을 수 없습니다."),
     COUPON_ISSUE_ALREADY_EXIST(CONFLICT, "이미 발급된 쿠폰이 존재합니다."),
+    COUPON_ALREADY_USED(BAD_REQUEST, "이미 사용된 쿠폰입니다."),
+    COUPON_EXPIRED(BAD_REQUEST, "만료된 쿠폰입니다."),
 
     PACKAGING_NOT_FOUND(NOT_FOUND, "포장지를 찾을 수 없습니다."),
     PACKAGING_DUPLICATE_RESOURCE(CONFLICT, "이미 존재하는 포장지입니다."),
@@ -56,9 +64,15 @@ public enum ErrorCode {
     UNAUTHORIZED_USER(UNAUTHORIZED,"권한이 없습니다."),
     FORBIDDEN_USER(FORBIDDEN,"잘못된 권한입니다."),
 
-    ORDER_NOT_FOUND(NOT_FOUND, "주문을 찾을 수 없습니다."),
+    DELIVERY_POLICY_NOT_FOUND(NOT_FOUND, "배송 정책이 설정되지 않았습니다."),
 
-    POINT_NOT_ENOUGH(BAD_REQUEST, "사용 가능한 포인트가 부족합니다.")
+    NON_MEMBER_INFO_REQUIRED(BAD_REQUEST, "비회원 주문 정보는 필수입니다."),
+    COUPON_NOT_ALLOWED_FOR_NON_MEMBER(BAD_REQUEST, "비회원은 쿠폰을 사용할 수 없습니다."),
+    POINT_NOT_ALLOWED_FOR_NON_MEMBER(BAD_REQUEST, "비회원은 포인트를 사용할 수 없습니다."),
+
+    CART_ITEM_NOT_COMPLETE(BAD_REQUEST, "일부 장바구니 아이템을 찾을 수 없습니다."),
+
+    ORDER_NOT_FOUND(NOT_FOUND, "주문을 찾을 수 없습니다.")
     ;
 
 
