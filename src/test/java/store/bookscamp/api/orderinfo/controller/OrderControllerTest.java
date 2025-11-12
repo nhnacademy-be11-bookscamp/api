@@ -65,7 +65,8 @@ class OrderControllerTest {
                     "http://image.url",
                     18000,
                     2,
-                    36000
+                    36000,
+                    true
             );
             PriceDto priceDto = new PriceDto(36000, 3000, 39000, 30000);
             PackagingDto packaging1 = new PackagingDto(1L, "일반 포장", 500);
@@ -125,7 +126,8 @@ class OrderControllerTest {
                     "http://image.url",
                     18000,
                     1,
-                    18000
+                    18000,
+                    true
             );
             PriceDto priceDto = new PriceDto(18000, 3000, 21000, 30000);
 
