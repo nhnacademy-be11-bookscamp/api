@@ -2,6 +2,8 @@ package store.bookscamp.api.cart.cookie;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static store.bookscamp.api.member.entity.MemberStatus.NORMAL;
+import static store.bookscamp.api.pointpolicy.entity.PointPolicyType.STANDARD;
+import static store.bookscamp.api.pointpolicy.entity.RewardType.RATE;
 
 import jakarta.servlet.http.Cookie;
 import java.time.LocalDate;
@@ -20,6 +22,8 @@ import store.bookscamp.api.cart.entity.Cart;
 import store.bookscamp.api.cart.repository.CartRepository;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.repository.MemberRepository;
+import store.bookscamp.api.pointpolicy.entity.PointPolicy;
+import store.bookscamp.api.rank.entity.Rank;
 
 @Disabled
 @SpringBootTest
@@ -97,6 +101,7 @@ class CartCookieServiceTest {
                 "member@naver.com",
                 "01012345678",
                 0,
+                new Rank(new PointPolicy(STANDARD, RATE, 3), "랭크", 0, 0),
                 NORMAL,
                 LocalDate.now(),
                 "member",

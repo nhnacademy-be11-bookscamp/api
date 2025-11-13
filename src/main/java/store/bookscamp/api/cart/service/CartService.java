@@ -1,11 +1,14 @@
 package store.bookscamp.api.cart.service;
 
+import static java.lang.Boolean.FALSE;
 import static store.bookscamp.api.common.exception.ErrorCode.BOOK_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_ITEM_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,6 +18,7 @@ import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.cart.entity.Cart;
 import store.bookscamp.api.cart.entity.CartItem;
+import store.bookscamp.api.cart.query.CartItemSearchQuery;
 import store.bookscamp.api.cart.repository.CartItemRepository;
 import store.bookscamp.api.cart.repository.CartRepository;
 import store.bookscamp.api.cart.service.dto.CartItemAddDto;
@@ -28,14 +32,15 @@ import store.bookscamp.api.member.repository.MemberRepository;
 @RequiredArgsConstructor
 public class CartService {
 
-    private final MemberRepository memberRepository;
     private final CartItemRepository cartItemRepository;
     private final BookRepository bookRepository;
     private final CartRepository cartRepository;
+    private final MemberRepository memberRepository;
 
     private static final String CART_PREFIX = "cart:";
     private final RedisTemplate<String, Object> redisTemplate;
 
+    private final CartItemSearchQuery cartItemSearchQuery;
     private final CartAsyncService cartAsyncService;
 
     @Transactional
@@ -46,18 +51,18 @@ public class CartService {
                 .orElseThrow(() -> new ApplicationException(BOOK_NOT_FOUND));
         CartItem cartItem = new CartItem(cart, book, dto.quantity());
         Long cartItemId = cartItemRepository.save(cartItem).getId();
-        redisTemplate.opsForHash().putIfAbsent(CART_PREFIX + cart.getId(), cartItemId, cartItem.getQuantity());
+        redisTemplate.opsForHash().put(CART_PREFIX + cart.getId(), cartItemId.toString(), cartItem.getQuantity());
 
         return cartItemId;
     }
 
     public void updateCart(Long cartId, Long cartItemId, Integer quantity) {
-        redisTemplate.opsForHash().put(CART_PREFIX + cartId, cartItemId, quantity);
+        redisTemplate.opsForHash().put(CART_PREFIX + cartId, cartItemId.toString(), quantity);
         cartAsyncService.updateCartAsync(cartItemId, quantity);
     }
 
     public void deleteCartItem(Long cartId, Long cartItemId) {
-        Long result = redisTemplate.opsForHash().delete(CART_PREFIX + cartId, cartItemId);
+        Long result = redisTemplate.opsForHash().delete(CART_PREFIX + cartId, cartItemId.toString());
         if (result == 0) {
             throw new ApplicationException(CART_ITEM_NOT_FOUND);
         }
@@ -72,18 +77,37 @@ public class CartService {
         cartAsyncService.clearCartAsync(cartId);
     }
 
+    @Transactional(readOnly = true)
     public List<CartItemDto> getCartItems(Long cartId) {
-        return redisTemplate.opsForHash().entries(CART_PREFIX + cartId)
-                .entrySet().stream()
-                .map((it) -> new CartItemDto(
-                        Long.parseLong(it.getKey().toString()), Integer.parseInt(it.getValue().toString())))
+        String key = CART_PREFIX + cartId;
+        if (FALSE.equals(redisTemplate.hasKey(key)) || cartItemRepository.countCartItemByCartId(cartId) != redisTemplate.opsForHash().size(key)) {
+            return fallback(cartId);
+        }
+        return redisTemplate.opsForHash().entries(key)
+                .keySet().stream()
+                .map(k -> cartItemSearchQuery.searchCartItemById(Long.parseLong(k.toString())))
                 .toList();
+    }
+
+    private List<CartItemDto> fallback(Long cartId) {
+        String key = CART_PREFIX + cartId;
+
+        List<CartItemDto> dtos = cartItemSearchQuery.searchCartItemsByCartId(cartId);
+
+        Map<String, Integer> map = new HashMap<>();
+        for (CartItemDto dto : dtos) {
+            map.put(dto.getCartItemId().toString(), dto.getQuantity());
+        }
+        redisTemplate.delete(key);
+        redisTemplate.opsForHash().putAll(key, map);
+
+        return dtos;
     }
 
     @Transactional
     public Long createOrGetCart(Long memberId) {
         if (memberId == null) {
-                return cartRepository.save(new Cart(null)).getId();
+            return cartRepository.save(new Cart(null)).getId();
         }
 
         return cartRepository.findByMemberId(memberId)
