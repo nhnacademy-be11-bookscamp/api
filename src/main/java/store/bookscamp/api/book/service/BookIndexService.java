@@ -6,11 +6,17 @@ import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import store.bookscamp.api.book.entity.Book;
@@ -49,7 +55,6 @@ public class BookIndexService {
                 if (deleteResp.acknowledged()) {
                     log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
                 }
-               /* log.info("[BookIndexService] index '{}' already exists ✅", INDEX_NAME);
                 return; // ✅ 반드시 리턴*/
             }//이미 존재하는 인덱스 삭제
             
@@ -78,14 +83,34 @@ public class BookIndexService {
             esClient.bulk(b -> {
                 b.index(INDEX_NAME);
                 for (BookProjection row : rows) {
+                    // 1️⃣ Projection → Document 변환
                     BookDocument doc = projectionToDoc(row);
+                    // 2️⃣ 임베딩 생성
+                    String combinedText = String.join(" ",
+                            doc.getTitle() != null ? doc.getTitle() : "",
+                            doc.getExplanation() != null ? doc.getExplanation() : "",
+                            doc.getCategory() != null ? doc.getCategory() : ""
+                    );
+                    float[] embedding = generateEmbedding(combinedText);
+                    doc.setBookVector(embedding);
+
+                    // 3️⃣ JSON 변환
                     Map<String, Object> jsonDoc = convertDocumentToMap(doc);
-                    b.operations(op -> op.index(idx -> idx.document(jsonDoc)));
+                    jsonDoc.put("book_vector", embedding); // ✅ 벡터 추가
+
+                    // 4️⃣ 인덱스 연산 추가
+                    b.operations(op -> op
+                            .index(idx -> idx
+                                    .index(INDEX_NAME)
+                                    .id(String.valueOf(doc.getId()))
+                                    .document(jsonDoc)
+                            )
+                    );
                 }
                 return b;
             });
 
-            
+            log.info("[BookIndexService] ✅ Indexed {} books into {}", rows.size(), INDEX_NAME);
         } catch (Exception e) {
             log.error("[BookIndexService] index init failed", e);
         }
@@ -181,6 +206,34 @@ public class BookIndexService {
         map.put("reviewCount", doc.getReviewCount());
         return map;
     }
+
+    private float[] generateEmbedding(String text) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://ollama.java21.net/api/embeddings"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("""
+                    { "model": "bge-m3", "prompt": "%s" }
+                """.formatted(text)))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            JSONObject json = new JSONObject(response.body());
+            JSONArray embeddingArray = json.getJSONArray("embedding");
+
+            float[] vector = new float[embeddingArray.length()];
+            for (int i = 0; i < embeddingArray.length(); i++) {
+                vector[i] = (float) embeddingArray.getDouble(i);
+            }
+            return vector;
+        } catch (Exception e) {
+            log.error("embedding generation failed", e);
+            return new float[1024]; // fallback vector
+        }
+    }
+
 }
 
 
