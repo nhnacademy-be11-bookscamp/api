@@ -3,11 +3,19 @@ spring:
     name: api-server
   profiles:
     active: prod
-
+  elasticsearch:
+    uris: http://s4.java21.net:9200
+    username: elastic
+    password: nhnacademy123!
+    ssl:
+      verification-mode: none
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+  session:
+    redis:
+      flush-mode: on_save
 
   cache:
     type: redis
@@ -25,6 +33,23 @@ spring:
           initial-interval: 1000
           multiplier: 2.0
           max-interval: 10000
+
+  datasource:
+    type: org.apache.commons.dbcp2.BasicDataSource
+    dbcp2:
+      initial-size: 5
+      max-total: 30
+      min-idle: 5
+      max-idle: 15
+      max-wait: 10000
+      validation-query: SELECT 1
+      test-on-borrow: true
+      test-while-idle: true
+      time-between-eviction-runs: 5000
+      min-evictable-idle-time: 60000
+      remove-abandoned-on-borrow: true
+      remove-abandoned-timeout: 60
+
 
 aladin:
   base-url: https://www.aladin.co.kr/ttb/api
@@ -49,8 +74,4 @@ springdoc:
     disabled: true
   model-and-view-allowed: true
 
-logging:
-  level:
-    org.springframework.web.reactive.function.client: DEBUG
-    reactor.netty.http.client: DEBUG
 

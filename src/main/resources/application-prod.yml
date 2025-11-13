@@ -8,6 +8,33 @@ eureka:
 
 spring:
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://s4.java21.net:13306/project_be11_team3
     username: project_be11_team3
     password: ${PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  data:
+    redis:
+      host: s4.java21.net
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      database: 331
+  rabbitmq:
+    host: s4.java21.net
+    port: 5672
+    username: admin
+    password: ${RABBITMQ_PASSWORD}
+
+logging:
+  level:
+    root: INFO
+    org.apache.commons.dbcp2: DEBUG
+    store.bookscamp.api: INFO
+    org.springframework.web.reactive.function.client: WARN
+    reactor.netty.http.client: WARN
+
+elasticsearch:
+  index:
+    name: bookscamp-prod

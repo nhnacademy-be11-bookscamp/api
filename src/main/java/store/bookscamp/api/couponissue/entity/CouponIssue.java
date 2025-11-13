@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import store.bookscamp.api.common.entity.SoftDeleteEntity;
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.member.entity.Member;
 
@@ -43,10 +45,31 @@ public class CouponIssue extends SoftDeleteEntity {
 
     public CouponIssue(Coupon coupon,
                        Member member,
+                       LocalDateTime expiredAt,
+                       LocalDateTime usedAt
+    ) {
+        this.coupon = coupon;
+        this.member = member;
+        this.expiredAt = expiredAt;
+        this.usedAt = usedAt;
+    }
+
+    public CouponIssue(Coupon coupon,
+                       Member member,
                        LocalDateTime expiredAt
     ) {
         this.coupon = coupon;
         this.member = member;
         this.expiredAt = expiredAt;
+    }
+
+    public void use() {
+        if (this.usedAt != null) {
+            throw new ApplicationException(ErrorCode.COUPON_ALREADY_USED);
+        }
+        if (this.expiredAt != null && LocalDateTime.now().isAfter(this.expiredAt)) {
+            throw new ApplicationException(ErrorCode.COUPON_EXPIRED);
+        }
+        this.usedAt = LocalDateTime.now();
     }
 }

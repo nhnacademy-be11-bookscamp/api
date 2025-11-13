@@ -12,6 +12,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import store.bookscamp.api.common.config.properties.RabbitmqProperties;
 
 @Configuration
 @RequiredArgsConstructor
@@ -19,9 +20,9 @@ public class RabbitmqConfig {
 
     private final RabbitmqProperties rabbitmqProperties;
 
-    public static final String SIGNUP_EXCHANGE = "member.signup.exchange";
-    public static final String SIGNUP_QUEUE = "member.signup.queue";
-    public static final String SIGNUP_KEY = "member.signup.key";
+    public static final String SIGNUP_EXCHANGE = "dev-member.signup.exchange";
+    public static final String SIGNUP_QUEUE = "dev-member.signup.queue";
+    public static final String SIGNUP_KEY = "dev-member.signup.key";
 
     @Bean
     public TopicExchange signupTopicExchange() {

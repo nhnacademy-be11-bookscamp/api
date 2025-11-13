@@ -45,13 +45,17 @@ public class Coupon extends SoftDeleteEntity {
 
     private Integer validDays; // 쿠폰 유효 기간
 
+    @Column(nullable = false)
+    private String name;
+
     public Coupon(TargetType targetType,
                   Long targetId,
                   DiscountType discountType,
                   int discountValue,
                   int minOrderAmount,
                   Integer maxDiscountAmount,
-                  Integer validDays
+                  Integer validDays,
+                  String name
     ) {
         this.targetType = targetType;
         this.targetId = targetId;
@@ -60,5 +64,6 @@ public class Coupon extends SoftDeleteEntity {
         this.minOrderAmount = minOrderAmount;
         this.maxDiscountAmount = maxDiscountAmount;
         this.validDays = validDays;
+        this.name = name;
     }
 }

@@ -1,6 +1,7 @@
 package store.bookscamp.api.category.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,39 +26,20 @@ import store.bookscamp.api.common.exception.ErrorCode;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryQueryService categoryQueryService;
 
     @Cacheable("categories")
     public List<CategoryListDto> getCategoryTree() {
+        return categoryQueryService.getCategoryTree();
+    }
 
-        List<Category> allCategories = categoryRepository.findAll();
-
-        Map<Long, CategoryListDto> dtoMap = allCategories.stream()
-                .map(category -> new CategoryListDto(category.getId(), category.getName()))
-                .collect(Collectors.toMap(CategoryListDto::id, dto -> dto));
-
-        List<CategoryListDto> rootCategories = new ArrayList<>();
-
-        for (Category category : allCategories) {
-
-            CategoryListDto currentDto = dtoMap.get(category.getId());
-
-            if (category.getParent() == null) {
-                rootCategories.add(currentDto);
-            } else {
-
-                CategoryListDto parentDto = dtoMap.get(category.getParent().getId());
-
-                if (parentDto != null) {
-                    parentDto.children().add(currentDto);
-                }
-            }
-        }
-
-        return rootCategories;
+    @Cacheable("categoryChildMap")
+    public Map<Long, List<Long>> getCategoryChildMap() {
+        return categoryQueryService.getCategoryChildMap();
     }
 
     @Transactional
-    @CacheEvict(value = "categories", allEntries = true)
+    @CacheEvict(value = {"categories", "categoryChildMap"}, allEntries = true)
     public void createCategory(CategoryCreateDto dto) {
 
         Category parentCategory = null;
@@ -77,7 +59,7 @@ public class CategoryService {
     }
 
     @Transactional
-    @CacheEvict(value = "categories", allEntries = true)
+    @CacheEvict(value = {"categories", "categoryChildMap"}, allEntries = true)
     public void updateCategory(CategoryUpdateDto dto) {
 
         Category category = categoryRepository.findById(dto.id())
@@ -96,7 +78,7 @@ public class CategoryService {
     }
 
     @Transactional
-    @CacheEvict(value = "categories", allEntries = true)
+    @CacheEvict(value = {"categories", "categoryChildMap"}, allEntries = true)
     public void deleteCategory(CategoryDeleteDto dto){
         if (!categoryRepository.existsById(dto.id())) {
             throw new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND);
@@ -106,6 +88,35 @@ public class CategoryService {
             categoryRepository.deleteById(dto.id());
         } catch (DataIntegrityViolationException e) {
             throw new ApplicationException(ErrorCode.CATEGORY_IN_USE);
+        }
+    }
+
+    public List<Long> getDescendantIdsIncludingSelf(Long categoryId) {
+
+        // 1. 캐시된 <부모, 자식 ID 목록> 맵을 가져옵니다. (매우 빠름)
+        Map<Long, List<Long>> childMap = getCategoryChildMap();
+
+        List<Long> descendantIds = new ArrayList<>();
+
+        // 2. 재귀 헬퍼 메서드 호출
+        collectDescendantIds(categoryId, descendantIds, childMap);
+
+        return descendantIds;
+    }
+
+    private void collectDescendantIds(Long currentId, List<Long> ids, Map<Long, List<Long>> childMap) {
+
+        // 1. 자기 자신을 리스트에 추가
+        ids.add(currentId);
+
+        // 2. 캐시된 맵에서 현재 ID의 직계 자식 목록을 조회
+        List<Long> directChildren = childMap.get(currentId);
+
+        // 3. 자식들이 있으면, 각 자식에 대해 재귀 호출
+        if (directChildren != null) {
+            for (Long childId : directChildren) {
+                collectDescendantIds(childId, ids, childMap);
+            }
         }
     }
 }

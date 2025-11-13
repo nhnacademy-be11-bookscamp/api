@@ -68,7 +68,8 @@ class CouponServiceTest {
                 10,
                 5000,
                 3000,
-                30
+                30,
+                "테스트 코드"
         );
 
         // when
@@ -94,7 +95,8 @@ class CouponServiceTest {
                 2000,
                 10000,
                 null,
-                15
+                15,
+                "테스트 코드"
         );
 
         // when
@@ -118,7 +120,8 @@ class CouponServiceTest {
                 15,
                 5000,
                 3000,
-                10
+                10,
+                "테스트 코드"
         );
 
         // expect
@@ -138,7 +141,8 @@ class CouponServiceTest {
                 1000,
                 5000,
                 null,
-                10
+                10,
+                "테스트 코드"
         );
 
         // expect
@@ -151,8 +155,8 @@ class CouponServiceTest {
     @DisplayName("쿠폰 목록을 조회할 수 있다")
     void listCoupons_success() {
         // given
-        Coupon c1 = new Coupon(BOOK, 1L, RATE, 10, 5000, 3000, 7);
-        Coupon c2 = new Coupon(CATEGORY, 2L, AMOUNT, 2000, 10000, null, 14);
+        Coupon c1 = new Coupon(BOOK, 1L, RATE, 10, 5000, 3000, 7, "테스트 코드");
+        Coupon c2 = new Coupon(CATEGORY, 2L, AMOUNT, 2000, 10000, null, 14, "테스트 코드");
         couponRepository.saveAll(List.of(c1, c2));
 
         // when
@@ -170,7 +174,7 @@ class CouponServiceTest {
     void deleteCoupon_success() {
         // given
         Coupon coupon = couponRepository.save(
-                new Coupon(BOOK, 1L, RATE, 10, 5000, 3000, 7)
+                new Coupon(BOOK, 1L, RATE, 10, 5000, 3000, 7, "테스트 코드")
         );
 
         // when

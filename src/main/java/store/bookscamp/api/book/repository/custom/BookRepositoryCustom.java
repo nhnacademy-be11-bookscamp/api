@@ -9,5 +9,7 @@ import store.bookscamp.api.book.entity.Book;
 @Repository
 public interface BookRepositoryCustom {
 
-    Page<Book> getBooks(List<Long> categoryIds, String keyword, String sortType, Pageable pageable);
+    Page<Book> getBooks(List<Long> categoryIds, String sortType, Pageable pageable);
+
+    List<Book> getRecommendBooks();
 }

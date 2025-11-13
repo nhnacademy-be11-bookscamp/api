@@ -1,5 +1,6 @@
 package store.bookscamp.api.coupon.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import store.bookscamp.api.coupon.service.CouponService;
 @RestController
 @RequestMapping("/coupons")
 @RequiredArgsConstructor
+@Tag(name = "쿠폰 API", description = "Coupon API입니다.")
 public class CouponController {
 
     private final CouponService couponService;

@@ -17,7 +17,7 @@ import store.bookscamp.api.tag.entity.Tag;
 @DataJpaTest
 @EntityScan(basePackages = "store.bookscamp.api.tag.entity")
 @EnableJpaRepositories(basePackages = "store.bookscamp.api.tag.repository")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY) // (선택) H2 강제
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class TagRepositoryTest {
 
     @Autowired

@@ -1,5 +1,6 @@
 package store.bookscamp.api.cart.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import store.bookscamp.api.cart.service.dto.CartItemAddDto;
 @RestController
 @RequestMapping("/carts")
 @RequiredArgsConstructor
+@Tag(name = "장바구니 API", description = "Cart API입니다")
 public class CartController {
 
     private final CartService cartService;

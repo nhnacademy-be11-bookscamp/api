@@ -1,5 +1,6 @@
 package store.bookscamp.api.category.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,9 +21,11 @@ import store.bookscamp.api.category.service.dto.CategoryCreateDto;
 import store.bookscamp.api.category.service.dto.CategoryDeleteDto;
 import store.bookscamp.api.category.service.dto.CategoryListDto;
 import store.bookscamp.api.category.service.dto.CategoryUpdateDto;
+import store.bookscamp.api.common.annotation.RequiredRole;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "카테고리 API", description = "Category API입니다")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -39,6 +42,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryResponseTree);
     }
 
+    @RequiredRole("ADMIN")
     @PostMapping("/admin/category/create")
     public ResponseEntity<Void> createCategory(@RequestBody CategoryCreateRequest request){
 
@@ -48,6 +52,7 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @RequiredRole("ADMIN")
     @PutMapping("/admin/category/update/{id}")
     public ResponseEntity<Void> updateCategory(@PathVariable Long id, @RequestBody CategoryUpdateRequest request) {
 
@@ -57,6 +62,7 @@ public class CategoryController {
         return ResponseEntity.ok().build();
     }
 
+    @RequiredRole("ADMIN")
     @DeleteMapping("/admin/category/delete/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id){
 

@@ -16,6 +16,9 @@ import store.bookscamp.api.member.service.dto.MemberCreateDto;
 import store.bookscamp.api.member.service.dto.MemberGetDto;
 import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
 import store.bookscamp.api.member.service.dto.MemberUpdateDto;
+import store.bookscamp.api.pointpolicy.entity.PointPolicyType;
+import store.bookscamp.api.rank.entity.Rank;
+import store.bookscamp.api.rank.repository.RankRepository;
 
 @Slf4j
 @Service
@@ -24,6 +27,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final MemberEventPublisher memberEventPublisher;
+    private final RankRepository rankRepository;
 
     @Transactional(readOnly = true)
     public MemberGetDto getMember(Long id){
@@ -51,12 +55,16 @@ public class MemberService {
 
     @Transactional
     public void createMember(MemberCreateDto member) {
+        Rank standardRank = rankRepository.findByPointPolicy_PointPolicyType(PointPolicyType.STANDARD)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.RANK_NOT_FOUND));
+
         Member newMember = new Member(
                 member.name(),
                 member.password(),
                 member.email(),
                 member.phone(),
                 0,
+                standardRank,
                 MemberStatus.NORMAL,
                 LocalDate.now(),
                 member.username(),
