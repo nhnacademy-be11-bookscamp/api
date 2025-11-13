@@ -55,7 +55,7 @@ public class BookIndexService {
                 if (deleteResp.acknowledged()) {
                     log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
                 }
-                return; // ✅ 반드시 리턴*/
+                //return; // ✅ 반드시 리턴*/
             }//이미 존재하는 인덱스 삭제
             
             try (Reader r = new InputStreamReader(
