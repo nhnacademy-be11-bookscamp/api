@@ -1,6 +1,7 @@
 package store.bookscamp.api.member.entity;
 
 import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -9,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -16,6 +19,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import store.bookscamp.api.common.entity.SoftDeleteEntity;
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
+import store.bookscamp.api.rank.entity.Rank;
 
 @Entity
 @Getter
@@ -43,6 +49,10 @@ public class Member extends SoftDeleteEntity {
     @Column(nullable = false)
     private int point;
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "rank_id")
+    private Rank rank;
+
     @Enumerated(STRING)
     @Column(nullable = false)
     private MemberStatus status;
@@ -63,6 +73,7 @@ public class Member extends SoftDeleteEntity {
                   String email,
                   String phone,
                   int point,
+                  Rank rank,
                   MemberStatus status,
                   LocalDate statusUpdateDate,
                   String username,
@@ -74,6 +85,7 @@ public class Member extends SoftDeleteEntity {
         this.email = email;
         this.phone = phone;
         this.point = point;
+        this.rank = rank;
         this.status = status;
         this.statusUpdateDate = statusUpdateDate;
         this.username = username;
@@ -88,5 +100,16 @@ public class Member extends SoftDeleteEntity {
 
     public void changePassword(String password){
         this.password = password;
+    }
+
+    public void usePoint(int point) {
+        if (this.point < point) {
+            throw new ApplicationException(ErrorCode.INSUFFICIENT_POINT);
+        }
+        this.point -= point;
+    }
+
+    public void earnPoint(int point) {
+        this.point += point;
     }
 }

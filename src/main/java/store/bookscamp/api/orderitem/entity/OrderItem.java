@@ -40,8 +40,22 @@ public class OrderItem {
     private Integer orderQuantity = 1;
 
     @Column(nullable = false)
-    private int packageQuantity;
+    private Integer bookPrice; // 주문 당시 개별 도서 판매가
 
     @Column(nullable = false)
-    private Integer bookTotalAmount;
+    private Integer bookTotalAmount; // 도서 총액
+
+    public OrderItem(OrderInfo orderInfo,
+                     Packaging packaging,
+                     Book book,
+                     Integer orderQuantity,
+                     Integer bookPrice,
+                     Integer bookTotalAmount) {
+        this.orderInfo = orderInfo;
+        this.packaging = packaging;
+        this.book = book;
+        this.orderQuantity = orderQuantity;
+        this.bookPrice = bookPrice;
+        this.bookTotalAmount = bookTotalAmount;
+    }
 }

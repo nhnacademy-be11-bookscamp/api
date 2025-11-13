@@ -54,7 +54,8 @@ class BirthdayCouponIssueSchedulerTest {
                 10000,
                 50000,
                 10000,
-                30
+                30,
+                "테스트 쿠폰"
         ));
 
         int thisMonth = LocalDate.now().getMonthValue();
@@ -65,6 +66,7 @@ class BirthdayCouponIssueSchedulerTest {
                 "user1@naver.com",
                 "01011111111",
                 0,
+                null,
                 NORMAL,
                 LocalDate.now(),
                 "member1",
@@ -78,6 +80,7 @@ class BirthdayCouponIssueSchedulerTest {
                 "user2@naver.com",
                 "01022222222",
                 0,
+                null,
                 NORMAL,
                 LocalDate.now(),
                 "member2",
@@ -91,6 +94,7 @@ class BirthdayCouponIssueSchedulerTest {
                 "user3@naver.com",
                 "01033333333",
                 0,
+                null,
                 NORMAL,
                 LocalDate.now(),
                 "member3",

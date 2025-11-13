@@ -11,7 +11,8 @@ public record CouponCreateDto(
         int discountValue,
         int minOrderAmount,
         Integer maxDiscountAmount,
-        Integer validDays
+        Integer validDays,
+        String name
 ) {
 
     public Coupon toEntity() {
@@ -22,7 +23,8 @@ public record CouponCreateDto(
                 discountValue,
                 minOrderAmount,
                 maxDiscountAmount,
-                validDays
+                validDays,
+                name
         );
     }
 }
