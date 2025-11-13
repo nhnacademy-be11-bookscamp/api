@@ -48,7 +48,8 @@ class CouponControllerTest {
                 10,
                 5_000,
                 3_000,
-                30
+                30,
+                "테스트 코드"
         );
         when(couponService.createCoupon(ArgumentMatchers.any()))
                 .thenReturn(1L);

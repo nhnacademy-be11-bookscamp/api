@@ -278,7 +278,8 @@ class OrderCreateServiceTest {
                     3000,
                     10000,
                     null,
-                    30
+                    30,
+                    "테스트 쿠폰"
             ));
             CouponIssue couponIssue = couponIssueRepository.save(
                     new CouponIssue(coupon, member, LocalDateTime.now().plusDays(30))
@@ -436,7 +437,8 @@ class OrderCreateServiceTest {
                     3000,
                     10000,
                     null,
-                    30
+                    30,
+                    ""
             ));
 
             OrderItemCreateDto item = new OrderItemCreateDto(book1.getId(), 1, null);
