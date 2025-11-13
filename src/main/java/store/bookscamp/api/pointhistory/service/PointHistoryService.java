@@ -27,9 +27,9 @@ public class PointHistoryService {
 
 
     @Transactional
-    public void earnPoint(PointHistoryEarnDto dto) {
+    public void earnPoint(PointHistoryEarnDto dto, Long memberId) {
 
-        Member member = getMember(dto.memberId());
+        Member member = getMember(memberId);
         OrderInfo orderInfo = getOrderInfoIfPresent(dto.orderId());
 
         member.earnPoint(dto.pointAmount());
@@ -39,9 +39,9 @@ public class PointHistoryService {
     }
 
     @Transactional
-    public void usePoint(PointHistoryUseDto dto) {
+    public void usePoint(PointHistoryUseDto dto, Long memberId) {
 
-        Member member = getMember(dto.memberId());
+        Member member = getMember(memberId);
         OrderInfo orderInfo = getOrderInfo(dto.orderId());
 
         member.usePoint(dto.pointAmount());

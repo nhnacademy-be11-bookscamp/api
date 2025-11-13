@@ -43,7 +43,7 @@ public class SignupEventConsumer {
                             PointType.EARN,
                             rewardValue
             );
-            pointHistoryService.earnPoint(earnDto);
+            pointHistoryService.earnPoint(earnDto, dto.memberId());
             log.info("회원가입 포인트 5000점 적립 완료. memberId = {}", dto.memberId());
         } catch (Exception e) {
             log.error("회원가입 포인트 적립 실패. memberId = {}", dto.memberId(), e);

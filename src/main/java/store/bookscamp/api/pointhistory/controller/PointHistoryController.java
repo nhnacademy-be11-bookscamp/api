@@ -29,18 +29,26 @@ public class PointHistoryController {
     @PostMapping("/point-histories/earn")
     @Operation(summary = "earn Point", description = "포인트 적립 API")
     public ResponseEntity<Void> earnPoint(
-            @RequestBody @Valid PointHistoryEarnRequest request) {
+            @RequestBody @Valid PointHistoryEarnRequest pointRequest,
+            HttpServletRequest request
+    ) {
 
-        pointHistoryService.earnPoint(request.toDto());
+        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+
+        pointHistoryService.earnPoint(pointRequest.toDto(), memberId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/point-histories/use")
     @Operation(summary = "use Point", description = "결제 시 포인트 사용 API")
     public ResponseEntity<Void> usePoint(
-            @RequestBody @Valid PointHistoryUseRequest request) {
+            @RequestBody @Valid PointHistoryUseRequest pointRequest,
+            HttpServletRequest request
+    ) {
 
-        pointHistoryService.usePoint(request.toDto());
+        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+
+        pointHistoryService.usePoint(pointRequest.toDto(), memberId);
         return ResponseEntity.ok().build();
     }
 
