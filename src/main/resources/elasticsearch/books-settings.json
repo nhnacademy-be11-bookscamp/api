@@ -39,6 +39,7 @@
       "explanation": { "type": "text", "analyzer": "korean_analyzer" },
       "content": { "type": "text", "analyzer": "korean_analyzer" },
       "publisher": { "type": "text", "analyzer": "korean_analyzer" },
+      "category": { "type": "text", "analyzer": "korean_analyzer" },
       "isbn": { "type": "keyword" },
       "packable": { "type": "boolean" },
       "regularPrice": { "type": "integer" },

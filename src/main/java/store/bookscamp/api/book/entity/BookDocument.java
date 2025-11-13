@@ -20,6 +20,7 @@ public class BookDocument {
     private String explanation;
     private String content;
     private String publisher;
+    private String category;
 
     @Field(type = FieldType.Date, format = DateFormat.date_optional_time)
     private LocalDate publishDate;
@@ -33,6 +34,7 @@ public class BookDocument {
     private String status;
     private double averageRating; // 평점 정렬용
     private long reviewCount; // 리뷰 정렬용
-    //private String tags;
-    //private String reviews;
+
+
+    private float[] bookVector;
 }
