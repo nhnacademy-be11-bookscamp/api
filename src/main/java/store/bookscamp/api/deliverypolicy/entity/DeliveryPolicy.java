@@ -9,6 +9,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import store.bookscamp.api.common.entity.SoftDeleteEntity;
 
 @Entity
 @Getter
@@ -29,10 +32,12 @@ public class DeliveryPolicy {
         this.baseDeliveryFee = baseDeliveryFee;
     }
 
-    // DeliveryPolicy.java
-    public void update(int freeDeliveryThreshold, int baseDeliveryFee) {
-        this.freeDeliveryThreshold = freeDeliveryThreshold;
-        this.baseDeliveryFee = baseDeliveryFee;
+    public void update(Integer freeDeliveryThreshold, Integer baseDeliveryFee) {
+        if (freeDeliveryThreshold != null) {
+            this.freeDeliveryThreshold = freeDeliveryThreshold;
+        }
+        if (baseDeliveryFee != null) {
+            this.baseDeliveryFee = baseDeliveryFee;
+        }
     }
-
 }
