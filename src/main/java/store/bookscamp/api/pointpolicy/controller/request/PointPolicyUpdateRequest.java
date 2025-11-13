@@ -1,4 +1,4 @@
-package store.bookscamp.api.pointpolicy.controller.response;
+package store.bookscamp.api.pointpolicy.controller.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
