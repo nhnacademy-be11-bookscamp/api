@@ -19,24 +19,26 @@ public record BookSortResponse(
         String isbn,
         double averageRating,
         long reviewCount,
+        String aiRecommand,
         String thumbnailUrl
 ) {
 
     public static BookSortResponse from(BookSortDto bookSortDto, String thumbnailUrl) {
         return new BookSortResponse(
-                bookSortDto.id(),
-                bookSortDto.title(),
-                bookSortDto.publisher(),
-                bookSortDto.publishDate(),
-                bookSortDto.contributors(),
-                bookSortDto.packable(),
-                bookSortDto.regularPrice(),
-                bookSortDto.salePrice(),
-                bookSortDto.stock(),
-                bookSortDto.viewCount(),
-                bookSortDto.isbn(),
-                bookSortDto.averageRating(),
-                bookSortDto.reviewCount(),
+                bookSortDto.getId(),
+                bookSortDto.getTitle(),
+                bookSortDto.getPublisher(),
+                bookSortDto.getPublishDate(),
+                bookSortDto.getContributors(),
+                bookSortDto.isPackable(),
+                bookSortDto.getRegularPrice(),
+                bookSortDto.getSalePrice(),
+                bookSortDto.getStock(),
+                bookSortDto.getViewCount(),
+                bookSortDto.getIsbn(),
+                bookSortDto.getAverageRating(),
+                bookSortDto.getReviewCount(),
+                bookSortDto.getAiRecommand(),
                 thumbnailUrl
         );
     }

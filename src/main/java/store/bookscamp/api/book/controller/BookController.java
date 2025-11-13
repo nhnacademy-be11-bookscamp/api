@@ -104,7 +104,7 @@ public class BookController {
 
         //TODO : 성능개선 필요
         for(BookSortDto dto : bookSortDtoPage){
-            String thumbnailUrl = bookImageService.getThumbnailUrl(dto.id());
+            String thumbnailUrl = bookImageService.getThumbnailUrl(dto.getId());
             bookSortResponseList.add(BookSortResponse.from(dto,thumbnailUrl));
         }
 
