@@ -74,6 +74,8 @@ public enum ErrorCode {
     POINT_NOT_ALLOWED_FOR_NON_MEMBER(BAD_REQUEST, "비회원은 포인트를 사용할 수 없습니다."),
 
     CART_ITEM_NOT_COMPLETE(BAD_REQUEST, "일부 장바구니 아이템을 찾을 수 없습니다."),
+
+    ORDER_NOT_FOUND(NOT_FOUND, "주문을 찾을 수 없습니다.")
     ;
 
 
