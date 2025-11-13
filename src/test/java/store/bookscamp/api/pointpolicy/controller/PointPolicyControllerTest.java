@@ -27,7 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store.bookscamp.api.cart.session.CartSessionService;
 import store.bookscamp.api.pointpolicy.controller.request.PointPolicyCreateRequest;
-import store.bookscamp.api.pointpolicy.controller.response.PointPolicyUpdateRequest;
+import store.bookscamp.api.pointpolicy.controller.request.PointPolicyUpdateRequest;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 import store.bookscamp.api.pointpolicy.service.PointPolicyService;
 
