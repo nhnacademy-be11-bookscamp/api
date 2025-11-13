@@ -1,16 +1,26 @@
 package store.bookscamp.api.orderinfo.service;
 
+import static store.bookscamp.api.common.exception.ErrorCode.*;
+import static store.bookscamp.api.coupon.entity.DiscountType.AMOUNT;
+import static store.bookscamp.api.coupon.entity.DiscountType.RATE;
 import static store.bookscamp.api.orderinfo.entity.OrderStatus.PENDING;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
+import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.repository.CouponIssueRepository;
+import store.bookscamp.api.couponissue.query.CouponIssueSearchQuery;
+import store.bookscamp.api.couponissue.query.dto.CouponSearchConditionDto;
 import store.bookscamp.api.delivery.entity.Delivery;
 import store.bookscamp.api.delivery.repository.deliveryRepository;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
@@ -32,6 +42,7 @@ import store.bookscamp.api.packaging.repository.PackagingRepository;
 import store.bookscamp.api.pointhistory.entity.PointHistory;
 import store.bookscamp.api.pointhistory.entity.PointType;
 import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
+import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 
@@ -46,24 +57,26 @@ public class OrderCreateService {
     private final NonMemberRepository nonMemberRepository;
 
     private final BookRepository bookRepository;
+    private final BookCategoryRepository bookCategoryRepository;
     private final PackagingRepository packagingRepository;
     private final MemberRepository memberRepository;
     private final CouponIssueRepository couponIssueRepository;
+    private final CouponIssueSearchQuery couponIssueSearchQuery;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
     public OrderCreateDto createOrder(OrderRequestDto request, Long memberId) {
         DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findAll().stream()
                 .findFirst()
-                .orElseThrow(() -> new ApplicationException(ErrorCode.DELIVERY_POLICY_NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException(DELIVERY_POLICY_NOT_FOUND));
 
         Member member = null;
         if (memberId != null) {
             member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
+                    .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
         } else {
             if (request.nonMemberInfo() == null) {
-                throw new ApplicationException(ErrorCode.NON_MEMBER_INFO_REQUIRED);
+                throw new ApplicationException(NON_MEMBER_INFO_REQUIRED);
             }
         }
 
@@ -72,13 +85,15 @@ public class OrderCreateService {
 
         for (OrderItemCreateDto itemRequest : request.items()) {
             Book book = bookRepository.findById(itemRequest.bookId())
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
+                    .orElseThrow(() -> new ApplicationException(BOOK_NOT_FOUND));
+
+            validateBook(book, itemRequest.quantity());
 
             netAmount += book.getSalePrice() * itemRequest.quantity();
 
             if (itemRequest.packagingId() != null) {
                 Packaging packaging = packagingRepository.findById(itemRequest.packagingId())
-                        .orElseThrow(() -> new ApplicationException(ErrorCode.PACKAGING_NOT_FOUND));
+                        .orElseThrow(() -> new ApplicationException(PACKAGING_NOT_FOUND));
                 packagingFee += packaging.getPrice();
             }
         }
@@ -91,23 +106,22 @@ public class OrderCreateService {
 
         int discountAmount = 0;
         CouponIssue couponIssue = null;
-        if (request.couponId() != null) {
+        if (request.couponIssueId() != null) {
             if (member == null) {
-                throw new ApplicationException(ErrorCode.COUPON_NOT_ALLOWED_FOR_NON_MEMBER);
+                throw new ApplicationException(COUPON_NOT_ALLOWED_FOR_NON_MEMBER);
             }
-            couponIssue = couponIssueRepository.findById(request.couponId())
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.COUPON_ISSUE_NOT_FOUND));
-
+            
+            couponIssue = validateAndGetCouponIssue(request.couponIssueId(), member, request.items(), netAmount);
             discountAmount = calculateCouponDiscount(couponIssue, netAmount);
         }
 
         int usedPoint = (request.usedPoint() != null) ? request.usedPoint() : 0;
         if (usedPoint > 0) {
             if (member == null) {
-                throw new ApplicationException(ErrorCode.POINT_NOT_ALLOWED_FOR_NON_MEMBER);
+                throw new ApplicationException(POINT_NOT_ALLOWED_FOR_NON_MEMBER);
             }
             if (member.getPoint() < usedPoint) {
-                throw new ApplicationException(ErrorCode.INSUFFICIENT_POINT);
+                throw new ApplicationException(INSUFFICIENT_POINT);
             }
         }
 
@@ -149,12 +163,12 @@ public class OrderCreateService {
 
         for (OrderItemCreateDto itemRequest : request.items()) {
             Book book = bookRepository.findById(itemRequest.bookId())
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
+                    .orElseThrow(() -> new ApplicationException(BOOK_NOT_FOUND));
 
             Packaging packaging = null;
             if (itemRequest.packagingId() != null) {
                 packaging = packagingRepository.findById(itemRequest.packagingId())
-                        .orElseThrow(() -> new ApplicationException(ErrorCode.PACKAGING_NOT_FOUND));
+                        .orElseThrow(() -> new ApplicationException(PACKAGING_NOT_FOUND));
             }
 
             int bookTotalAmount = book.getSalePrice() * itemRequest.quantity();
@@ -205,12 +219,53 @@ public class OrderCreateService {
         return new OrderCreateDto(orderInfo.getId(), finalPaymentAmount);
     }
 
+    private void validateBook(Book book, int requestQuantity) {
+        if (book.getStatus() != BookStatus.AVAILABLE) {
+            throw new ApplicationException(BOOK_NOT_AVAILABLE);
+        }
+
+        if (book.getStock() < requestQuantity) {
+            throw new ApplicationException(INSUFFICIENT_STOCK);
+        }
+    }
+
+    private CouponIssue validateAndGetCouponIssue(Long couponIssueId, Member member, List<OrderItemCreateDto> items, int netAmount) {
+        List<Long> bookIds = items.stream()
+                .map(OrderItemCreateDto::bookId)
+                .toList();
+
+        List<Long> categoryIds = bookIds.stream()
+                .flatMap(bookId -> bookCategoryRepository.findByBook_Id(bookId).stream())
+                .map(bc -> bc.getCategory().getId())
+                .distinct()
+                .toList();
+
+        CouponSearchConditionDto searchCondition = new CouponSearchConditionDto(
+                member.getId(),
+                categoryIds,
+                bookIds
+        );
+
+        List<CouponIssue> availableCoupons = couponIssueSearchQuery.searchCouponIssue(searchCondition);
+
+        CouponIssue couponIssue = availableCoupons.stream()
+                .filter(issue -> issue.getId().equals(couponIssueId))
+                .findFirst()
+                .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
+
+        if (netAmount < couponIssue.getCoupon().getMinOrderAmount()) {
+            throw new ApplicationException(COUPON_MIN_ORDER_AMOUNT_NOT_MET);
+        }
+
+        return couponIssue;
+    }
+
     private int calculateEarnedPoint(Member member, int netAmount) {
         if (member.getRank() == null) {
             return 0;
         }
 
-        var pointPolicy = member.getRank().getPointPolicy();
+        PointPolicy pointPolicy = member.getRank().getPointPolicy();
         if (pointPolicy == null) {
             return 0;
         }
@@ -222,18 +277,19 @@ public class OrderCreateService {
     }
 
     private int calculateCouponDiscount(CouponIssue couponIssue, int netAmount) {
-        var coupon = couponIssue.getCoupon();
+        Coupon coupon = couponIssue.getCoupon();
 
-        return switch (coupon.getDiscountType()) {
-            case RATE -> {
-                int discount = (int) (netAmount * coupon.getDiscountValue() / 100.0);
-                if (coupon.getMaxDiscountAmount() != null) {
-                    discount = Math.min(discount, coupon.getMaxDiscountAmount());
-                }
-                yield discount;
+        if (coupon.getDiscountType() == RATE) {
+            int discount = (int) Math.floor(netAmount * coupon.getDiscountValue() / 100.0);
+            if (coupon.getMaxDiscountAmount() != null) {
+                discount = Math.min(discount, coupon.getMaxDiscountAmount());
             }
-            case AMOUNT -> coupon.getDiscountValue();
-        };
+            return discount;
+        } else if (coupon.getDiscountType() == AMOUNT) {
+            return coupon.getDiscountValue();
+        } else {
+            throw new ApplicationException(INVALID_COUPON_DISCOUNT_TYPE);
+        }
     }
 
     private LocalDate calculateShippingDate(LocalDate desiredDeliveryDate) {
@@ -244,9 +300,9 @@ public class OrderCreateService {
         LocalDate shippingDate = desiredDeliveryDate.minusDays(1);
 
         if (shippingDate.getDayOfWeek() == DayOfWeek.SATURDAY) {
-            shippingDate = shippingDate.minusDays(1);  // 금요일
+            shippingDate = shippingDate.minusDays(1);
         } else if (shippingDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            shippingDate = shippingDate.minusDays(2);  // 금요일
+            shippingDate = shippingDate.minusDays(2);
         }
 
         return shippingDate;

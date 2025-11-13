@@ -73,6 +73,7 @@ class OrderControllerTest {
             PackagingDto packaging2 = new PackagingDto(2L, "고급 포장", 1000);
             CouponDto coupon = new CouponDto(
                     1L,
+                    1L,
                     "10% 할인 쿠폰",
                     "RATE",
                     10,
