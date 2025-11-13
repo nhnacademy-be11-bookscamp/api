@@ -19,7 +19,7 @@ public record OrderCreateRequest(
         @Valid
         DeliveryInfoRequest deliveryInfo,
 
-        Long couponId,
+        Long couponIssueId,
 
         @Min(value = 0, message = "포인트는 0 이상이어야 합니다.")
         Integer usedPoint,
@@ -45,7 +45,7 @@ public record OrderCreateRequest(
                         deliveryInfo.desiredDeliveryDate(),
                         deliveryInfo.deliveryMemo()
                 ),
-                couponId,
+                couponIssueId,
                 usedPoint,
                 nonMemberInfo != null ? new NonMemberInfoDto(nonMemberInfo.password()) : null
         );
