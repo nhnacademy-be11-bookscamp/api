@@ -10,6 +10,7 @@ import static store.bookscamp.api.couponissue.entity.QCouponIssue.couponIssue;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
@@ -26,11 +27,15 @@ public class CouponIssueSearchQuery {
 
     // 주문 시 사용할 수 있는 쿠폰 조회.
     public List<CouponIssue> searchCouponIssue(CouponSearchConditionDto dto) {
+        LocalDateTime now = LocalDateTime.now();
+        
         return queryFactory
                 .selectFrom(couponIssue)
                 .leftJoin(couponIssue.coupon, coupon).fetchJoin()
                 .where(
                         couponIssue.member.id.eq(dto.memberId()),
+                        couponIssue.usedAt.isNull(),
+                        couponIssue.expiredAt.after(now),
                         categoryCouponIn(dto.categoryIds())
                                 .or(bookCouponIn(dto.bookIds()))
                                 .or(allTargetCouponIn())
