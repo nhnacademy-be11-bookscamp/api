@@ -12,7 +12,8 @@ public record CouponResponse(
         int discountValue,
         int minOrderAmount,
         Integer maxDiscountAmount,
-        Integer validDays
+        Integer validDays,
+        String name
 ) {
 
     public static CouponResponse from(Coupon coupon) {
@@ -24,7 +25,8 @@ public record CouponResponse(
                 coupon.getDiscountValue(),
                 coupon.getMinOrderAmount(),
                 coupon.getMaxDiscountAmount(),
-                coupon.getValidDays()
+                coupon.getValidDays(),
+                coupon.getName()
         );
     }
 }
