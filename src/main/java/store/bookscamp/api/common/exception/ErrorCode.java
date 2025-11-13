@@ -54,6 +54,10 @@ public enum ErrorCode {
     COUPON_ISSUE_ALREADY_EXIST(CONFLICT, "이미 발급된 쿠폰이 존재합니다."),
     COUPON_ALREADY_USED(BAD_REQUEST, "이미 사용된 쿠폰입니다."),
     COUPON_EXPIRED(BAD_REQUEST, "만료된 쿠폰입니다."),
+    COUPON_MIN_ORDER_AMOUNT_NOT_MET(BAD_REQUEST, "쿠폰 사용을 위한 최소 주문 금액을 충족하지 못했습니다."),
+    COUPON_NOT_APPLICABLE_TO_BOOK(BAD_REQUEST, "해당 도서에 적용할 수 없는 쿠폰입니다."),
+    COUPON_NOT_APPLICABLE_TO_CATEGORY(BAD_REQUEST, "해당 카테고리에 적용할 수 없는 쿠폰입니다."),
+    INVALID_COUPON_DISCOUNT_TYPE(BAD_REQUEST, "유효하지 않은 쿠폰 할인 타입입니다."),
 
     PACKAGING_NOT_FOUND(NOT_FOUND, "포장지를 찾을 수 없습니다."),
     PACKAGING_DUPLICATE_RESOURCE(CONFLICT, "이미 존재하는 포장지입니다."),
@@ -74,6 +78,8 @@ public enum ErrorCode {
     POINT_NOT_ALLOWED_FOR_NON_MEMBER(BAD_REQUEST, "비회원은 포인트를 사용할 수 없습니다."),
 
     CART_ITEM_NOT_COMPLETE(BAD_REQUEST, "일부 장바구니 아이템을 찾을 수 없습니다."),
+
+    ORDER_NOT_FOUND(NOT_FOUND, "주문을 찾을 수 없습니다.")
     ;
 
 

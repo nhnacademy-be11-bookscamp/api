@@ -3,6 +3,7 @@ package store.bookscamp.api.orderinfo.controller.response;
 import store.bookscamp.api.orderinfo.service.dto.CouponDto;
 
 public record CouponInfo(
+        Long couponIssueId,
         Long couponId,
         String couponName,
         String discountType,
@@ -13,6 +14,7 @@ public record CouponInfo(
 ) {
     public static CouponInfo fromDto(CouponDto dto) {
         return new CouponInfo(
+                dto.couponIssueId(),
                 dto.couponId(),
                 dto.couponName(),
                 dto.discountType(),

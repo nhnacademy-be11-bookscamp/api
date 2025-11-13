@@ -63,7 +63,7 @@ public class MemberService {
                 member.password(),
                 member.email(),
                 member.phone(),
-                5000,
+                0,
                 standardRank,
                 MemberStatus.NORMAL,
                 LocalDate.now(),

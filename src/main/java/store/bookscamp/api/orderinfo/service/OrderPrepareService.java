@@ -23,15 +23,12 @@ import store.bookscamp.api.orderinfo.service.dto.PackagingDto;
 import store.bookscamp.api.orderinfo.service.dto.PriceDto;
 import store.bookscamp.api.packaging.repository.PackagingRepository;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
-import store.bookscamp.api.couponissue.repository.CouponIssueRepository;
 import store.bookscamp.api.couponissue.query.CouponIssueSearchQuery;
 import store.bookscamp.api.couponissue.query.dto.CouponSearchConditionDto;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.coupon.entity.DiscountType;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +41,6 @@ public class OrderPrepareService {
     private final PackagingRepository packagingRepository;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
     private final MemberRepository memberRepository;
-    private final CouponIssueRepository couponIssueRepository;
     private final CouponIssueSearchQuery couponIssueSearchQuery;
 
 
@@ -97,7 +93,7 @@ public class OrderPrepareService {
                     .map(OrderItemRequestDto::bookId)
                     .toList();
 
-            availableCoupons = getAvailableCoupons(member, bookIds, totalAmount);
+            availableCoupons = getAvailableCoupons(member, bookIds, netAmount);
         }
 
         List<PackagingDto> availablePackagings = getAvailablePackagings();
@@ -134,14 +130,8 @@ public class OrderPrepareService {
                 .toList();
     }
 
-    private List<CouponDto> getAvailableCoupons(Member member, List<Long> bookIds, int totalAmount) {
-        LocalDateTime now = LocalDateTime.now();
-
-        List<Long> categoryIds = bookIds.stream()
-                .flatMap(bookId -> bookCategoryRepository.findByBook_Id(bookId).stream())
-                .map(bookCategory -> bookCategory.getCategory().getId())
-                .distinct()
-                .toList();
+    private List<CouponDto> getAvailableCoupons(Member member, List<Long> bookIds, int netAmount) {
+        List<Long> categoryIds = findCategoryIds(bookIds);
 
         CouponSearchConditionDto searchCondition = new CouponSearchConditionDto(
                 member.getId(),
@@ -149,25 +139,39 @@ public class OrderPrepareService {
                 bookIds
         );
 
-        return couponIssueSearchQuery.searchCouponIssue(searchCondition).stream()
-                .filter(issue -> issue.getUsedAt() == null)
-                .filter(issue -> issue.getExpiredAt().isAfter(now))
-                .map(CouponIssue::getCoupon)
-                .filter(coupon -> totalAmount >= coupon.getMinOrderAmount())
-                .map(coupon -> {
-                    int expectedDiscount = calculateExpectedDiscount(coupon, totalAmount);
+        List<CouponIssue> couponIssues = couponIssueSearchQuery.searchCouponIssue(searchCondition);
+        
+        return convertToCouponDtos(couponIssues, netAmount);
+    }
 
-                    return new CouponDto(
-                            coupon.getId(),
-                            buildCouponName(coupon),
-                            coupon.getDiscountType().name(),
-                            coupon.getDiscountValue(),
-                            coupon.getMinOrderAmount(),
-                            coupon.getMaxDiscountAmount(),
-                            expectedDiscount
-                    );
-                })
+    private List<Long> findCategoryIds(List<Long> bookIds) {
+        return bookIds.stream()
+                .flatMap(bookId -> bookCategoryRepository.findByBook_Id(bookId).stream())
+                .map(bookCategory -> bookCategory.getCategory().getId())
+                .distinct()
                 .toList();
+    }
+
+    private List<CouponDto> convertToCouponDtos(List<CouponIssue> couponIssues, int totalAmount) {
+        return couponIssues.stream()
+                .map(issue -> createCouponDto(issue, totalAmount))
+                .toList();
+    }
+
+    private CouponDto createCouponDto(CouponIssue issue, int totalAmount) {
+        Coupon coupon = issue.getCoupon();
+        int expectedDiscount = calculateExpectedDiscount(coupon, totalAmount);
+
+        return new CouponDto(
+                issue.getId(),
+                coupon.getId(),
+                buildCouponName(coupon),
+                coupon.getDiscountType().name(),
+                coupon.getDiscountValue(),
+                coupon.getMinOrderAmount(),
+                coupon.getMaxDiscountAmount(),
+                expectedDiscount
+        );
     }
 
     private String buildCouponName(Coupon coupon) {
