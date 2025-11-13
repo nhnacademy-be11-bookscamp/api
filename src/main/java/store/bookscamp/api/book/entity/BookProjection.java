@@ -8,6 +8,7 @@ public interface BookProjection {
     String getExplanation();
     String getContent();
     String getPublisher();
+    String getCategory();
     LocalDate getPublishDate();
     String getIsbn();
     String getContributors();
