@@ -30,7 +30,7 @@ public class BookLikeBatchScheduler {
     private final BookRepository bookRepository;
     private final MemberRepository memberRepository;
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 1800000)
     public void flushLikesToDatabase() {
         Map<Object, Object> updates = redisTemplate.opsForHash().entries(LIKE_UPDATES_KEY);
         if (updates.isEmpty()) {

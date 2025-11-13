@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.pointpolicy.controller.request.PointPolicyCreateRequest;
 import store.bookscamp.api.pointpolicy.controller.response.PointPolicyResponse;
-import store.bookscamp.api.pointpolicy.controller.response.PointPolicyUpdateRequest;
+import store.bookscamp.api.pointpolicy.controller.request.PointPolicyUpdateRequest;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 import store.bookscamp.api.pointpolicy.service.PointPolicyService;
 

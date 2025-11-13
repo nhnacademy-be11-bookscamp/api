@@ -29,7 +29,10 @@ public record CouponCreateRequest(
         Integer maxDiscountAmount,
 
         @Positive
-        Integer validDays
+        Integer validDays,
+
+        @NotNull
+        String name
 ) {
 
     public CouponCreateDto toDto() {
@@ -40,7 +43,8 @@ public record CouponCreateRequest(
                 discountValue,
                 minOrderAmount,
                 maxDiscountAmount,
-                validDays
+                validDays,
+                name
         );
     }
 }
