@@ -20,7 +20,8 @@ public record BookSortResponse(
         double averageRating,
         long reviewCount,
         String aiRecommand,
-        String thumbnailUrl
+        String thumbnailUrl,
+        Integer aiRank
 ) {
 
     public static BookSortResponse from(BookSortDto bookSortDto, String thumbnailUrl) {
@@ -39,7 +40,8 @@ public record BookSortResponse(
                 bookSortDto.getAverageRating(),
                 bookSortDto.getReviewCount(),
                 bookSortDto.getAiRecommand(),
-                thumbnailUrl
+                thumbnailUrl,
+                bookSortDto.getAiRank()
         );
     }
 }
