@@ -30,12 +30,12 @@ public class RabbitmqConfig {
     }
 
     @Bean
-    public Queue queue() {
+    public Queue signupQueue() {
         return new Queue(SIGNUP_QUEUE, true);
     }
 
     @Bean
-    public Binding binding(TopicExchange topicExchange, Queue queue) {
+    public Binding signupBinding(TopicExchange topicExchange, Queue queue) {
         return BindingBuilder.bind(queue).to(topicExchange).with(SIGNUP_KEY);
     }
 

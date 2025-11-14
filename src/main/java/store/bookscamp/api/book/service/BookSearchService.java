@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -36,8 +35,7 @@ public class BookSearchService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final RerankerClient rerankerClient;
     private final CategoryRepository categoryRepository;
-    @Value("${elasticsearch.index.name}")
-    private String INDEX_NAME;
+    private final BookAnswerService bookAnswerService;
 
     public Page<BookSortDto> searchBooks(BookSearchRequest request) {
         NativeQueryBuilder qb = new NativeQueryBuilder();
@@ -48,8 +46,7 @@ public class BookSearchService {
             }
             return noKeyWordSearch(qb, request, category);
         }// 키워드 없이 카테고리만 검색
-        return hybridSearchWithRRF(request);
-
+        return hybridSearchWithLLM(request);
     }
 
     public Page<BookSortDto> noKeyWordSearch(NativeQueryBuilder qb, BookSearchRequest request, Category category) {
@@ -72,22 +69,70 @@ public class BookSearchService {
                 hits.getTotalHits());
     }
 
+
+    // ================================================
+    // ✅ Gemini LLM 검증
+    // ================================================
+    public Page<BookSortDto> hybridSearchWithLLM(BookSearchRequest request) {
+        // 🔹 기존 hybridSearchWithRRF 결과 가져오기
+        List<BookDocument> docs = hybridSearchWithRRF(request);
+        // 🔹 Gemini 호출
+        Map<String, Object> aiResponse = bookAnswerService.generateAnswer(request.keyword(),docs);
+        List<Long> idList= (List<Long>) aiResponse.get("idList");
+        List<String> recList= (List<String>) aiResponse.get("recList");
+        List<BookDocument> aiRerankDocs = new  ArrayList<>();
+        for(int i = 0;i<idList.size();i++){
+            for(int j=0;j<docs.size();j++){
+                if(idList.get(i)==docs.get(j).getId()){
+                    aiRerankDocs.add(docs.get(j));
+                }
+            }
+        }
+        aiRerankDocs=applySortAfterRerank(aiRerankDocs, request.sortType());
+       /* List<BookDocument> notAiRerankDocs = new  ArrayList<>();
+        for(int i =docs.size()-idList.size()+1;i<docs.size();i++){
+            notAiRerankDocs.add(docs.get(i));
+        }
+        applySortAfterRerank(notAiRerankDocs, request.sortType());
+        for(int j=0;j<notAiRerankDocs.size();j++){
+            aiRerankDocs.add(notAiRerankDocs.get(j));
+        }*/
+        List<BookSortDto> sortDtoList = new ArrayList<>();
+        for(int i =0;i<aiRerankDocs.size();i++){
+            BookSortDto sortDto = BookSortDto.fromDocument(aiRerankDocs.get(i));
+            for(int j=0;j<idList.size();j++){
+                if(sortDto.getId()==idList.get(j)){
+                    if(j<=2){
+                        sortDto.setAiRank(j+1);
+                        sortDto.setAiRecommand(recList.get(j));
+                    }
+                }
+            }
+            sortDtoList.add(sortDto);
+        }
+        Page<BookSortDto> page = new PageImpl<>(sortDtoList,
+                        request.pageable(), aiRerankDocs.size());
+
+        // 🔹 결과 통합
+        return page;
+    }
+
+
     // ================================================
     // ✅ 통합 검색 (BM25 + Reranker + KNN + RRF)
     // ================================================
-    public Page<BookSortDto> hybridSearchWithRRF(BookSearchRequest request) {
+    public List<BookDocument> hybridSearchWithRRF(BookSearchRequest request) {
+        String keyword = request.keyword();
         Category category = null;
         if (request.categoryId() != null) {
             category = categoryRepository.getCategoryById(request.categoryId());
         }
-        String keyword = request.keyword();
-        Pageable pageable = request.pageable();
 
         // 1️⃣ BM25 검색 (키워드)
         List<BookDocument> bm25Results = runBm25Search(category, keyword, 100);
 
         // 2️⃣ KNN 검색 (벡터)
-        List<BookDocument> knnResults = runKnnSearch(category,keyword, 100);
+        List<BookDocument> knnResults = runKnnSearch(category, keyword, 100);
 
         // 3️⃣ RRF 융합
         List<BookDocument> fused = rrfFusion(bm25Results, knnResults);
@@ -95,12 +140,15 @@ public class BookSearchService {
         // 4️⃣ Reranker 적용
         List<BookDocument> reranked = rerankResults(keyword, fused);
 
-        // 5️⃣ 상위 20개 반환
-        List<BookDocument> topDocs = reranked.stream().limit(20).toList();
+        // 5️⃣ 상위 10개 반환
+        List<BookDocument> topDocs = reranked.stream().limit(10).toList();
+
+        for(int i = 0; i < topDocs.size(); i++){
+            log.info("top-title : " + topDocs.get(i).getTitle());
+        }
 
         topDocs = applySortAfterRerank(topDocs, request.sortType());
-        return new PageImpl<>(topDocs.stream().map(BookSortDto::fromDocument).toList(),
-                pageable, fused.size());
+        return topDocs;
     }
 
 
@@ -109,13 +157,13 @@ public class BookSearchService {
     // ================================================
     private List<BookDocument> runBm25Search(Category category, String keyword, int size) {
         NativeQueryBuilder qb = new NativeQueryBuilder();
-
         if (keyword != null && !keyword.isBlank()) {
-            if(category!=null) {
+            if (category != null) {
                 qb.withQuery(multiMatch(m -> m.query(keyword)
-                        .fields("category^100","title^90", "contributors^80", "tags^70", "isbn^60", "publisher^50", "explanation^40",
+                        .fields("category^100", "title^90", "contributors^80", "tags^70", "isbn^60", "publisher^50",
+                                "explanation^40",
                                 "reviews^30")));
-            }else{
+            } else {
                 qb.withQuery(multiMatch(m -> m.query(keyword)
                         .fields("title^100", "contributors^90", "tags^80", "isbn^70", "publisher^60", "explanation^50",
                                 "reviews^40")));
@@ -124,7 +172,7 @@ public class BookSearchService {
             qb.withQuery(q -> q.matchAll(m -> m));
         }
 
-        qb.withPageable(PageRequest.of(0,size));
+        qb.withPageable(PageRequest.of(0, size));
         Query query = qb.build();
         SearchHits<BookDocument> hits = elasticsearchOperations.search(query, BookDocument.class);
         return hits.getSearchHits().stream().map(SearchHit::getContent).toList();
@@ -133,16 +181,14 @@ public class BookSearchService {
     // ================================================
     // ✅ KNN (벡터 기반 의미 검색)
     // ================================================
-    private List<BookDocument> runKnnSearch(Category category, String keyword,int size) {
+    private List<BookDocument> runKnnSearch(Category category, String keyword, int size) {
         String combinedText = "";
-        if (category != null && category.getName().isBlank()) {
-            combinedText = String.join(" ",
-                    keyword != null ? keyword : "",
-                    category.getName() != null ? category.getName() : ""
-            );
-        }else{
-            combinedText=keyword;
+        if (category != null && category.getName() != null && !category.getName().isBlank()) {
+            combinedText = keyword + " " + category.getName() + " " + category.getName();
+        } else {
+            combinedText = keyword;
         }
+        log.info("knn-combined-text : " + combinedText);
         List<Float> vectorList = toFloatList(generateEmbedding(combinedText));
 
         NativeQuery query = NativeQuery.builder()
@@ -169,7 +215,6 @@ public class BookSearchService {
         if (docs.isEmpty()) {
             return docs;
         }
-
         List<String> texts = docs.stream()
                 .map(d -> d.getTitle() + " " + d.getExplanation())
                 .toList();
