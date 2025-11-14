@@ -48,10 +48,10 @@ public class BookIndexService {
     @PostConstruct
     public void init() {
         try {
-             BooleanResponse exists=esClient.indices().exists(e -> e.index(INDEX_NAME));
             if(INDEX_NAME.equals("bookscamp-dev")) {
                 return;
             }
+            BooleanResponse exists=esClient.indices().exists(e -> e.index(INDEX_NAME));
                 if (exists.value()) {
                     DeleteIndexResponse deleteResp = esClient.indices().delete(d -> d.index(INDEX_NAME));
                     if (deleteResp.acknowledged()) {
