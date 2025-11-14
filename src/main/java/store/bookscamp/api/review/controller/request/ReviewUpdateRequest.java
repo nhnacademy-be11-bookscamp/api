@@ -4,8 +4,9 @@ import java.util.List;
 
 public record ReviewUpdateRequest(
 
-        String content,
+        Long reviewId,
         Integer score,
-        List<String> ImageUrls,
+        String content,
+        List<String> imageUrls,
         List<String> removedImageUrls
 ) {}
