@@ -67,4 +67,12 @@ public class CartController {
                 .toList();
         return ResponseEntity.ok().body(response);
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> clearCart(
+            @CartId Long cartId
+    ) {
+        cartService.clearCart(cartId);
+        return ResponseEntity.ok().build();
+    }
 }
