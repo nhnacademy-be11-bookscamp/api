@@ -47,4 +47,9 @@ public class Review extends SoftDeleteEntity {
         this.content = content;
         this.score = score;
     }
+
+    public void update(String content, Integer score) {
+        this.content = content;
+        this.score = score;
+    }
 }

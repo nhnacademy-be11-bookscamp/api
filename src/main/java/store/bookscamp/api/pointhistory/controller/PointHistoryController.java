@@ -5,11 +5,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.common.annotation.RequiredRole;
 import store.bookscamp.api.pointhistory.controller.request.PointHistoryEarnRequest;
@@ -55,14 +57,17 @@ public class PointHistoryController {
     @GetMapping("/member/point-histories")
     @Operation(summary = "read Point", description = "유저 포인트 내역 조회 API")
     @RequiredRole("USER")
-    public ResponseEntity<List<PointHistoryResponse>> getMyPointHistory(HttpServletRequest request) {
+    public ResponseEntity<Page<PointHistoryResponse>> getMyPointHistory(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
 
         Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
 
-        List<PointHistoryResponse> response = pointHistoryService.listMemberPoints(memberId)
-                .stream()
-                .map(PointHistoryResponse::from)
-                .toList();
+        Page<PointHistoryResponse> response =
+                pointHistoryService.listMemberPoints(memberId, PageRequest.of(page, size) )
+                        .map(PointHistoryResponse::from);
 
         return ResponseEntity.ok(response);
     }
