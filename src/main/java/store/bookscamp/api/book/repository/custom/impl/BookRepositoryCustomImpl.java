@@ -3,8 +3,8 @@ package store.bookscamp.api.book.repository.custom.impl;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,11 +15,14 @@ import store.bookscamp.api.bookcategory.entity.QBookCategory;
 import store.bookscamp.api.booklike.entity.QBookLike;
 import store.bookscamp.api.category.entity.QCategory;
 
-
-@RequiredArgsConstructor
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    public BookRepositoryCustomImpl(EntityManager em) {
+        this.queryFactory = new JPAQueryFactory(em);
+    }
+
     private static final QBook book = QBook.book;
     private static final QBookCategory bookCategory = QBookCategory.bookCategory;
     private static final QCategory category = QCategory.category;

@@ -11,5 +11,5 @@ public interface CouponIssueRepositoryCustom {
 
     List<CouponIssue> findByMemberIdAndFilterStatus(Long memberId, CouponFilterStatus status);
 
-    public List<Coupon> findDownloadableCoupons(Long memberId, Long bookId);
+    List<Coupon> findDownloadableCoupons(Long memberId, Long bookId);
 }

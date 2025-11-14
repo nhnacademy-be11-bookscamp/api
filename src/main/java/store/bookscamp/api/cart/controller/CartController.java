@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.cart.controller.request.CartItemAddRequest;
 import store.bookscamp.api.cart.controller.request.CartItemUpdateRequest;
 import store.bookscamp.api.cart.controller.response.CartItemsResponse;
+import store.bookscamp.api.cart.cookie.CartId;
 import store.bookscamp.api.cart.service.CartService;
 import store.bookscamp.api.cart.service.dto.CartItemAddDto;
-import store.bookscamp.api.cart.session.CartId;
 
 @RestController
 @RequestMapping("/carts")
@@ -66,5 +66,13 @@ public class CartController {
                 .map(CartItemsResponse::from)
                 .toList();
         return ResponseEntity.ok().body(response);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> clearCart(
+            @CartId Long cartId
+    ) {
+        cartService.clearCart(cartId);
+        return ResponseEntity.ok().build();
     }
 }
