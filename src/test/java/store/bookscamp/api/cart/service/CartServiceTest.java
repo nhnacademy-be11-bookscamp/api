@@ -144,8 +144,8 @@ class CartServiceTest {
             // then
             List<CartItemDto> cartItems = cartService.getCartItems(cart.getId());
             for (CartItemDto cartItem : cartItems) {
-                if (cartItem.cartItemId().equals(cartItemId)) {
-                    assertThat(cartItem.quantity()).isEqualTo(5);
+                if (cartItem.getCartItemId().equals(cartItemId)) {
+                    assertThat(cartItem.getQuantity()).isEqualTo(5);
                 }
             }
         }
@@ -189,7 +189,7 @@ class CartServiceTest {
             cartService.clearCart(cart.getId());
 
             // then
-            List<CartItem> cartItems = cartItemRepository.findAllByCart(cart);
+            List<CartItem> cartItems = cartItemRepository.findAllByCartId(cart.getId());
             assertThat(cartItems).isEmpty();
         }
     }

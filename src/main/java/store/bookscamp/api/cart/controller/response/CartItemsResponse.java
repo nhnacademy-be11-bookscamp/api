@@ -3,9 +3,23 @@ package store.bookscamp.api.cart.controller.response;
 import store.bookscamp.api.cart.service.dto.CartItemDto;
 
 public record CartItemsResponse(
-        Long cartItemId
+        Long cartItemId,
+        Long bookId,
+        String thumbnailImageUrl,
+        Integer quantity,
+        Integer regularPrice,
+        Integer salePrice,
+        Integer totalPrice
 ) {
     public static CartItemsResponse from(CartItemDto dto) {
-        return new CartItemsResponse(dto.cartItemId());
+        return new CartItemsResponse(
+                dto.getCartItemId(),
+                dto.getBookId(),
+                dto.getThumbnailImageUrl(),
+                dto.getQuantity(),
+                dto.getRegularPrice(),
+                dto.getSalePrice(),
+                dto.getTotalPrice()
+        );
     }
 }

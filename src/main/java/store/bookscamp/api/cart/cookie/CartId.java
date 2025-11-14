@@ -1,4 +1,4 @@
-package store.bookscamp.api.cart.session;
+package store.bookscamp.api.cart.cookie;
 
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
