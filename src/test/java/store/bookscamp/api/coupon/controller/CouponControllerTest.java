@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import store.bookscamp.api.common.annotation.RequiredRole;
 import store.bookscamp.api.coupon.controller.request.CouponCreateRequest;
 import store.bookscamp.api.coupon.entity.DiscountType;
 import store.bookscamp.api.coupon.entity.TargetType;
@@ -38,7 +40,7 @@ class CouponControllerTest {
 
 
     @Test
-    @DisplayName("POST /coupons - 쿠폰 생성 성공 시 200 OK")
+    @DisplayName("POST /admin/coupons - 쿠폰 생성 성공 시 200 OK")
     void createCoupon_success() throws Exception {
         // given
         CouponCreateRequest req = new CouponCreateRequest(
@@ -55,9 +57,10 @@ class CouponControllerTest {
                 .thenReturn(1L);
 
         // when & then
-        mockMvc.perform(post("/coupons")
+        mockMvc.perform(post("/admin/coupons")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+                        .content(objectMapper.writeValueAsString(req))
+                .header("X-User-Role", "ADMIN"))
                 .andExpect(status().isOk());
 
         verify(couponService, times(1))
@@ -88,13 +91,14 @@ class CouponControllerTest {
     }
 
     @Test
-    @DisplayName("DELETE /coupons/{id} - 삭제 성공 시 200 OK")
+    @DisplayName("DELETE /admin/coupons/{id} - 삭제 성공 시 200 OK")
     void deleteCoupon_success() throws Exception {
         // given
         Long couponId = 42L;
 
         // when & then
-        mockMvc.perform(delete("/coupons/{couponId}", couponId))
+        mockMvc.perform(delete("/admin/coupons/{couponId}", couponId)
+                        .header("X-User-Role", "ADMIN"))
                 .andExpect(status().isOk());
 
         verify(couponService, times(1)).deleteCoupon(couponId);

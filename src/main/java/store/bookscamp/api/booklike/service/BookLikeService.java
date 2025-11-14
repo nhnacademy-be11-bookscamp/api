@@ -1,12 +1,17 @@
 package store.bookscamp.api.booklike.service;
 
 import io.lettuce.core.RedisCommandExecutionException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.dto.BookWishListDto;
 import store.bookscamp.api.booklike.entity.BookLike;
 import store.bookscamp.api.booklike.repository.BookLikeRepository;
 import store.bookscamp.api.booklike.service.dto.BookLikeCountDto;
@@ -22,6 +27,7 @@ public class BookLikeService {
 
     private static final String LIKE_UPDATE_KEY = "like:update";
     private static final String LIKE_COUNT_KEY = "like:count";
+    private static final String WISHLIST_MEMBER_KEY_PREFIX = "wishlist:member:";
 
     private final RedisTemplate<String, String> redisTemplate;
     private final BookLikeRepository bookLikeRepository;
@@ -33,6 +39,7 @@ public class BookLikeService {
         String hashKey = memberId + ":" + bookId;
         String hashValue = String.valueOf(isLiked);
         String bookIdStr = String.valueOf(bookId);
+        String wishListKey = WISHLIST_MEMBER_KEY_PREFIX + memberId;
 
         if (!memberRepository.existsById(memberId)) {
             throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
@@ -48,9 +55,16 @@ public class BookLikeService {
             long incrementAmount = isLiked ? 1L : -1L;
             redisTemplate.opsForHash().increment(LIKE_COUNT_KEY, bookIdStr, incrementAmount);
 
+            if (isLiked) {
+                redisTemplate.opsForSet().add(wishListKey, bookIdStr);
+            } else {
+                redisTemplate.opsForSet().remove(wishListKey, bookIdStr);
+            }
+
             // 키들이 만료되지 않도록 영구 저장 처리
             redisTemplate.persist(LIKE_UPDATE_KEY);
             redisTemplate.persist(LIKE_COUNT_KEY);
+            redisTemplate.persist(wishListKey);
 
         } catch (RedisConnectionFailureException e) {
             throw new ApplicationException(ErrorCode.REDIS_CONNECTION_FAILED);
@@ -109,6 +123,37 @@ public class BookLikeService {
         }
 
         return getStatusFromDBAndCache(memberId, bookId, hashKey);
+    }
+
+    public List<Book> getWishListByMemberId(Long memberId) {
+
+        String userWishlistKey = WISHLIST_MEMBER_KEY_PREFIX + memberId;
+        Set<String> bookIdStrings = redisTemplate.opsForSet().members(userWishlistKey);
+
+        if (bookIdStrings == null || bookIdStrings.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Long> bookIds = bookIdStrings.stream()
+                .map(Long::parseLong)
+                .toList();
+
+        return bookRepository.findAllById(bookIds);
+    }
+
+    public void unlikeBook(Long bookId, Long memberId) {
+        String wishListKey = WISHLIST_MEMBER_KEY_PREFIX + memberId;
+        String schedulerHashKey = memberId + ":" + bookId;
+
+        redisTemplate.opsForHash().put(LIKE_UPDATE_KEY, schedulerHashKey, "false");
+
+        redisTemplate.opsForSet().remove(wishListKey, bookId.toString());
+
+        redisTemplate.opsForHash().increment(LIKE_COUNT_KEY, String.valueOf(bookId), -1);
+
+        redisTemplate.persist(LIKE_UPDATE_KEY);
+        redisTemplate.persist(wishListKey);
+        redisTemplate.persist(LIKE_COUNT_KEY);
     }
 
     private BookLikeCountDto getCountFromDBAndCache(Long bookId, String bookIdStr) {

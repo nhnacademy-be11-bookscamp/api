@@ -1,10 +1,14 @@
-package store.bookscamp.api.bookImage.service;
+package store.bookscamp.api.bookimage.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,17 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
-import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
 import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
-import store.bookscamp.api.book.entity.Book;
-
-import java.util.Arrays;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class BookImageServiceTest {
