@@ -25,7 +25,6 @@ public class CouponSearchQuery {
 
     // 책 하나에 사용할 수 있는 책, 카테고리 쿠폰들 모두 조회
     public List<Coupon> searchCouponForBook(Long bookId) {
-
         return queryFactory
                 .selectFrom(coupon)
                 .where(

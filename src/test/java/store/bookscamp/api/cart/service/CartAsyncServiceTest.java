@@ -39,15 +39,12 @@ class CartAsyncServiceTest {
     private BookRepository bookRepository;
     @Autowired
     private MemberRepository memberRepository;
-//    @Autowired
-//    private ContributorRepository contributorRepository;
 
     private Cart cart;
     private CartItem cartItem;
 
     @BeforeEach
     void setUp() {
-//        Contributor contributor = contributorRepository.save(new Contributor("기여자"));
         Member member = memberRepository.save(new Member(
                 "회원",
                 "1234",
@@ -86,7 +83,6 @@ class CartAsyncServiceTest {
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
         bookRepository.deleteAll();
-//        contributorRepository.deleteAll();
         memberRepository.deleteAll();
     }
 
@@ -121,6 +117,6 @@ class CartAsyncServiceTest {
 
         // then
         TimeUnit.MILLISECONDS.sleep(100);
-        assertThat(cartItemRepository.findAllByCart(cart)).isEmpty();
+        assertThat(cartItemRepository.findAllByCartId(cart.getId())).isEmpty();
     }
 }
