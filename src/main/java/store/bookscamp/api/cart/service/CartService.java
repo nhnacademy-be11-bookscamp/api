@@ -1,6 +1,7 @@
 package store.bookscamp.api.cart.service;
 
 import static java.lang.Boolean.FALSE;
+import static java.time.Duration.ofDays;
 import static store.bookscamp.api.common.exception.ErrorCode.BOOK_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_ITEM_NOT_FOUND;
 import static store.bookscamp.api.common.exception.ErrorCode.CART_NOT_FOUND;
@@ -38,6 +39,7 @@ public class CartService {
     private final MemberRepository memberRepository;
 
     private static final String CART_PREFIX = "cart:";
+    private static final Integer CART_CACHE_TTL = 7;
     private final RedisTemplate<String, Object> redisTemplate;
 
     private final CartItemSearchQuery cartItemSearchQuery;
@@ -58,7 +60,12 @@ public class CartService {
 
     public void updateCart(Long cartId, Long cartItemId, Integer quantity) {
         redisTemplate.opsForHash().put(CART_PREFIX + cartId, cartItemId.toString(), quantity);
-        cartAsyncService.updateCartAsync(cartItemId, quantity);
+
+        try {
+            cartAsyncService.updateCartAsync(cartItemId, quantity);
+        } catch (Exception e) {
+            log.error("cartItem update 오류. cartItemId = {}", cartItemId, e);
+        }
     }
 
     public void deleteCartItem(Long cartId, Long cartItemId) {
@@ -66,7 +73,12 @@ public class CartService {
         if (result == 0) {
             throw new ApplicationException(CART_ITEM_NOT_FOUND);
         }
-        cartAsyncService.deleteCartItemAsync(cartItemId);
+
+        try {
+            cartAsyncService.deleteCartItemAsync(cartItemId);
+        } catch (Exception e) {
+            log.error("cartItem delete 오류. cartItemId = {}", cartItemId, e);
+        }
     }
 
     public void clearCart(Long cartId) {
@@ -74,7 +86,12 @@ public class CartService {
         if (!result) {
             log.info("cart clear: cache에 존재하지 않는 cart. cartId = {}", cartId);
         }
-        cartAsyncService.clearCartAsync(cartId);
+
+        try {
+            cartAsyncService.clearCartAsync(cartId);
+        } catch (Exception e) {
+            log.error("clear cart 오류. cartId = {}", cartId, e);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -100,8 +117,13 @@ public class CartService {
         }
         redisTemplate.delete(key);
         redisTemplate.opsForHash().putAll(key, map);
+        log.info("cart cache fallback. cartId = {}", cartId);
 
         return dtos;
+    }
+
+    public void extendCacheTtl(Long cartId) {
+        redisTemplate.expire(CART_PREFIX + cartId, ofDays(CART_CACHE_TTL));
     }
 
     @Transactional

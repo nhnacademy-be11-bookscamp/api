@@ -1,6 +1,8 @@
 package store.bookscamp.api.pointhistory.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
@@ -13,8 +15,6 @@ import store.bookscamp.api.pointhistory.entity.PointHistory;
 import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
 import store.bookscamp.api.pointhistory.service.dto.PointHistoryEarnDto;
 import store.bookscamp.api.pointhistory.service.dto.PointHistoryUseDto;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -51,8 +51,8 @@ public class PointHistoryService {
     }
 
     // 마이페이지 조회
-    public List<PointHistory> listMemberPoints(Long memberId) {
-        return pointHistoryRepository.findAllHistoryByMemberId(memberId);
+    public Page<PointHistory> listMemberPoints(Long memberId, Pageable pageable) {
+        return pointHistoryRepository.findAllHistoryByMemberId(memberId, pageable);
     }
 
     private Member getMember(Long memberId) {

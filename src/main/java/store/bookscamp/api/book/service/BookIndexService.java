@@ -48,16 +48,18 @@ public class BookIndexService {
     @PostConstruct
     public void init() {
         try {
-             BooleanResponse exists=esClient.indices().exists(e -> e.index(INDEX_NAME));
+            if(INDEX_NAME.equals("bookscamp-dev")) {
+                return;
+            }
+            BooleanResponse exists=esClient.indices().exists(e -> e.index(INDEX_NAME));
+                if (exists.value()) {
+                    DeleteIndexResponse deleteResp = esClient.indices().delete(d -> d.index(INDEX_NAME));
+                    if (deleteResp.acknowledged()) {
+                        log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
+                    }
+                    //return; // ✅ 반드시 리턴*/
+                }//이미 존재하는 인덱스 삭제
 
-            if (exists.value()) {
-                DeleteIndexResponse deleteResp = esClient.indices().delete(d -> d.index(INDEX_NAME));
-                if (deleteResp.acknowledged()) {
-                    log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
-                }
-                //return; // ✅ 반드시 리턴*/
-            }//이미 존재하는 인덱스 삭제
-            
             try (Reader r = new InputStreamReader(
                     new ClassPathResource(SETTINGS_PATH).getInputStream(),
                     StandardCharsets.UTF_8)) {
