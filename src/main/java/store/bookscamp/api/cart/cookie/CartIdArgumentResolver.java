@@ -1,6 +1,7 @@
-package store.bookscamp.api.cart.session;
+package store.bookscamp.api.cart.cookie;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.MethodParameter;
@@ -15,7 +16,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @RequiredArgsConstructor
 public class CartIdArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final CartSessionService cartSessionService;
+    private final CartCookieService cartCookieService;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -30,6 +31,7 @@ public class CartIdArgumentResolver implements HandlerMethodArgumentResolver {
                                   WebDataBinderFactory binderFactory
     ) {
         HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
-        return cartSessionService.extractCartId(request);
+        HttpServletResponse response = (HttpServletResponse) webRequest.getNativeResponse();
+        return cartCookieService.extractCartId(request, response);
     }
 }

@@ -1,19 +1,17 @@
 package store.bookscamp.api.couponissue.repository.custom.impl;
 
-import static store.bookscamp.api.bookcategory.entity.QBookCategory.*;
-import static store.bookscamp.api.coupon.entity.QCoupon.*;
-import static store.bookscamp.api.couponissue.entity.QCouponIssue.*;
+import static store.bookscamp.api.bookcategory.entity.QBookCategory.bookCategory;
+import static store.bookscamp.api.coupon.entity.QCoupon.coupon;
+import static store.bookscamp.api.couponissue.entity.QCouponIssue.couponIssue;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
-import store.bookscamp.api.book.entity.QBook;
 import store.bookscamp.api.bookcategory.entity.QBookCategory;
-import store.bookscamp.api.category.entity.QCategory;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.coupon.entity.QCoupon;
 import store.bookscamp.api.coupon.entity.TargetType;
@@ -22,10 +20,13 @@ import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.entity.QCouponIssue;
 import store.bookscamp.api.couponissue.repository.custom.CouponIssueRepositoryCustom;
 
-@RequiredArgsConstructor
 public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    public CouponIssueRepositoryCustomImpl(EntityManager em) {
+        this.queryFactory = new JPAQueryFactory(em);
+    }
 
     @Override
     public List<CouponIssue> findByMemberIdAndFilterStatus(Long memberId, CouponFilterStatus status) {
