@@ -1,8 +1,13 @@
 package store.bookscamp.api.book.service;
 
+import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
@@ -12,7 +17,9 @@ import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookIndexDto;
+import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.book.service.dto.BookUpdateDto;
+import store.bookscamp.api.book.service.dto.BookWishListDto;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.bookimage.entity.BookImage;
@@ -20,6 +27,9 @@ import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
 import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
+import store.bookscamp.api.booklike.entity.BookLike;
+import store.bookscamp.api.booklike.repository.BookLikeRepository;
+import store.bookscamp.api.booklike.service.BookLikeService;
 import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
@@ -28,6 +38,7 @@ import store.bookscamp.api.category.service.CategoryService;
 import store.bookscamp.api.category.service.dto.CategoryDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
+import store.bookscamp.api.member.repository.MemberRepository;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
 import store.bookscamp.api.tag.service.dto.TagDto;
@@ -45,8 +56,10 @@ public class BookService {
     private final BookTagRepository bookTagRepository;
     private final BookImageRepository bookImageRepository;
     private final BookImageService bookImageService;
-    private final CategoryService categoryService;
     private final BookIndexService bookIndexService;
+    private final BookLikeRepository bookLikeRepository;
+    private final BookLikeService bookLikeService;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
@@ -207,5 +220,53 @@ public class BookService {
                     thumbnailUrl
             );
         }).toList();
+    }
+
+    public Page<BookWishListDto> getWishList(Long memberId, Pageable pageable){
+        if (memberId == null){
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        List<Book> wishListByMemberId = getWishListByMemberId(memberId);
+        List<BookWishListDto> wishListDtoList = new ArrayList<>();
+
+        for (Book book : wishListByMemberId){
+            String thumbnailUrl = bookImageService.getThumbnailUrl(book.getId());
+            wishListDtoList.add(new BookWishListDto(
+                   book.getId(),
+                   book.getTitle(),
+                   book.getPublisher(),
+                   book.getPublishDate(),
+                   book.getContributors(),
+                   book.isPackable(),
+                   book.getRegularPrice(),
+                   book.getSalePrice(),
+                   book.getStatus(),
+                   thumbnailUrl
+           ));
+        }
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), wishListDtoList.size());
+
+        List<BookWishListDto> pagedList = wishListDtoList.subList(start, end);
+
+        return new PageImpl<>(pagedList, pageable, wishListDtoList.size());
+    }
+
+    public void deleteWishList(Long bookId, Long memberId){
+        if (memberRepository.findById(memberId).isEmpty()){
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        if (bookRepository.findById(bookId).isEmpty()){
+            throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
+        }
+
+        bookLikeService.unlikeBook(bookId, memberId);
+    }
+
+    public List<Book> getWishListByMemberId(Long memberId){
+        return bookLikeService.getWishListByMemberId(memberId);
     }
 }

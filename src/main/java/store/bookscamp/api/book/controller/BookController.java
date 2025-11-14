@@ -2,6 +2,7 @@ package store.bookscamp.api.book.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +26,7 @@ import store.bookscamp.api.book.controller.response.BookIndexResponse;
 import store.bookscamp.api.book.controller.response.BookInfoResponse;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
+import store.bookscamp.api.book.controller.response.BookWishListResponse;
 import store.bookscamp.api.book.service.BookSearchService;
 import store.bookscamp.api.book.service.BookService;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
@@ -31,8 +34,11 @@ import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookIndexDto;
 import store.bookscamp.api.book.service.dto.BookSearchRequest;
 import store.bookscamp.api.book.service.dto.BookSortDto;
+import store.bookscamp.api.book.service.dto.BookWishListDto;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.common.annotation.RequiredRole;
+import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.common.pagination.RestPageImpl;
 
 
@@ -126,6 +132,45 @@ public class BookController {
                 .map(BookIndexResponse::from)
                 .toList();
         return ResponseEntity.ok(allBooksResponse);
+    }
+
+    @GetMapping("/wishlist")
+    @RequiredRole("USER")
+    public ResponseEntity<RestPageImpl<BookWishListResponse>> getWishListBooks(
+            HttpServletRequest request,
+            @PageableDefault(size = 10, page = 0) Pageable pageable
+    ){
+        Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
+
+        Page<BookWishListDto> wishList = bookService.getWishList(memberId, pageable);
+        List<BookWishListResponse> responses = new ArrayList<>();
+
+        for (BookWishListDto dto : wishList){
+            responses.add(BookWishListResponse.from(dto));
+        }
+
+        Page<BookWishListResponse> wishListResponse = new PageImpl<>(
+                responses,
+                pageable,
+                wishList.getTotalElements()
+        );
+
+        RestPageImpl<BookWishListResponse> responsePage = new RestPageImpl<>(wishListResponse);
+
+        return ResponseEntity.ok(responsePage);
+    }
+
+    @DeleteMapping("/wishlist/{itemId}")
+    @RequiredRole("USER")
+    public ResponseEntity<Void> deleteWishList(
+            HttpServletRequest request,
+            @PathVariable Long itemId
+    ){
+        Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
+
+        bookService.deleteWishList(itemId, memberId);
+
+        return ResponseEntity.ok().build();
     }
 }
 
