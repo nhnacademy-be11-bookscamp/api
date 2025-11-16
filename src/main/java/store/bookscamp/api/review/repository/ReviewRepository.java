@@ -7,5 +7,5 @@ import store.bookscamp.api.review.entity.Review;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    boolean existsByOrderItemAndMember(Member member, OrderItem orderItem);
+    boolean existsByOrderItemAndMember(OrderItem orderItem, Member member);
 }

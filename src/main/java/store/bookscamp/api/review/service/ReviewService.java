@@ -12,13 +12,21 @@ import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 import store.bookscamp.api.pointhistory.entity.PointType;
 import store.bookscamp.api.pointhistory.service.PointHistoryService;
 import store.bookscamp.api.pointhistory.service.dto.PointHistoryEarnDto;
+import store.bookscamp.api.pointpolicy.entity.PointPolicy;
+import store.bookscamp.api.pointpolicy.entity.PointPolicyType;
+import store.bookscamp.api.pointpolicy.repository.PointPolicyRepository;
 import store.bookscamp.api.review.entity.Review;
 import store.bookscamp.api.review.repository.ReviewRepository;
+import store.bookscamp.api.review.repository.ReviewQueryRepository;
+import store.bookscamp.api.review.service.dto.MyReviewDto;
 import store.bookscamp.api.review.service.dto.ReviewCreateDto;
 import store.bookscamp.api.review.service.dto.ReviewUpdateDto;
+import store.bookscamp.api.review.service.dto.ReviewableItemDto;
 import store.bookscamp.api.reviewimage.service.ReviewImageService;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageCreateDto;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageDeleteDto;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +38,8 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewImageService reviewImageService;
     private final PointHistoryService pointHistoryService;
+    private final PointPolicyRepository pointPolicyRepository;
+    private final ReviewQueryRepository reviewQueryRepository;
 
     @Transactional
     public void createReview(ReviewCreateDto dto) {
@@ -37,7 +47,7 @@ public class ReviewService {
         Member member = getMember(dto.memberId());
         OrderItem orderItem = getOrderItem(dto.orderItemId());
 
-        if (reviewRepository.existsByOrderItemAndMember(member, orderItem)) {
+        if (reviewRepository.existsByOrderItemAndMember(orderItem, member)) {
             throw new ApplicationException(ErrorCode.REVIEW_ALREADY_EXISTS);
         }
 
@@ -46,9 +56,15 @@ public class ReviewService {
 
         reviewImageService.createReviewImage(new ReviewImageCreateDto(review, dto.imageUrls()));
 
-        int reward = dto.hasImages() ? 500 : 200;
+        PointPolicyType policyType = dto.hasImages()
+                ? PointPolicyType.REVIEW_IMAGE
+                : PointPolicyType.REVIEW_TEXT;
+
+        PointPolicy policy = pointPolicyRepository.findByPointPolicyType(policyType)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.POINT_POLICY_NOT_FOUND));
+
         pointHistoryService.earnPoint(
-                new PointHistoryEarnDto(dto.memberId(), null, PointType.EARN, reward),
+                new PointHistoryEarnDto(dto.memberId(), null, PointType.EARN, policy.getRewardValue()),
                 dto.memberId()
         );
     }
@@ -66,6 +82,14 @@ public class ReviewService {
 
         reviewImageService.deleteReviewImage(new ReviewImageDeleteDto(dto.removedImageUrls()));
         reviewImageService.createReviewImage(new ReviewImageCreateDto(review, dto.imageUrls()));
+    }
+
+    public List<ReviewableItemDto> getReviewableItems(Long memberId) {
+        return reviewQueryRepository.findReviewableItems(memberId);
+    }
+
+    public List<MyReviewDto> getMyReviews(Long memberId) {
+        return reviewQueryRepository.findMyReviews(memberId);
     }
 
     private Member getMember(Long memberId) {
