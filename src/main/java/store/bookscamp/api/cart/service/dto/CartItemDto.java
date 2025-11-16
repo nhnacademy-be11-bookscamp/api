@@ -7,6 +7,7 @@ import lombok.Data;
 public class CartItemDto {
     Long cartItemId;
     Long bookId;
+    String bookTitle;
     String thumbnailImageUrl;
     Integer quantity;
     Integer regularPrice;
@@ -17,6 +18,7 @@ public class CartItemDto {
     public CartItemDto(
             Long cartItemId,
             Long bookId,
+            String bookTitle,
             String thumbnailImageUrl,
             Integer quantity,
             Integer regularPrice,
@@ -25,6 +27,7 @@ public class CartItemDto {
     ) {
         this.cartItemId = cartItemId;
         this.bookId = bookId;
+        this.bookTitle = bookTitle;
         this.thumbnailImageUrl = thumbnailImageUrl;
         this.quantity = quantity;
         this.regularPrice = regularPrice;
