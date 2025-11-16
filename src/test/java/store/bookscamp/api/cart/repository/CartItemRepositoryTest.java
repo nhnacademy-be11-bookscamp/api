@@ -36,8 +36,7 @@ class CartItemRepositoryTest {
     private CartRepository cartRepository;
     @Autowired
     private BookRepository bookRepository;
-//    @Autowired
-//    private ContributorRepository contributorRepository;
+
     @Autowired
     private MemberRepository memberRepository;
 
@@ -48,7 +47,6 @@ class CartItemRepositoryTest {
 
     @BeforeEach
     void setUp() {
-//        Contributor contributor = contributorRepository.save(new Contributor("저자"));
         member = memberRepository.save(new Member(
                 "회원",
                 "1234",
@@ -105,7 +103,7 @@ class CartItemRepositoryTest {
         cartItemRepository.save(new CartItem(cart, book2, 2));
 
         // when
-        List<CartItem> items = cartItemRepository.findAllByCart(cart);
+        List<CartItem> items = cartItemRepository.findAllByCartId(cart.getId());
 
         // then
         assertThat(items).hasSize(2);
@@ -125,7 +123,7 @@ class CartItemRepositoryTest {
         cartItemRepository.deleteAllByCart(cart);
 
         // then
-        List<CartItem> remaining = cartItemRepository.findAllByCart(cart);
+        List<CartItem> remaining = cartItemRepository.findAllByCartId(cart.getId());
         assertThat(remaining).isEmpty();
     }
 }

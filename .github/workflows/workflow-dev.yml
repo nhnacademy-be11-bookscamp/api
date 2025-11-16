@@ -48,27 +48,3 @@ jobs:
       # 4️⃣ 빌드 결과 확인
       - name: Show built JAR
         run: ls -lh target/*.jar
-
-      # 5️⃣ 서버로 JAR 파일 전송
-      - name: 📦 Copy JAR to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT }}
-          source: "target/*.jar"
-          target: "/home/backend/be11-team3/api-dev"
-
-      # 6️⃣ 서버에서 배포 스크립트 실행
-      - name: 🚀 Run deploy.sh on server
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT }}
-          script: |
-            cd /home/backend/be11-team3/api-dev
-            chmod +x deploy-dev.sh
-            bash -lc './deploy-dev.sh'

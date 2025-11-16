@@ -30,10 +30,10 @@ spring:
       hibernate.globally_quoted_identifiers: true
 
   rabbitmq:
-    host: s4.java21.net
+    host: localhost
     port: 5672
     username: admin
-    password: nhnacademy123!
+    password: 1234
   data:
     redis:
       host: localhost

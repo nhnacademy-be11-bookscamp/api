@@ -23,15 +23,8 @@ public class RoleCheckAspect {
             throw new ApplicationException(ErrorCode.UNAUTHORIZED_USER);
         }
 
-        if ("ADMIN".equals(required) && "USER".equals(userRole)) {
+        if (!userRole.equals(required)) {
             throw new ApplicationException(ErrorCode.FORBIDDEN_USER);
         }
-
-        if ("USER".equals(required) && ("USER".equals(userRole) || "ADMIN".equals(userRole))) {
-        } else if (!userRole.equals(required)) {
-            throw new ApplicationException(ErrorCode.FORBIDDEN_USER);
-        }
-
     }
-
 }
