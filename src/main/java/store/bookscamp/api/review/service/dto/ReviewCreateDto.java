@@ -5,6 +5,7 @@ import store.bookscamp.api.review.controller.request.ReviewCreateRequest;
 import java.util.List;
 
 public record ReviewCreateDto(
+
         Long orderItemId,
         Long memberId,
         Integer score,
