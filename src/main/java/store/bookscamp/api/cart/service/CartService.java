@@ -51,11 +51,21 @@ public class CartService {
                 .orElseThrow(() -> new ApplicationException(CART_NOT_FOUND));
         Book book = bookRepository.findById(dto.bookId())
                 .orElseThrow(() -> new ApplicationException(BOOK_NOT_FOUND));
-        CartItem cartItem = new CartItem(cart, book, dto.quantity());
-        Long cartItemId = cartItemRepository.save(cartItem).getId();
-        redisTemplate.opsForHash().put(CART_PREFIX + cart.getId(), cartItemId.toString(), cartItem.getQuantity());
 
-        return cartItemId;
+        String key = CART_PREFIX + cart.getId();
+        return cartItemRepository.findByCartAndBook(cart, book)
+                .map(it -> {
+                    it.updateQuantity(it.getQuantity() + dto.quantity());
+                    redisTemplate.opsForHash().put(key, it.getId().toString(), it.getQuantity());
+                    log.info("이미 장바구니에 있는 상품. 수량 추가. cartItemID = {}", it.getId());
+                    return it.getId();
+                })
+                .orElseGet(() -> {
+                    CartItem newItem = new CartItem(cart, book, dto.quantity());
+                    Long newId = cartItemRepository.save(newItem).getId();
+                    redisTemplate.opsForHash().put(key, newId.toString(), newItem.getQuantity());
+                    return newId;
+                });
     }
 
     public void updateCart(Long cartId, Long cartItemId, Integer quantity) {
@@ -97,7 +107,7 @@ public class CartService {
     @Transactional(readOnly = true)
     public List<CartItemDto> getCartItems(Long cartId) {
         String key = CART_PREFIX + cartId;
-        if (FALSE.equals(redisTemplate.hasKey(key)) || cartItemRepository.countCartItemByCartId(cartId) != redisTemplate.opsForHash().size(key)) {
+        if (isCartCacheInvalid(cartId, key)) {
             return fallback(cartId);
         }
         return redisTemplate.opsForHash().entries(key)
@@ -139,5 +149,10 @@ public class CartService {
                             .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
                     return cartRepository.save(new Cart(member));
                 }).getId();
+    }
+
+    private boolean isCartCacheInvalid(Long cartId, String key) {
+        return FALSE.equals(redisTemplate.hasKey(key))
+                || cartItemRepository.countCartItemByCartId(cartId) != redisTemplate.opsForHash().size(key);
     }
 }
