@@ -23,7 +23,6 @@ import store.bookscamp.api.review.service.dto.MyReviewDto;
 import store.bookscamp.api.review.service.dto.ReviewCreateDto;
 import store.bookscamp.api.review.service.dto.ReviewUpdateDto;
 import store.bookscamp.api.review.service.dto.ReviewableItemDto;
-import store.bookscamp.api.reviewimage.repository.ReviewImageRepository;
 import store.bookscamp.api.reviewimage.service.ReviewImageService;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageCreateDto;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageDeleteDto;
