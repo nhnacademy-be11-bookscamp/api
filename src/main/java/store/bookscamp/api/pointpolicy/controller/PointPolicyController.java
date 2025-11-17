@@ -13,14 +13,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import store.bookscamp.api.common.annotation.RequiredRole;
 import store.bookscamp.api.pointpolicy.controller.request.PointPolicyCreateRequest;
-import store.bookscamp.api.pointpolicy.controller.response.PointPolicyResponse;
 import store.bookscamp.api.pointpolicy.controller.request.PointPolicyUpdateRequest;
+import store.bookscamp.api.pointpolicy.controller.response.PointPolicyResponse;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 import store.bookscamp.api.pointpolicy.service.PointPolicyService;
 
 @RestController
-@RequestMapping("/point-policies")
+@RequestMapping("/admin/point-policies")
 @RequiredArgsConstructor
 @Tag(name = "포인트정책 API", description = "PointPolicy API입니다.")
 public class PointPolicyController {
@@ -28,6 +29,7 @@ public class PointPolicyController {
     private final PointPolicyService pointPolicyService;
 
     @PostMapping
+    @RequiredRole("ADMIN")
     public ResponseEntity<Void> createPointPolicy(
             @RequestBody @Valid PointPolicyCreateRequest request
     ) {
@@ -36,6 +38,7 @@ public class PointPolicyController {
     }
 
     @PutMapping("/{pointPolicyId}")
+    @RequiredRole("ADMIN")
     public ResponseEntity<Void> updatePointPolicy(
             @PathVariable Long pointPolicyId,
             @RequestBody @Valid PointPolicyUpdateRequest request
@@ -45,6 +48,7 @@ public class PointPolicyController {
     }
 
     @DeleteMapping("/{pointPolicyId}")
+    @RequiredRole("ADMIN")
     public ResponseEntity<Void> deletePointPolicy(
             @PathVariable Long pointPolicyId
     ) {
@@ -53,6 +57,7 @@ public class PointPolicyController {
     }
 
     @GetMapping
+    @RequiredRole("ADMIN")
     public ResponseEntity<List<PointPolicyResponse>> listPointPolicies() {
         List<PointPolicyResponse> response = pointPolicyService.listPointPolicies().stream()
                 .map(PointPolicyResponse::from)
@@ -61,6 +66,7 @@ public class PointPolicyController {
     }
 
     @GetMapping("/{pointPolicyId}")
+    @RequiredRole("ADMIN")
     public ResponseEntity<PointPolicyResponse> getPointPolicy(
             @PathVariable Long pointPolicyId
     ) {
