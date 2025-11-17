@@ -1,8 +1,8 @@
 package store.bookscamp.api.orderinfo.service;
 
 import static store.bookscamp.api.common.exception.ErrorCode.*;
-import static store.bookscamp.api.coupon.entity.DiscountType.AMOUNT;
-import static store.bookscamp.api.coupon.entity.DiscountType.RATE;
+import static store.bookscamp.api.coupon.entity.TargetType.BIRTHDAY;
+import static store.bookscamp.api.coupon.entity.TargetType.WELCOME;
 import static store.bookscamp.api.orderinfo.entity.OrderStatus.PENDING;
 
 import java.time.DayOfWeek;
@@ -15,12 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
-import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.repository.CouponIssueRepository;
-import store.bookscamp.api.couponissue.query.CouponIssueSearchQuery;
-import store.bookscamp.api.couponissue.query.dto.CouponSearchConditionDto;
 import store.bookscamp.api.delivery.entity.Delivery;
 import store.bookscamp.api.delivery.repository.deliveryRepository;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
@@ -55,15 +52,13 @@ public class OrderCreateService {
     private final OrderItemRepository orderItemRepository;
     private final deliveryRepository deliveryRepository;
     private final NonMemberRepository nonMemberRepository;
-
     private final BookRepository bookRepository;
-    private final BookCategoryRepository bookCategoryRepository;
     private final PackagingRepository packagingRepository;
     private final MemberRepository memberRepository;
     private final CouponIssueRepository couponIssueRepository;
-    private final CouponIssueSearchQuery couponIssueSearchQuery;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
     private final PointHistoryRepository pointHistoryRepository;
+    private final OrderInfoService orderInfoService;
 
     public OrderCreateDto createOrder(OrderRequestDto request, Long memberId) {
         DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findAll().stream()
@@ -110,9 +105,9 @@ public class OrderCreateService {
             if (member == null) {
                 throw new ApplicationException(COUPON_NOT_ALLOWED_FOR_NON_MEMBER);
             }
-            
             couponIssue = validateAndGetCouponIssue(request.couponIssueId(), member, request.items(), netAmount);
-            discountAmount = calculateCouponDiscount(couponIssue, netAmount);
+            int applicableAmount = calculateApplicableAmount(couponIssue.getCoupon(), request.items(), netAmount);
+            discountAmount = calculateCouponDiscount(couponIssue, applicableAmount);
         }
 
         int usedPoint = (request.usedPoint() != null) ? request.usedPoint() : 0;
@@ -230,31 +225,17 @@ public class OrderCreateService {
     }
 
     private CouponIssue validateAndGetCouponIssue(Long couponIssueId, Member member, List<OrderItemCreateDto> items, int netAmount) {
+        CouponIssue couponIssue = couponIssueRepository.findById(couponIssueId)
+                .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
+
         List<Long> bookIds = items.stream()
                 .map(OrderItemCreateDto::bookId)
                 .toList();
 
-        List<Long> categoryIds = bookIds.stream()
-                .flatMap(bookId -> bookCategoryRepository.findByBook_Id(bookId).stream())
-                .map(bc -> bc.getCategory().getId())
-                .distinct()
-                .toList();
+        boolean isAvailable = orderInfoService.isAvailableCoupon(couponIssueId, member, bookIds, netAmount);
 
-        CouponSearchConditionDto searchCondition = new CouponSearchConditionDto(
-                member.getId(),
-                categoryIds,
-                bookIds
-        );
-
-        List<CouponIssue> availableCoupons = couponIssueSearchQuery.searchCouponIssue(searchCondition);
-
-        CouponIssue couponIssue = availableCoupons.stream()
-                .filter(issue -> issue.getId().equals(couponIssueId))
-                .findFirst()
-                .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
-
-        if (netAmount < couponIssue.getCoupon().getMinOrderAmount()) {
-            throw new ApplicationException(COUPON_MIN_ORDER_AMOUNT_NOT_MET);
+        if (!isAvailable) {
+            throw new ApplicationException(COUPON_NOT_FOUND);
         }
 
         return couponIssue;
@@ -277,19 +258,7 @@ public class OrderCreateService {
     }
 
     private int calculateCouponDiscount(CouponIssue couponIssue, int netAmount) {
-        Coupon coupon = couponIssue.getCoupon();
-
-        if (coupon.getDiscountType() == RATE) {
-            int discount = (int) Math.floor(netAmount * coupon.getDiscountValue() / 100.0);
-            if (coupon.getMaxDiscountAmount() != null) {
-                discount = Math.min(discount, coupon.getMaxDiscountAmount());
-            }
-            return discount;
-        } else if (coupon.getDiscountType() == AMOUNT) {
-            return coupon.getDiscountValue();
-        } else {
-            throw new ApplicationException(INVALID_COUPON_DISCOUNT_TYPE);
-        }
+        return orderInfoService.calculateCouponDiscount(couponIssue, netAmount);
     }
 
     private LocalDate calculateShippingDate(LocalDate desiredDeliveryDate) {
@@ -306,5 +275,16 @@ public class OrderCreateService {
         }
 
         return shippingDate;
+    }
+
+    private int calculateApplicableAmount(Coupon coupon, List<OrderItemCreateDto> items, int netAmount) {
+        if (coupon.getTargetType() == WELCOME || coupon.getTargetType() == BIRTHDAY) {
+            return netAmount;
+        }
+
+        return items.stream()
+                .filter(item -> orderInfoService.isApplicableItem(item.bookId(), coupon.getTargetType(), coupon.getTargetId()))
+                .mapToInt(item -> orderInfoService.calculateItemAmount(item.bookId(), item.quantity()))
+                .sum();
     }
 }
