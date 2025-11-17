@@ -7,7 +7,6 @@ import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
 import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
-import store.bookscamp.api.bookimage.service.dto.BookImageDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 

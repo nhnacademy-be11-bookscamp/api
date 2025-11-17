@@ -5,16 +5,21 @@ import store.bookscamp.api.review.controller.request.ReviewUpdateRequest;
 import java.util.List;
 
 public record ReviewUpdateDto(
-        String content,
+
+        Long reviewId,
+        Long memberId,
         Integer score,
-        List<String> ImageUrls,
+        String content,
+        List<String> imageUrls,
         List<String> removedImageUrls
 ) {
-    public static ReviewUpdateDto from(ReviewUpdateRequest req) {
+    public static ReviewUpdateDto from(ReviewUpdateRequest req, Long memberId) {
         return new ReviewUpdateDto(
-                req.content(),
+                req.reviewId(),
+                memberId,
                 req.score(),
-                req.ImageUrls(),
+                req.content(),
+                req.imageUrls(),
                 req.removedImageUrls()
         );
     }
