@@ -1,5 +1,10 @@
 {
   "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+
+    "refresh_interval": "1s",
+
     "analysis": {
       "tokenizer": {
         "nori_tokenizer": {
@@ -25,30 +30,37 @@
             "기질, 특성",
             "LA, 로스엔젤레스",
             "JAVA, 자바",
-            "DB, 데이터베이스"
+            "DB, 데이터베이스",
+            "책, 도서"
           ]
         }
       }
     }
   },
+
   "mappings": {
     "properties": {
       "id": { "type": "long" },
-      "title": { "type": "text", "analyzer": "korean_analyzer"},
+
+      "title": { "type": "text", "analyzer": "korean_analyzer" },
       "contributors": { "type": "text", "analyzer": "korean_analyzer" },
       "explanation": { "type": "text", "analyzer": "korean_analyzer" },
       "content": { "type": "text", "analyzer": "korean_analyzer" },
       "publisher": { "type": "text", "analyzer": "korean_analyzer" },
+
       "category": { "type": "keyword" },
       "isbn": { "type": "keyword" },
       "packable": { "type": "boolean" },
+
       "regularPrice": { "type": "integer" },
       "salePrice": { "type": "integer" },
       "stock": { "type": "integer" },
       "viewCount": { "type": "long" },
       "status": { "type": "keyword" },
+
       "averageRating": { "type": "float" },
       "reviewCount": { "type": "long" },
+
       "publishDate": {
         "type": "date",
         "format": "strict_date_optional_time||yyyy-MM-dd"
@@ -58,7 +70,12 @@
         "type": "dense_vector",
         "dims": 1024,
         "index": true,
-        "similarity": "cosine"
+        "similarity": "cosine",
+        "index_options": {
+          "type": "int8_hnsw",
+          "m": 16,
+          "ef_construction": 100
+        }
       }
     }
   }
