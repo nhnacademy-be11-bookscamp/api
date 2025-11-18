@@ -2,10 +2,10 @@ spring:
   application:
     name: api-server
   profiles:
-    active: dev
+    active: prod
 
   config:
-    import: "optional:configserver:"   # ★ 이 줄 추가 (포인트)
+    import: "optional:configserver:"
 
   cloud:
     config:
