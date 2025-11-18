@@ -15,6 +15,8 @@ import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.coupon.repository.CouponRepository;
 import store.bookscamp.api.coupon.service.dto.CouponCreateDto;
+import store.bookscamp.api.couponissue.entity.CouponIssue;
+import store.bookscamp.api.couponissue.repository.CouponIssueRepository;
 
 @Service
 @Transactional(readOnly = true)
@@ -24,6 +26,7 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
+    private final CouponIssueRepository couponIssueRepository;
 
     @Transactional
     public Long createCoupon(CouponCreateDto dto) {
@@ -51,5 +54,6 @@ public class CouponService {
     @Transactional
     public void deleteCoupon(Long couponId) {
         couponRepository.deleteById(couponId);
+        couponIssueRepository.deleteByCoupon_Id(couponId);
     }
 }
