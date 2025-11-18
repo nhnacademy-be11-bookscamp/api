@@ -1,5 +1,3 @@
-// TagControllerTest
-
 package store.bookscamp.api.tag.controller;
 
 import static org.hamcrest.Matchers.*;
@@ -22,6 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
 
+/**
+ * TagController의 통합 테스트 클래스입니다.
+ * MockMvc를 사용하여 HTTP 요청을 시뮬레이션하고 결과를 검증합니다.
+ * @Transactional 어노테이션을 사용하여 각 테스트 후 데이터베이스를 롤백합니다.
+ * 모든 API가 @RequiredRole("ADMIN")으로 보호되므로, 요청 헤더를 통해 ADMIN 권한을 부여합니다.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -39,87 +43,148 @@ class TagControllerIntegrationTest {
     private static final MediaType JSON_UTF8 =
             new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8);
 
+    // ADMIN 권한을 부여하기 위한 상수 정의 (PackagingControllerTest 참고)
+    private static final String ROLE_HEADER = "X-User-Role";
+    private static final String ADMIN = "ADMIN";
+
     @Test
-    @DisplayName("POST /admin/tags - 생성 성공(201 + Location + body)")
+    @DisplayName("POST /admin/tags - 태그 생성 성공(201 + Location + body)")
     void create_ok() throws Exception {
+        // given
         String body = """
         {"name":"java"}
         """;
 
+        // when & then
         mockMvc.perform(post("/admin/tags")
                         .contentType(JSON_UTF8)
-                        .content(body))
+                        .content(body)
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isCreated())
+                // Location 헤더가 /tags/{id} 패턴을 따르는지 확인
                 .andExpect(header().string("Location", matchesPattern("/tags/\\d+")))
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.name").value("java"));
     }
 
     @Test
-    @DisplayName("POST /admin/tags - 중복이면 400")
+    @DisplayName("POST /admin/tags - 중복이면 400 Bad Request")
     void create_dup() throws Exception {
+        // given: 이미 존재하는 태그 생성
         tagRepository.save(Tag.create("java"));
 
         String body = """
         {"name":"java"}
         """;
 
+        // when & then
         mockMvc.perform(post("/admin/tags")
                         .contentType(JSON_UTF8)
-                        .content(body))
+                        .content(body)
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("GET /admin/tags/{id} - 조회 성공")
+    @DisplayName("GET /admin/tags/{id} - 태그 ID로 조회 성공")
     void get_ok() throws Exception {
+        // given
         Tag saved = tagRepository.save(Tag.create("spring"));
 
-        mockMvc.perform(get("/admin/tags/{id}", saved.getId()))
+        // when & then
+        mockMvc.perform(get("/admin/tags/{id}", saved.getId())
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(saved.getId()))
                 .andExpect(jsonPath("$.name").value("spring"));
     }
 
     @Test
-    @DisplayName("GET /admin/tags/{id} - 없으면 404")
+    @DisplayName("GET /admin/tags/{id} - 존재하지 않는 ID면 404 Not Found")
     void get_404() throws Exception {
-        mockMvc.perform(get("/admin/tags/{id}", 999L))
+        // when & then
+        mockMvc.perform(get("/admin/tags/{id}", 999L)
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("GET /admin/tags - 전체 목록")
-    void list_ok() throws Exception {
+    @DisplayName("GET /admin/tags - Page 형태로 전체 목록 조회 확인")
+    void getAll_ok() throws Exception {
+        // given: 3개의 태그 저장
         LongStream.rangeClosed(1, 3)
                 .forEach(i -> tagRepository.save(Tag.create("t" + i)));
 
-        mockMvc.perform(get("/admin/tags"))
+        // when & then
+        mockMvc.perform(get("/admin/tags")
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[*].name", containsInAnyOrder("t1", "t2", "t3")));
+                // Page<T> 구조 확인
+                .andExpect(jsonPath("$.content", hasSize(3)))
+                // 저장된 모든 이름이 포함되었는지 확인
+                .andExpect(jsonPath("$.content[*].name",
+                        containsInAnyOrder("t1", "t2", "t3")))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.number").value(0)); // 현재 페이지 index
     }
 
     @Test
-    @DisplayName("PUT /admin/tags/{id} - 수정 성공")
+    @DisplayName("GET /admin/tags - 기본 페이징(size=5, id DESC) 동작 확인")
+    void getAll_paging_default() throws Exception {
+        // given: 8개의 태그 저장 (id: 1~8). 기본 size=5, sort=id,DESC
+        LongStream.rangeClosed(1, 8)
+                .forEach(i -> tagRepository.save(Tag.create("t" + i)));
+
+        // when & then
+        mockMvc.perform(get("/admin/tags")
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
+                .andExpect(status().isOk())
+                // 첫 페이지 content size = 5
+                .andExpect(jsonPath("$.content", hasSize(5)))
+                // id DESC 기준이므로 t8, t7, t6, t5, t4 순으로 정렬되었는지 확인
+                .andExpect(jsonPath("$.content[0].name").value("t8"))
+                .andExpect(jsonPath("$.content[1].name").value("t7"))
+                .andExpect(jsonPath("$.content[2].name").value("t6"))
+                .andExpect(jsonPath("$.content[3].name").value("t5"))
+                .andExpect(jsonPath("$.content[4].name").value("t4"))
+                .andExpect(jsonPath("$.totalElements").value(8))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.number").value(0));
+    }
+
+    @Test
+    @DisplayName("PUT /admin/tags/{id} - 태그 이름 수정 성공")
     void update_ok() throws Exception {
+        // given
         Tag saved = tagRepository.save(Tag.create("old"));
 
         String body = """
         {"name":"new"}
         """;
 
+        // when & then
         mockMvc.perform(put("/admin/tags/{id}", saved.getId())
                         .contentType(JSON_UTF8)
-                        .content(body))
+                        .content(body)
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(saved.getId()))
                 .andExpect(jsonPath("$.name").value("new"));
     }
 
     @Test
-    @DisplayName("PUT /admin/tags/{id} - 이름 중복이면 400")
+    @DisplayName("PUT /admin/tags/{id} - 이름 중복이면 400 Bad Request")
     void update_dup() throws Exception {
+        // given: 수정 대상 태그 (t1)와 중복될 이름 (dup) 태그 준비
         Tag t1 = tagRepository.save(Tag.create("a"));
         tagRepository.save(Tag.create("dup"));
 
@@ -127,25 +192,35 @@ class TagControllerIntegrationTest {
         {"name":"dup"}
         """;
 
+        // when & then
         mockMvc.perform(put("/admin/tags/{id}", t1.getId())
                         .contentType(JSON_UTF8)
-                        .content(body))
+                        .content(body)
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("DELETE /admin/tags/{id} - 삭제 204")
+    @DisplayName("DELETE /admin/tags/{id} - 삭제 성공 204 No Content")
     void delete_ok() throws Exception {
+        // given
         Tag saved = tagRepository.save(Tag.create("del"));
 
-        mockMvc.perform(delete("/admin/tags/{id}", saved.getId()))
+        // when & then
+        mockMvc.perform(delete("/admin/tags/{id}", saved.getId())
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    @DisplayName("DELETE /admin/tags/{id} - 없으면 404")
+    @DisplayName("DELETE /admin/tags/{id} - 존재하지 않는 ID 삭제 시도 시 404 Not Found")
     void delete_404() throws Exception {
-        mockMvc.perform(delete("/admin/tags/{id}", 12345L))
+        // when & then
+        mockMvc.perform(delete("/admin/tags/{id}", 12345L)
+                        // FIX: X-User-Role 헤더를 통해 ADMIN 권한 부여
+                        .header(ROLE_HEADER, ADMIN))
                 .andExpect(status().isNotFound());
     }
 }

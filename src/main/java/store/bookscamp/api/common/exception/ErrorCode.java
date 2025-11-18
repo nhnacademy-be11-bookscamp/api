@@ -68,8 +68,8 @@ public enum ErrorCode {
     UNAUTHORIZED_USER(UNAUTHORIZED,"권한이 없습니다."),
     FORBIDDEN_USER(FORBIDDEN,"잘못된 권한입니다."),
 
-    DELIVERY_POLICY_NOT_CONFIGURED(BAD_REQUEST, "배송비 정책이 설정되지 않았습니다."),
-    DELIVERY_POLICY_IN_USE(CONFLICT, "해당 배송비 정책은 사용 중이라 삭제할 수 없습니다."),
+    DELIVERY_POLICY_NOT_CONFIGURED(NOT_FOUND, "배송비 정책이 설정되지 않았습니다."),
+    DELIVERY_POLICY_ALREADY_EXISTS(CONFLICT, "배송비 정책이 이미 존재합니다."),
 
     DELIVERY_POLICY_NOT_FOUND(NOT_FOUND, "배송 정책이 설정되지 않았습니다."),
 
