@@ -4,6 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.common.annotation.RequiredRole;
+import store.bookscamp.api.common.pagination.RestPageImpl;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.couponissue.controller.request.CouponIssueRequest;
 import store.bookscamp.api.couponissue.controller.response.CouponIssueDownloadResponse;
@@ -46,18 +50,19 @@ public class CouponIssueController {
 
     @GetMapping("/my")
     @RequiredRole("USER")
-    public ResponseEntity<List<CouponIssueResponse>> getMyCoupons(
+    public ResponseEntity<RestPageImpl<CouponIssueResponse>> getMyCoupons(
             HttpServletRequest request,
-            @RequestParam(name = "status", required = false, defaultValue = "ALL") CouponFilterStatus status
-            ) {
+            @RequestParam(name = "status", required = false, defaultValue = "ALL") CouponFilterStatus status,
+            @PageableDefault(size = 10, sort = "createdAt,desc") Pageable pageable
+    ) {
         Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
-        List<CouponIssue> couponIssues = couponIssueService.listCouponIssue(memberId, status);
+        Page<CouponIssue> couponIssuesPage = couponIssueService.listCouponIssue(memberId, status, pageable);
 
-        List<CouponIssueResponse> response = couponIssues.stream()
-                .map(CouponIssueResponse::from)
-                .toList();
+        Page<CouponIssueResponse> response = couponIssuesPage
+                .map(CouponIssueResponse::from);
 
-        return ResponseEntity.ok(response);
+        RestPageImpl<CouponIssueResponse> responseRestPage = new RestPageImpl<>(response);
+        return ResponseEntity.ok(responseRestPage);
     }
 
     @GetMapping("/downloadable/{bookId}")

@@ -9,7 +9,6 @@ import store.bookscamp.api.member.service.dto.MemberCreateDto;
 
 public record MemberCreateRequest(
         @NotNull
-        @Size(min=4, max = 20)
         String username,
         @NotBlank
         String password,
