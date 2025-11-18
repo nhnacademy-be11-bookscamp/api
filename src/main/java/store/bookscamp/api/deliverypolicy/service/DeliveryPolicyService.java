@@ -1,10 +1,13 @@
 package store.bookscamp.api.deliverypolicy.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
+import store.bookscamp.api.deliverypolicy.controller.request.DeliveryPolicyCreateRequest;
 import store.bookscamp.api.deliverypolicy.controller.request.DeliveryPolicyUpdateRequest;
 import store.bookscamp.api.deliverypolicy.controller.response.DeliveryPolicyGetResponse;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
@@ -18,6 +21,21 @@ public class DeliveryPolicyService {
     private final DeliveryPolicyRepository deliveryPolicyRepository;
 
     @Transactional
+    public DeliveryPolicyGetResponse create (DeliveryPolicyCreateRequest req) {
+        deliveryPolicyRepository.findTopByOrderByIdAsc()
+                .ifPresent(deliveryPolicy -> {
+                    throw new ApplicationException(ErrorCode.DELIVERY_POLICY_ALREADY_EXISTS);
+                });
+        DeliveryPolicy policy = new DeliveryPolicy(
+                req.getFreeDeliveryThreshold(),
+                req.getBaseDeliveryFee()
+        );
+
+        DeliveryPolicy saved = deliveryPolicyRepository.save(policy);
+        return DeliveryPolicyGetResponse.fromEntity(saved);
+    }
+
+    @Transactional
     public DeliveryPolicyGetResponse update(DeliveryPolicyUpdateRequest req) {
         DeliveryPolicy policy = deliveryPolicyRepository.findTopByOrderByIdAsc()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.DELIVERY_POLICY_NOT_CONFIGURED));
@@ -26,7 +44,6 @@ public class DeliveryPolicyService {
         return DeliveryPolicyGetResponse.fromEntity(policy);
     }
 
-    /** 현재 정책 조회(사용자/관리자) */
     public DeliveryPolicyGetResponse getDeliveryPolicy() {
         DeliveryPolicy policy = deliveryPolicyRepository.findTopByOrderByIdAsc()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.DELIVERY_POLICY_NOT_CONFIGURED));

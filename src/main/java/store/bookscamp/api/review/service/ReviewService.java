@@ -3,6 +3,7 @@ package store.bookscamp.api.review.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.member.entity.Member;
@@ -33,11 +34,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ReviewService {
 
+    private final ReviewImageService reviewImageService;
+    private final PointHistoryService pointHistoryService;
+    private final BookImageService bookImageService;
+
     private final MemberRepository memberRepository;
     private final OrderItemRepository orderItemRepository;
     private final ReviewRepository reviewRepository;
-    private final ReviewImageService reviewImageService;
-    private final PointHistoryService pointHistoryService;
     private final PointPolicyRepository pointPolicyRepository;
     private final ReviewQueryRepository reviewQueryRepository;
 
@@ -90,6 +93,35 @@ public class ReviewService {
 
     public List<MyReviewDto> getMyReviews(Long memberId) {
         return reviewQueryRepository.findMyReviews(memberId);
+    }
+
+    public MyReviewDto getUpdateReview(Long reviewId, Long memberId) {
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.REVIEW_NOT_FOUND));
+
+        // 본인 리뷰인지 검증
+        if (!review.getMember().getId().equals(memberId)) {
+            throw new ApplicationException(ErrorCode.NO_PERMISSION);
+        }
+
+        // 리뷰 이미지 조회
+        List<String> imageUrls = reviewImageService.getReviewImages(reviewId);
+
+        // 도서 썸네일 조회
+        Long bookId = review.getOrderItem().getBook().getId();
+        String thumbnailUrl = bookImageService.getThumbnailUrl(bookId);
+
+        return new MyReviewDto(
+                review.getId(),
+                bookId,
+                review.getOrderItem().getBook().getTitle(),
+                thumbnailUrl,
+                review.getContent(),
+                review.getScore(),
+                review.getCreatedAt(),
+                imageUrls
+        );
     }
 
     private Member getMember(Long memberId) {
