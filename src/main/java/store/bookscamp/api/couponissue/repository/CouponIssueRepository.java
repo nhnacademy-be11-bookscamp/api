@@ -17,4 +17,6 @@ public interface CouponIssueRepository extends JpaRepository<CouponIssue, Long>,
     List<CouponIssue> findAllByMember(Member member);
 
     void deleteByMember_IdAndId(Long memberId, Long id);
+
+    void deleteByCoupon_Id(Long couponId);
 }

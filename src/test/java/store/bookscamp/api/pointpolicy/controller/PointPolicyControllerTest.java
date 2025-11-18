@@ -55,7 +55,7 @@ class PointPolicyControllerTest {
         given(pointPolicyService.createPointPolicy(any())).willReturn(1L);
 
         // when & then
-        mockMvc.perform(post("/point-policies")
+        mockMvc.perform(post("/admin/point-policies")
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
@@ -71,7 +71,7 @@ class PointPolicyControllerTest {
         doNothing().when(pointPolicyService).updatePointPolicy(any());
 
         // when & then
-        mockMvc.perform(put("/point-policies/{id}", 1L)
+        mockMvc.perform(put("/admin/point-policies/{id}", 1L)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
@@ -86,7 +86,7 @@ class PointPolicyControllerTest {
         doNothing().when(pointPolicyService).deletePointPolicy(1L);
 
         // when & then
-        mockMvc.perform(delete("/point-policies/{id}", 1L))
+        mockMvc.perform(delete("/admin/point-policies/{id}", 1L))
                 .andExpect(status().isOk());
 
         verify(pointPolicyService).deletePointPolicy(1L);
@@ -101,7 +101,7 @@ class PointPolicyControllerTest {
         given(pointPolicyService.getPointPolicy(1L)).willReturn(policy);
 
         // when & then
-        mockMvc.perform(get("/point-policies/{id}", 1L))
+        mockMvc.perform(get("/admin/point-policies/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointPolicyId").value(1L))
                 .andExpect(jsonPath("$.pointPolicyType").value("WELCOME"))
@@ -121,7 +121,7 @@ class PointPolicyControllerTest {
         given(pointPolicyService.listPointPolicies()).willReturn(List.of(policy1, policy2));
 
         // when & then
-        mockMvc.perform(get("/point-policies"))
+        mockMvc.perform(get("/admin/point-policies"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].pointPolicyId").value(1L))
                 .andExpect(jsonPath("$[1].pointPolicyId").value(2L))

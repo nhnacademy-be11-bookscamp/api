@@ -79,7 +79,12 @@ public enum ErrorCode {
 
     CART_ITEM_NOT_COMPLETE(BAD_REQUEST, "일부 장바구니 아이템을 찾을 수 없습니다."),
 
-    ORDER_NOT_FOUND(NOT_FOUND, "주문을 찾을 수 없습니다.")
+    ORDER_NOT_FOUND(NOT_FOUND, "주문을 찾을 수 없습니다."),
+
+    REVIEW_NOT_FOUND(NOT_FOUND, "리뷰를 찾을 수 없습니다."),
+    REVIEW_ALREADY_EXISTS(BAD_REQUEST, "이미 존재하는 리뷰입니다"),
+    ORDER_ITEM_NOT_FOUND(NOT_FOUND, "주문상품을 찾을 수 없습니다"),
+    NO_PERMISSION(FORBIDDEN, "권한이 없습니다.")
     ;
 
 
