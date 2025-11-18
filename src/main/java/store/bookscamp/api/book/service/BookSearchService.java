@@ -16,6 +16,7 @@ import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 import store.bookscamp.api.book.controller.request.RerankerRequest;
 import store.bookscamp.api.book.controller.response.RerankerResponse;
+import store.bookscamp.api.book.entity.BookCaching;
 import store.bookscamp.api.book.entity.BookDocument;
 import store.bookscamp.api.book.feign.RerankerClient;
 import store.bookscamp.api.book.service.dto.BookSearchRequest;
@@ -36,8 +37,15 @@ public class BookSearchService {
     private final RerankerClient rerankerClient;
     private final CategoryRepository categoryRepository;
     private final BookAnswerService bookAnswerService;
+    private final BookCachingIndexService cachingIndexService;
 
     public Page<BookSortDto> searchBooks(BookSearchRequest request) {
+        if(request.keyword()!=null && !request.keyword().equals("")){
+            Optional<BookCaching> cache = cachingIndexService.getCache(request.keyword());
+            if (cache.isPresent()) {
+                return convertToSearchResponse(cache.get(), request);
+            }
+        }
         NativeQueryBuilder qb = new NativeQueryBuilder();
         if (request.keyword() == null || request.keyword().isEmpty()) {
             Category category = null;
@@ -50,21 +58,17 @@ public class BookSearchService {
     }
 
     public Page<BookSortDto> noKeyWordSearch(NativeQueryBuilder qb, BookSearchRequest request, Category category) {
-        if (category != null && category.getName().isBlank()) {
-            qb.withQuery(multiMatch(m -> m.query(category.getName())
-                    .fields("category^100", "title^90", "contributors^80", "tags^70", "isbn^60", "publisher^50",
-                            "explanation^40",
-                            "reviews^30")));
-        } else {
-            qb.withQuery(q -> q.matchAll(m -> m));
+        if (category != null && !category.getName().isBlank()) {
+            qb.withFilter(f -> f.term(t -> t.field("category").value(category.getName())));
         }
+        qb.withQuery(q -> q.matchAll(m -> m));
 
         qb.withPageable(request.pageable());
         Query query = qb.build();
 
         SearchHits<BookDocument> hits = elasticsearchOperations.search(query, BookDocument.class);
         List<BookDocument> documents = hits.getSearchHits().stream().map(SearchHit::getContent).toList();
-        documents = applySortAfterRerank(documents, request.sortType());
+        documents = applySortBookDocument(documents, request.sortType());
         return new PageImpl<>(documents.stream().map(BookSortDto::fromDocument).toList(), request.pageable(),
                 hits.getTotalHits());
     }
@@ -76,45 +80,49 @@ public class BookSearchService {
     public Page<BookSortDto> hybridSearchWithLLM(BookSearchRequest request) {
         // 🔹 기존 hybridSearchWithRRF 결과 가져오기
         List<BookDocument> docs = hybridSearchWithRRF(request);
+        List<BookDocument> topDocs = docs.stream().limit(10).toList();
         // 🔹 Gemini 호출
-        Map<String, Object> aiResponse = bookAnswerService.generateAnswer(request.keyword(),docs);
-        List<Long> idList= (List<Long>) aiResponse.get("idList");
-        List<String> recList= (List<String>) aiResponse.get("recList");
-        List<BookDocument> aiRerankDocs = new  ArrayList<>();
-        for(int i = 0;i<idList.size();i++){
-            for(int j=0;j<docs.size();j++){
-                if(idList.get(i)==docs.get(j).getId()){
-                    aiRerankDocs.add(docs.get(j));
-                }
-            }
+        Map<String, Object> aiResponse = null;
+        try {
+            aiResponse = bookAnswerService.generateAnswer(request.keyword(), topDocs);
+        } catch (Exception e) {
+            log.warn("[hybridSearchWithLLM] LLM 호출 실패, LLM 없이 진행합니다. keyword={}", request.keyword(), e);
         }
-        aiRerankDocs=applySortAfterRerank(aiRerankDocs, request.sortType());
-       /* List<BookDocument> notAiRerankDocs = new  ArrayList<>();
-        for(int i =docs.size()-idList.size()+1;i<docs.size();i++){
-            notAiRerankDocs.add(docs.get(i));
+        List<BookSortDto> dtoList;
+
+        if (aiResponse == null) {
+            // 🔹 LLM 실패 → aiRank/aiRecommand 없이 기본 정렬만
+            dtoList = docs.stream()
+                    .map(BookSortDto::fromDocument)
+                    .toList();
+
+        } else {
+            // 🔹 LLM 성공 → 지금 네가 짜놓은 로직 그대로
+            List<Long> idList = (List<Long>) aiResponse.get("idList");
+            List<String> recList = (List<String>) aiResponse.get("recList");
+            dtoList = buildDtoWithAiInfo(docs, idList, recList);
         }
-        applySortAfterRerank(notAiRerankDocs, request.sortType());
-        for(int j=0;j<notAiRerankDocs.size();j++){
-            aiRerankDocs.add(notAiRerankDocs.get(j));
-        }*/
-        List<BookSortDto> sortDtoList = new ArrayList<>();
-        for(int i =0;i<aiRerankDocs.size();i++){
-            BookSortDto sortDto = BookSortDto.fromDocument(aiRerankDocs.get(i));
-            for(int j=0;j<idList.size();j++){
-                if(sortDto.getId()==idList.get(j)){
-                    if(j<=2){
-                        sortDto.setAiRank(j+1);
-                        sortDto.setAiRecommand(recList.get(j));
-                    }
-                }
-            }
-            sortDtoList.add(sortDto);
+
+        cachingIndexService.saveCache(request.keyword(), dtoList);
+        List<BookSortDto> sorted =
+                applySortAfterSortDto(dtoList, request.sortType());
+
+        Pageable pageable = request.pageable();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), sorted.size());
+
+        if (start >= sorted.size()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, sorted.size());
         }
-        Page<BookSortDto> page = new PageImpl<>(sortDtoList,
-                        request.pageable(), aiRerankDocs.size());
+
+        List<BookSortDto> pageSlice = sorted.subList(start, end);
+        return new PageImpl<>(pageSlice, pageable, sorted.size());
+        /*
+        Page<BookSortDto> page = new PageImpl<>(sortedDtos,
+                request.pageable(), dtoList.size());
 
         // 🔹 결과 통합
-        return page;
+        return page;*/
     }
 
 
@@ -130,25 +138,34 @@ public class BookSearchService {
 
         // 1️⃣ BM25 검색 (키워드)
         List<BookDocument> bm25Results = runBm25Search(category, keyword, 100);
+        System.out.println("bm25Results size : " + bm25Results.size());
+        for (BookDocument bm : bm25Results) {
+            System.out.println("bm25Results: " + bm.getTitle());
+        }
 
         // 2️⃣ KNN 검색 (벡터)
         List<BookDocument> knnResults = runKnnSearch(category, keyword, 100);
+        System.out.println("knnResults size : " + knnResults.size());
+        for (BookDocument kn : knnResults) {
+            System.out.println("knnResults: " + kn.getTitle());
+        }
 
         // 3️⃣ RRF 융합
         List<BookDocument> fused = rrfFusion(bm25Results, knnResults);
+        System.out.println("fused results size : " + fused.size());
+        for (BookDocument rrf : fused) {
+            System.out.println("fused: " + rrf.getTitle());
+        }
 
         // 4️⃣ Reranker 적용
         List<BookDocument> reranked = rerankResults(keyword, fused);
 
         // 5️⃣ 상위 10개 반환
-        List<BookDocument> topDocs = reranked.stream().limit(10).toList();
+        //List<BookDocument> topDocs = reranked.stream().limit(10).toList();
 
-        for(int i = 0; i < topDocs.size(); i++){
-            log.info("top-title : " + topDocs.get(i).getTitle());
-        }
 
-        topDocs = applySortAfterRerank(topDocs, request.sortType());
-        return topDocs;
+        reranked = applySortBookDocument(reranked, request.sortType());
+        return reranked;
     }
 
 
@@ -193,7 +210,7 @@ public class BookSearchService {
 
         NativeQuery query = NativeQuery.builder()
                 .withKnnSearches(knn -> knn
-                        .field("book_vector")
+                        .field("bookVector")
                         .queryVector(vectorList)  // ✅ 여기서 List<Float> 사용
                         .k(size)
                         .numCandidates(150)
@@ -309,8 +326,12 @@ public class BookSearchService {
         return list;
     }
 
-    private List<BookDocument> applySortAfterRerank(List<BookDocument> docs, String sortType) {
+    private List<BookDocument> applySortBookDocument(List<BookDocument> docs, String sortType) {
         return switch (sortType) {
+            case "title" -> docs.stream()
+                    .sorted(Comparator.comparing(BookDocument::getTitle,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .toList();
             case "bookLike" -> docs.stream()
                     .sorted(Comparator.comparingLong(BookDocument::getViewCount).reversed())
                     .toList();
@@ -332,6 +353,98 @@ public class BookSearchService {
             default -> docs; // 기본은 rerank 결과 그대로 사용
         };
     }
+
+    private List<BookSortDto> buildDtoWithAiInfo(List<BookDocument> docs,
+                                                 List<Long> idList,
+                                                 List<String> recList) {
+        List<BookSortDto> sortDtoList = new ArrayList<>();
+
+        for (int i = 0; i < idList.size(); i++) {
+            Long id = idList.get(i);
+            for (BookDocument doc : docs) {
+                if (doc.getId().equals(id)) {
+                    BookSortDto dto = BookSortDto.fromDocument(doc);
+                    if (i <= 2) { // 상위 3개만 노출
+                        dto.setAiRank(i + 1);
+                        dto.setAiRecommand(recList.get(i));
+                    }
+                    sortDtoList.add(dto);
+                }
+            }
+        }
+        return sortDtoList;
+    }
+
+    private Page<BookSortDto> convertToSearchResponse(BookCaching cache, BookSearchRequest request) {
+
+        String sortType = request.sortType();
+        Pageable pageable = request.pageable();
+
+        // 1) 전체 리스트 가져옴
+        List<BookSortDto> docs = new ArrayList<>(cache.getBooks());
+
+        // 2) 정렬은 전체 리스트에 대해 수행해야 한다
+        docs = applySortAfterSortDto(docs, sortType);
+
+        // 3) 정렬된 리스트에서 page 범위만 자른다
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), docs.size());
+
+        if (start >= docs.size()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, docs.size());
+        }
+
+        List<BookSortDto> pageSlice = docs.subList(start, end);
+
+        // 4) 그걸 PageImpl 로 감싸서 리턴
+        return new PageImpl<>(pageSlice, pageable, docs.size());
+    }
+
+    private List<BookSortDto> applySortAfterSortDto(List<BookSortDto> dtos, String sortType) {
+
+        if (dtos == null || dtos.isEmpty()) {
+            return dtos;
+        }
+
+        return switch (sortType) {
+
+            case "title" -> dtos.stream()
+                    .sorted(Comparator.comparing(BookSortDto::getTitle,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .toList();
+
+            case "bookLike" -> dtos.stream()
+                    .sorted(Comparator.comparingLong(BookSortDto::getViewCount)
+                            .reversed())
+                    .toList();
+
+            case "publishDate" -> dtos.stream()
+                    .sorted(Comparator.comparing(BookSortDto::getPublishDate,
+                            Comparator.nullsLast(Comparator.reverseOrder())))
+                    .toList();
+
+            case "low-price" -> dtos.stream()
+                    .sorted(Comparator.comparingInt(BookSortDto::getSalePrice))
+                    .toList();
+
+            case "high-price" -> dtos.stream()
+                    .sorted(Comparator.comparingInt(BookSortDto::getSalePrice)
+                            .reversed())
+                    .toList();
+
+            case "rating" -> dtos.stream()
+                    .sorted(Comparator.comparingDouble(BookSortDto::getAverageRating)
+                            .reversed())
+                    .toList();
+
+            case "review" -> dtos.stream()
+                    .sorted(Comparator.comparingLong(BookSortDto::getReviewCount)
+                            .reversed())
+                    .toList();
+            default -> dtos;
+        };
+    }
+
 }
 
 
