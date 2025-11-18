@@ -13,14 +13,16 @@ import jakarta.persistence.Lob;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.bookscamp.api.common.entity.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
+import store.bookscamp.api.common.entity.SoftDeleteEntity;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class Book extends BaseEntity {
+@SQLRestriction("deleted_at IS NULL")
+public class Book extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)

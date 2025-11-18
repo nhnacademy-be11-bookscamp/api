@@ -37,7 +37,7 @@ spring:
   datasource:
     type: org.apache.commons.dbcp2.BasicDataSource
     dbcp2:
-      initial-size: 5
+      initial-size: 10
       max-total: 30
       min-idle: 5
       max-idle: 15

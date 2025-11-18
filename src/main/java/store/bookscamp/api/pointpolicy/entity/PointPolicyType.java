@@ -7,6 +7,7 @@ public enum PointPolicyType {
     ROYAL,
     GOLD,
     PLATINUM,
-    REVIEW,
+    REVIEW_TEXT,
+    REVIEW_IMAGE,
     WELCOME
 }
