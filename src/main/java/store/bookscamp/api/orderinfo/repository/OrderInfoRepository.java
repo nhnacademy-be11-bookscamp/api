@@ -9,11 +9,4 @@ import store.bookscamp.api.orderinfo.entity.OrderStatus;
 
 public interface OrderInfoRepository extends JpaRepository<OrderInfo, Long> {
 
-    // 회원 주문 목록 조회 (페이징 + 정렬은 Pageable에서 처리)
-    Page<OrderInfo> findByMemberId(Long orderId, Pageable pageable);
-
-    // TODO : 아직 사용 안함 => 필요 없으면 삭제
-    Page<OrderInfo> findByMemberIdAndOrderStatusIn(Long orderId,
-                                                   Collection<OrderStatus> orderStatus,
-                                                   Pageable pageable);
 }

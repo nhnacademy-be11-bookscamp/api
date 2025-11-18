@@ -1,5 +1,7 @@
 package store.bookscamp.api.tag.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,12 @@ public class TagService {
         return tagRepository.findAll().stream()
                 .map(TagGetDto::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TagGetDto> getPage(Pageable pageable) {
+        return tagRepository.findAll(pageable)
+                .map(TagGetDto::from);
     }
 
     @Transactional
