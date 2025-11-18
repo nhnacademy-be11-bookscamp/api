@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
-import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
 import store.bookscamp.api.deliverypolicy.repository.DeliveryPolicyRepository;
@@ -23,12 +22,12 @@ import store.bookscamp.api.orderinfo.service.dto.PackagingDto;
 import store.bookscamp.api.orderinfo.service.dto.PriceDto;
 import store.bookscamp.api.packaging.repository.PackagingRepository;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
-import store.bookscamp.api.couponissue.query.CouponIssueSearchQuery;
-import store.bookscamp.api.couponissue.query.dto.CouponSearchConditionDto;
 import store.bookscamp.api.coupon.entity.Coupon;
-import store.bookscamp.api.coupon.entity.DiscountType;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
+
+import static store.bookscamp.api.coupon.entity.TargetType.BIRTHDAY;
+import static store.bookscamp.api.coupon.entity.TargetType.WELCOME;
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +36,10 @@ public class OrderPrepareService {
 
     private final BookRepository bookRepository;
     private final BookImageService bookImageService;
-    private final BookCategoryRepository bookCategoryRepository;
     private final PackagingRepository packagingRepository;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
     private final MemberRepository memberRepository;
-    private final CouponIssueSearchQuery couponIssueSearchQuery;
+    private final OrderInfoService orderInfoService;
 
 
     public OrderPrepareDto prepare(OrderPrepareRequestDto request, Long memberId) {
@@ -93,7 +91,7 @@ public class OrderPrepareService {
                     .map(OrderItemRequestDto::bookId)
                     .toList();
 
-            availableCoupons = getAvailableCoupons(member, bookIds, netAmount);
+            availableCoupons = getAvailableCoupons(member, bookIds, request.items(), netAmount);
         }
 
         List<PackagingDto> availablePackagings = getAvailablePackagings();
@@ -130,42 +128,27 @@ public class OrderPrepareService {
                 .toList();
     }
 
-    private List<CouponDto> getAvailableCoupons(Member member, List<Long> bookIds, int netAmount) {
-        List<Long> categoryIds = findCategoryIds(bookIds);
+    private List<CouponDto> getAvailableCoupons(Member member, List<Long> bookIds, List<OrderItemRequestDto> items, int netAmount) {
+        List<CouponIssue> couponIssues = orderInfoService.getAvailableCouponIssues(member, bookIds, netAmount);
 
-        CouponSearchConditionDto searchCondition = new CouponSearchConditionDto(
-                member.getId(),
-                categoryIds,
-                bookIds
-        );
-
-        List<CouponIssue> couponIssues = couponIssueSearchQuery.searchCouponIssue(searchCondition);
-        
-        return convertToCouponDtos(couponIssues, netAmount);
+        return convertToCouponDtos(couponIssues, items, netAmount);
     }
 
-    private List<Long> findCategoryIds(List<Long> bookIds) {
-        return bookIds.stream()
-                .flatMap(bookId -> bookCategoryRepository.findByBook_Id(bookId).stream())
-                .map(bookCategory -> bookCategory.getCategory().getId())
-                .distinct()
-                .toList();
-    }
-
-    private List<CouponDto> convertToCouponDtos(List<CouponIssue> couponIssues, int totalAmount) {
+    private List<CouponDto> convertToCouponDtos(List<CouponIssue> couponIssues, List<OrderItemRequestDto> items, int netAmount) {
         return couponIssues.stream()
-                .map(issue -> createCouponDto(issue, totalAmount))
+                .map(issue -> createCouponDto(issue, items, netAmount))
                 .toList();
     }
 
-    private CouponDto createCouponDto(CouponIssue issue, int totalAmount) {
+    private CouponDto createCouponDto(CouponIssue issue, List<OrderItemRequestDto> items, int netAmount) {
         Coupon coupon = issue.getCoupon();
-        int expectedDiscount = calculateExpectedDiscount(coupon, totalAmount);
+        int applicableAmount = calculateApplicableAmount(coupon, items, netAmount);
+        int expectedDiscount = orderInfoService.calculateCouponDiscount(issue, applicableAmount);
 
         return new CouponDto(
                 issue.getId(),
                 coupon.getId(),
-                buildCouponName(coupon),
+                coupon.getName(),
                 coupon.getDiscountType().name(),
                 coupon.getDiscountValue(),
                 coupon.getMinOrderAmount(),
@@ -174,41 +157,15 @@ public class OrderPrepareService {
         );
     }
 
-    private String buildCouponName(Coupon coupon) {
-        StringBuilder name = new StringBuilder();
-
-        if (coupon.getMinOrderAmount() > 0) {
-            name.append(String.format("%,d원 이상 구매 시 ", coupon.getMinOrderAmount()));
+    private int calculateApplicableAmount(Coupon coupon, List<OrderItemRequestDto> items, int netAmount) {
+        if (coupon.getTargetType() == WELCOME || coupon.getTargetType() == BIRTHDAY) {
+            return netAmount;
         }
 
-        if (coupon.getDiscountType() == DiscountType.RATE) {
-            name.append(String.format("%d%% 할인", coupon.getDiscountValue()));
-            if (coupon.getMaxDiscountAmount() != null) {
-                name.append(String.format(" (최대 %,d원)", coupon.getMaxDiscountAmount()));
-            }
-        } else {
-            name.append(String.format("%,d원 할인", coupon.getDiscountValue()));
-        }
-
-        return name.toString();
-    }
-
-    private int calculateExpectedDiscount(Coupon coupon, int totalAmount) {
-        if (totalAmount < coupon.getMinOrderAmount()) {
-            return 0;
-        }
-
-        if (coupon.getDiscountType() == DiscountType.RATE) {
-            int discount = (int) Math.floor(totalAmount * coupon.getDiscountValue() / 100.0);
-
-            if (coupon.getMaxDiscountAmount() != null) {
-                discount = Math.min(discount, coupon.getMaxDiscountAmount());
-            }
-
-            return discount;
-        } else {
-            return coupon.getDiscountValue();
-        }
+        return items.stream()
+                .filter(item -> orderInfoService.isApplicableItem(item.bookId(), coupon.getTargetType(), coupon.getTargetId()))
+                .mapToInt(item -> orderInfoService.calculateItemAmount(item.bookId(), item.quantity()))
+                .sum();
     }
 
 }
