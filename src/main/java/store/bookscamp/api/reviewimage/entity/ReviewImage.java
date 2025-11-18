@@ -26,7 +26,6 @@ public class ReviewImage {
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
-    @Column(nullable = false)
     private String imageUrl;
 
     public ReviewImage(Review review, String imageUrl) {

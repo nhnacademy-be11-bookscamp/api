@@ -159,6 +159,25 @@ public class BookService {
     }
 
     @Transactional
+    public void deleteBook(Long id) {
+
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
+
+        book.softDelete();
+
+        List<BookTag> bookTags = bookTagRepository.findAllByBookId(id);
+        for (BookTag bt : bookTags) {
+            bt.softDelete();
+        }
+
+        List<BookCategory> bookCategories = bookCategoryRepository.findAllByBookId(id);
+        for (BookCategory bc : bookCategories) {
+            bc.softDelete();
+        }
+    }
+
+    @Transactional
     public BookDetailDto getBookDetail(Long bookId) {
 
         Book book = bookRepository.getBookById(bookId);

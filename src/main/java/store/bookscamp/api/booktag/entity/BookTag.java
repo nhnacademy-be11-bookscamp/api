@@ -12,12 +12,13 @@ import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.common.entity.SoftDeleteEntity;
 import store.bookscamp.api.tag.entity.Tag;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class BookTag {
+public class BookTag extends SoftDeleteEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     private Long id;

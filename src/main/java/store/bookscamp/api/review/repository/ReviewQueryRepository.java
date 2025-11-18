@@ -92,7 +92,7 @@ public class ReviewQueryRepository {
                     Long reviewId = tuple.get(review.id);
                     Long bookId = tuple.get(book.id);
 
-                    // ⭐ 썸네일 추출
+                    // 썸네일 추출
                     String thumbnailUrl = bookImageService.getThumbnailUrl(bookId);
 
                     // 리뷰 이미지 목록

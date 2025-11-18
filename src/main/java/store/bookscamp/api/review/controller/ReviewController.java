@@ -15,23 +15,22 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/review")
 @Tag(name = "리뷰 API", description = "Review API입니다")
 public class ReviewController {
 
     private final ReviewService reviewService;
 
-    // 리뷰 작성 가능한 상품 조회
-    @GetMapping("/reviewable")
-    @Operation(summary = "read reviewable orderItems", description = "리뷰 작성 가능한 상품 조회 API")
+    // todo: 도서 상세페이지 리뷰 조회 평균 평점
+
+    @GetMapping("/member/review/reviewable")
+    @Operation(summary = "read reviewable orderItems", description = "작성 가능한 리뷰 상품 조회 API")
     @RequiredRole("USER")
     public ResponseEntity<List<ReviewableItemDto>> getReviewableItems(HttpServletRequest request) {
         Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
         return ResponseEntity.ok(reviewService.getReviewableItems(memberId));
     }
 
-    // 작성한 리뷰 조회
-    @GetMapping("/my")
+    @GetMapping("/member/review/my")
     @Operation(summary = "read my reviews", description = "유저가 작성한 리뷰 조회 API")
     @RequiredRole("USER")
     public ResponseEntity<List<MyReviewDto>> getMyReviews(HttpServletRequest request) {
@@ -39,7 +38,18 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getMyReviews(memberId));
     }
 
-    @PostMapping
+    @GetMapping("/member/review/{reviewId}")
+    @Operation(summary = "read update page", description = "리뷰 수정 페이지")
+    @RequiredRole("USER")
+    public ResponseEntity<MyReviewDto> getUpdateReview(
+            @PathVariable Long reviewId,
+            HttpServletRequest request
+    ) {
+        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        return ResponseEntity.ok(reviewService.getUpdateReview(reviewId, memberId));
+    }
+
+    @PostMapping("/member/review")
     @Operation(summary = "create review", description = "리뷰 등록 API")
     @RequiredRole("USER")
     public ResponseEntity<Void> createReview(
@@ -51,7 +61,7 @@ public class ReviewController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping
+    @PutMapping("/member/review")
     @Operation(summary = "update review", description = "리뷰 수정 API")
     @RequiredRole("USER")
     public ResponseEntity<Void> updateReview(

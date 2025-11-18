@@ -13,11 +13,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.category.entity.Category;
+import store.bookscamp.api.common.entity.SoftDeleteEntity;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class BookCategory {
+public class BookCategory extends SoftDeleteEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     private Long id;

@@ -10,6 +10,8 @@ import store.bookscamp.api.reviewimage.repository.ReviewImageRepository;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageCreateDto;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageDeleteDto;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewImageService {
@@ -44,5 +46,12 @@ public class ReviewImageService {
                     .orElseThrow(() -> new ApplicationException(ErrorCode.IMAGE_NOT_FOUND));
             reviewImageRepository.delete(image);
         }
+    }
+
+    public List<String> getReviewImages(Long reviewId) {
+        return reviewImageRepository.findByReviewId(reviewId)
+                .stream()
+                .map(ReviewImage::getImageUrl)
+                .toList();
     }
 }
