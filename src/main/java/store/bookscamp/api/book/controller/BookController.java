@@ -37,8 +37,6 @@ import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.book.service.dto.BookWishListDto;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.common.annotation.RequiredRole;
-import store.bookscamp.api.common.exception.ApplicationException;
-import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.common.pagination.RestPageImpl;
 
 
@@ -77,7 +75,6 @@ public class BookController {
         return ResponseEntity.ok().body("{\"message\":\"알라딘 도서 등록이 완료되었습니다.\"}");
     }
 
-    // 도서 수정
     @PutMapping(value = "/admin/books/{id}/update", produces = "application/json")
     @Operation(summary = "update book", description = "도서수정 API")
     @RequiredRole("ADMIN")
@@ -89,6 +86,14 @@ public class BookController {
         bookService.updateBook(id, req);
 
         return ResponseEntity.ok().body("{\"message\":\"도서 정보가 수정되었습니다.\"}");
+    }
+
+    @DeleteMapping("/admin/books/{id}")
+    @Operation(summary = "delete book", description = "도서삭제 API")
+    @RequiredRole("ADMIN")
+    public ResponseEntity<Void> deleteBook(@PathVariable Long bookId) {
+        bookService.deleteBook(bookId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/books")
