@@ -1,7 +1,7 @@
 {
   "settings": {
     "index.lifecycle.name": "bookscamp-cache-policy",
-    "index.lifecycle rollover_alias": "bookscamp-caching",
+    "index.lifecycle.rollover_alias": "bookscamp-caching",
     "analysis": {
       "analyzer": {
         "nori_analyzer": {
