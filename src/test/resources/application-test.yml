@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: api-test
+
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=MYSQL
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+
+  cache:
+    type: none
+
+  elasticsearch:
+    uris: http://localhost:9200
+    username:
+    password:
+    ssl:
+      verification-mode: none
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+logging:
+  level:
+    root: WARN
+
+elasticsearch:
+  index:
+    name: test-index
+
+google:
+  gemini:
+    api-key: dummy-test-key
+
+aladin:
+  base-url: https://example.com
+  ttb-key: dummy-ttb-key
+  output: js
+  version: "20131101"
