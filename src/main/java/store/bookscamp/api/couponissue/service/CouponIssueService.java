@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -76,12 +78,12 @@ public class CouponIssueService {
         return couponIssueRepository.save(couponIssue).getId();
     }
 
-    public List<CouponIssue> listCouponIssue(Long memberId, CouponFilterStatus status) {
+    public Page<CouponIssue> listCouponIssue(Long memberId, CouponFilterStatus status, Pageable pageable) {
         if(!memberRepository.existsById(memberId)){
             throw new ApplicationException(MEMBER_NOT_FOUND);
         }
 
-        return couponIssueRepository.findByMemberIdAndFilterStatus(memberId, status);
+        return couponIssueRepository.findByMemberIdAndFilterStatus(memberId, status, pageable);
     }
 
     @Transactional(readOnly = true)

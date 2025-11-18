@@ -9,10 +9,12 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query; // 네이티브 쿼리용
+import jakarta.persistence.Query;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.data.domain.Page; // [수정] Page 임포트
+import org.springframework.data.domain.PageImpl; // [수정] PageImpl 임포트
+import org.springframework.data.domain.Pageable; // [수정] Pageable 임포트
 import store.bookscamp.api.bookcategory.entity.QBookCategory;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.coupon.entity.QCoupon;
@@ -33,11 +35,11 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
     }
 
     @Override
-    public List<CouponIssue> findByMemberIdAndFilterStatus(Long memberId, CouponFilterStatus status) {
+    public Page<CouponIssue> findByMemberIdAndFilterStatus(Long memberId, CouponFilterStatus status, Pageable pageable) {
 
         QCouponIssue qCouponIssue = couponIssue;
         LocalDateTime now = LocalDateTime.now();
-        BooleanBuilder builder = new BooleanBuilder();
+        BooleanBuilder builder = new BooleanBuilder(); // where 절 조건
 
         builder.and(qCouponIssue.member.id.eq(memberId));
 
@@ -60,10 +62,16 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
                 break;
         }
 
+        // --- [수정] 페이징 쿼리 적용 ---
+
+        // 1. 데이터(Content) 조회 쿼리 (offset, limit 적용)
         JPAQuery<CouponIssue> query = queryFactory
                 .selectFrom(qCouponIssue)
-                .where(builder);
+                .where(builder)
+                .offset(pageable.getOffset()) // 페이징 적용
+                .limit(pageable.getPageSize()); // 페이징 적용
 
+        // 2. 정렬 조건 적용 (기존 정렬 로직 유지)
         query = switch (status) {
             case AVAILABLE -> query.orderBy(qCouponIssue.expiredAt.asc().nullsLast());
             case USED -> query.orderBy(qCouponIssue.usedAt.desc());
@@ -71,22 +79,30 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
             default -> query.orderBy(qCouponIssue.createdAt.desc());
         };
 
-        return query.fetch();
+        List<CouponIssue> content = query.fetch(); // 데이터 조회 실행
+
+        // 3. 전체 카운트 조회 쿼리
+        JPAQuery<Long> countQuery = queryFactory
+                .select(qCouponIssue.count())
+                .from(qCouponIssue)
+                .where(builder); // 동일한 where 조건 사용
+
+        Long total = countQuery.fetchOne(); // 카운트 조회 실행
+
+        // 4. PageImpl 객체로 래핑하여 반환
+        return new PageImpl<>(content, pageable, total != null ? total : 0);
     }
 
     @Override
     public List<Coupon> findDownloadableCoupons(Long memberId, Long bookId) {
+        // ... (findDownloadableCoupons 로직은 동일) ...
 
         QCoupon qCoupon = coupon;
         QCouponIssue qCouponIssue = couponIssue;
         QBookCategory qBookCategory = bookCategory;
 
-        // --- [수정] ---
-        // 1. 재귀 쿼리(CTE)를 포함한 네이티브 SQL 정의
-        // (주의: 'category' 테이블, 'id' 컬럼, 'parent_id' 컬럼 이름은 실제 DB에 맞게 수정해야 합니다.)
         String recursiveQuery = """
             WITH RECURSIVE CategoryAncestors (id, parent_id) AS (
-                -- 1. Anchor Member: 이 책(bookId)에 직접 연결된 카테고리 ID
                 SELECT 
                     c.id, 
                     c.parent_id
@@ -95,11 +111,10 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
                 JOIN 
                     book_category bc ON c.id = bc.category_id
                 WHERE 
-                    bc.book_id = ?1
+                    bc.book_id = ?1 
                 
                 UNION ALL
                 
-                -- 2. Recursive Member: 상위 부모 카테고리 찾기
                 SELECT 
                     p.id, 
                     p.parent_id
@@ -108,20 +123,15 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
                 JOIN 
                     CategoryAncestors ca ON p.id = ca.parent_id
             )
-            -- 3. 최종적으로 모든 ID를 중복 없이 선택
             SELECT DISTINCT id FROM CategoryAncestors;
             """;
 
-        // 2. 네이티브 쿼리 실행
-        Query nativeQuery = em.createNativeQuery(recursiveQuery, Long.class); // Long.class로 타입 캐스팅
+        Query nativeQuery = em.createNativeQuery(recursiveQuery, Long.class);
         nativeQuery.setParameter(1, bookId);
 
         @SuppressWarnings("unchecked")
         List<Long> allCategoryIds = (List<Long>) nativeQuery.getResultList();
-        // --- [수정 끝] ---
 
-
-        // 3. QueryDSL 쿼리에 네이티브 쿼리 결과(allCategoryIds)를 사용
         return queryFactory
                 .select(qCoupon)
                 .from(qCoupon)
@@ -131,12 +141,9 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
                                         .and(qCoupon.targetId.eq(bookId))
                         )
                                 .or(
-                                        // [수정] 서브쿼리 대신, 위에서 구한 allCategoryIds 목록을 사용
                                         qCoupon.targetType.eq(TargetType.CATEGORY)
                                                 .and(allCategoryIds.isEmpty() ? null : qCoupon.targetId.in(allCategoryIds))
                                 ),
-
-                        // 발급여부 체크 (기존과 동일)
                         qCoupon.id.notIn(
                                 JPAExpressions
                                         .select(qCouponIssue.coupon.id)
