@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
 import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.book.entity.BookDocument;
+import store.bookscamp.api.book.entity.BookProjection;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
@@ -147,6 +149,15 @@ public class BookService {
             if (!exists) {
                 bookCategoryRepository.save(new BookCategory(book, category));
             }
+            List<BookProjection>bookProjections=bookRepository.findAllBooksWithRatingAndReview();
+            BookDocument doc = null;
+            for (BookProjection bookProjection : bookProjections) {
+                if(bookProjection.getId()==book.getId()){
+                    doc=bookIndexService.projectionToDoc(bookProjection);
+                }
+            }
+            doc.setCategory(category.getName());
+            bookIndexService.indexBook(doc);
         }
 
         if (dto.tagIds() != null) {

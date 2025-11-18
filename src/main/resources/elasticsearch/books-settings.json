@@ -39,7 +39,7 @@
       "explanation": { "type": "text", "analyzer": "korean_analyzer" },
       "content": { "type": "text", "analyzer": "korean_analyzer" },
       "publisher": { "type": "text", "analyzer": "korean_analyzer" },
-      "category": { "type": "text", "analyzer": "korean_analyzer" },
+      "category": { "type": "keyword" },
       "isbn": { "type": "keyword" },
       "packable": { "type": "boolean" },
       "regularPrice": { "type": "integer" },
@@ -52,6 +52,13 @@
       "publishDate": {
         "type": "date",
         "format": "strict_date_optional_time||yyyy-MM-dd"
+      },
+
+      "bookVector": {
+        "type": "dense_vector",
+        "dims": 1024,
+        "index": true,
+        "similarity": "cosine"
       }
     }
   }

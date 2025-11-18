@@ -1,0 +1,48 @@
+{
+  "settings": {
+    "index.lifecycle.name": "bookscamp-cache-policy",
+    "index.lifecycle rollover_alias": "bookscamp-caching",
+    "analysis": {
+      "analyzer": {
+        "nori_analyzer": {
+          "type": "custom",
+          "tokenizer": "nori_tokenizer",
+          "filter": ["lowercase"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "keyword": {
+        "type": "keyword"
+      },
+      "books": {
+        "type": "nested",
+        "properties": {
+          "id":             { "type": "long" },
+          "title":          { "type": "text", "analyzer": "nori_analyzer" },
+          "publisher":      { "type": "keyword" },
+          "publishDate": {
+            "type": "date",
+            "format": "strict_date_optional_time||yyyy-MM-dd"
+          },
+          "contributors":   { "type": "text", "analyzer": "nori_analyzer" },
+          "packable":       { "type": "boolean" },
+          "regularPrice":   { "type": "integer" },
+          "salePrice":      { "type": "integer" },
+          "stock":          { "type": "integer" },
+          "viewCount":      { "type": "long" },
+          "isbn":           { "type": "keyword" },
+          "averageRating":  { "type": "double" },
+          "reviewCount":    { "type": "long" },
+          "aiRecommand":    { "type": "text", "analyzer": "nori_analyzer" },
+          "aiRank":         { "type": "integer" }
+        }
+      },
+      "cachedAt": {
+        "type": "long"
+      }
+    }
+  }
+}
