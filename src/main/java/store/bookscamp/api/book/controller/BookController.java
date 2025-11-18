@@ -91,8 +91,8 @@ public class BookController {
     @DeleteMapping("/admin/books/{id}")
     @Operation(summary = "delete book", description = "도서삭제 API")
     @RequiredRole("ADMIN")
-    public ResponseEntity<Void> deleteBook(@PathVariable Long bookId) {
-        bookService.deleteBook(bookId);
+    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
     }
 

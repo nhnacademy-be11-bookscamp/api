@@ -159,19 +159,19 @@ public class BookService {
     }
 
     @Transactional
-    public void deleteBook(Long bookId) {
+    public void deleteBook(Long id) {
 
-        Book book = bookRepository.findById(bookId)
+        Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
 
         book.softDelete();
 
-        List<BookTag> bookTags = bookTagRepository.findAllByBookId(bookId);
+        List<BookTag> bookTags = bookTagRepository.findAllByBookId(id);
         for (BookTag bt : bookTags) {
             bt.softDelete();
         }
 
-        List<BookCategory> bookCategories = bookCategoryRepository.findAllByBookId(bookId);
+        List<BookCategory> bookCategories = bookCategoryRepository.findAllByBookId(id);
         for (BookCategory bc : bookCategories) {
             bc.softDelete();
         }

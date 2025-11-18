@@ -11,7 +11,7 @@ import store.bookscamp.api.category.entity.Category;
 public interface BookCategoryRepository extends JpaRepository<BookCategory, Long> {
 
     @Query("SELECT bc FROM BookCategory bc WHERE bc.book.id = :bookId")
-    List<BookCategory> findAllByBookId(@Param("bookId") Long bookId);
+    List<BookCategory> findAllByBookId(@Param("bookId") Long id);
 
     void deleteByBook(Book book);
 

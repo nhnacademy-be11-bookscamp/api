@@ -10,7 +10,7 @@ import store.bookscamp.api.booktag.entity.BookTag;
 public interface BookTagRepository extends JpaRepository<BookTag, Long> {
 
     @Query("SELECT bt FROM BookTag bt WHERE bt.book.id = :bookId")
-    List<BookTag> findAllByBookId(@Param("bookId") Long bookId);
+    List<BookTag> findAllByBookId(@Param("bookId") Long id);
 
     void deleteByBook(Book book);
 
