@@ -159,6 +159,12 @@ public class BookService {
     }
 
     @Transactional
+    public void deleteBook(BookDetailDto dto) {
+
+
+    }
+
+    @Transactional
     public BookDetailDto getBookDetail(Long bookId) {
 
         Book book = bookRepository.getBookById(bookId);
