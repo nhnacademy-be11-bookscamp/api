@@ -2,7 +2,9 @@ package store.bookscamp.api.common.config;
 
 import feign.Logger;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
+@Profile("!test")
 public class FeignConfig {
     @Bean
     Logger.Level feignLoggerLevel() {

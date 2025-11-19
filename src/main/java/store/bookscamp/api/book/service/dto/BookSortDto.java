@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookDocument;
 
@@ -17,6 +20,8 @@ public class BookSortDto {
     private Long id;
     private String title;
     private String publisher;
+
+    @Field(type = FieldType.Date, format = DateFormat.date_optional_time)
     private LocalDate publishDate;
     private String contributors;
     private boolean packable;

@@ -41,12 +41,42 @@ public class OrderPrepareService {
     private final MemberRepository memberRepository;
     private final OrderInfoService orderInfoService;
 
-
     public OrderPrepareDto prepare(OrderPrepareRequestDto request, Long memberId) {
         List<OrderItemDto> orderItems = new ArrayList<>();
+        int netAmount = processOrderItems(request.items(), orderItems);
+
+        PriceDto priceInfo = calculatePriceInfo(netAmount);
+
+        int availablePoint = 0;
+        List<CouponDto> availableCoupons = new ArrayList<>();
+
+        if (memberId != null) {
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
+            availablePoint = member.getPoint();
+
+            List<Long> bookIds = request.items().stream()
+                    .map(OrderItemRequestDto::bookId)
+                    .toList();
+
+            availableCoupons = getAvailableCoupons(member, bookIds, request.items(), netAmount);
+        }
+
+        List<PackagingDto> availablePackagings = getAvailablePackagings();
+
+        return new OrderPrepareDto(
+                orderItems,
+                priceInfo,
+                availablePoint,
+                availablePackagings,
+                availableCoupons
+        );
+    }
+
+    private int processOrderItems(List<OrderItemRequestDto> items, List<OrderItemDto> orderItems) {
         int netAmount = 0;
 
-        for (OrderItemRequestDto itemRequest : request.items()) {
+        for (OrderItemRequestDto itemRequest : items) {
             Book book = bookRepository.findById(itemRequest.bookId())
                     .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
 
@@ -68,35 +98,20 @@ public class OrderPrepareService {
             ));
         }
 
-        DeliveryPolicy deliveryPolicy = getActiveDeliveryPolicy();
-        int deliveryFee = calculateDeliveryFee(netAmount, deliveryPolicy);
+        return netAmount;
+    }
 
+    private PriceDto calculatePriceInfo(int netAmount) {
+        DeliveryPolicy deliveryPolicy = getDeliveryPolicy();
+        int deliveryFee = calculateDeliveryFee(netAmount, deliveryPolicy);
         int totalAmount = netAmount + deliveryFee;
 
-        PriceDto priceInfo = new PriceDto(
+        return new PriceDto(
                 netAmount,
                 deliveryFee,
                 totalAmount,
                 deliveryPolicy.getFreeDeliveryThreshold()
         );
-
-        int availablePoint = 0;
-        List<CouponDto> availableCoupons = new ArrayList<>();
-        if (memberId != null) {
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
-            availablePoint = member.getPoint();
-
-            List<Long> bookIds = request.items().stream()
-                    .map(OrderItemRequestDto::bookId)
-                    .toList();
-
-            availableCoupons = getAvailableCoupons(member, bookIds, request.items(), netAmount);
-        }
-
-        List<PackagingDto> availablePackagings = getAvailablePackagings();
-
-        return new OrderPrepareDto(orderItems, priceInfo, availablePoint, availablePackagings, availableCoupons);
     }
 
     private void validateBook(Book book, int requestQuantity) {
@@ -116,7 +131,7 @@ public class OrderPrepareService {
         return policy.getBaseDeliveryFee();
     }
 
-    private DeliveryPolicy getActiveDeliveryPolicy() {
+    private DeliveryPolicy getDeliveryPolicy() {
         return deliveryPolicyRepository.findAll().stream()
                 .findFirst()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.DELIVERY_POLICY_NOT_FOUND));
@@ -124,7 +139,7 @@ public class OrderPrepareService {
 
     private List<PackagingDto> getAvailablePackagings() {
         return packagingRepository.findAll().stream()
-                .map(p -> new PackagingDto(p.getId(), p.getName(), p.getPrice()))
+                .map(packaging -> new PackagingDto(packaging.getId(), packaging.getName(), packaging.getPrice()))
                 .toList();
     }
 
@@ -136,17 +151,17 @@ public class OrderPrepareService {
 
     private List<CouponDto> convertToCouponDtos(List<CouponIssue> couponIssues, List<OrderItemRequestDto> items, int netAmount) {
         return couponIssues.stream()
-                .map(issue -> createCouponDto(issue, items, netAmount))
+                .map(couponIssue -> createCouponDto(couponIssue, items, netAmount))
                 .toList();
     }
 
-    private CouponDto createCouponDto(CouponIssue issue, List<OrderItemRequestDto> items, int netAmount) {
-        Coupon coupon = issue.getCoupon();
+    private CouponDto createCouponDto(CouponIssue couponIssue, List<OrderItemRequestDto> items, int netAmount) {
+        Coupon coupon = couponIssue.getCoupon();
         int applicableAmount = calculateApplicableAmount(coupon, items, netAmount);
-        int expectedDiscount = orderInfoService.calculateCouponDiscount(issue, applicableAmount);
+        int expectedDiscount = orderInfoService.calculateCouponDiscount(couponIssue, applicableAmount);
 
         return new CouponDto(
-                issue.getId(),
+                couponIssue.getId(),
                 coupon.getId(),
                 coupon.getName(),
                 coupon.getDiscountType().name(),
