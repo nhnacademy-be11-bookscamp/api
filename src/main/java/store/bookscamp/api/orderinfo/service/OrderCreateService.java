@@ -1,8 +1,8 @@
 package store.bookscamp.api.orderinfo.service;
 
 import static store.bookscamp.api.common.exception.ErrorCode.*;
-import static store.bookscamp.api.coupon.entity.DiscountType.AMOUNT;
-import static store.bookscamp.api.coupon.entity.DiscountType.RATE;
+import static store.bookscamp.api.coupon.entity.TargetType.BIRTHDAY;
+import static store.bookscamp.api.coupon.entity.TargetType.WELCOME;
 import static store.bookscamp.api.orderinfo.entity.OrderStatus.PENDING;
 
 import java.time.DayOfWeek;
@@ -15,12 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
-import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.repository.CouponIssueRepository;
-import store.bookscamp.api.couponissue.query.CouponIssueSearchQuery;
-import store.bookscamp.api.couponissue.query.dto.CouponSearchConditionDto;
 import store.bookscamp.api.delivery.entity.Delivery;
 import store.bookscamp.api.delivery.repository.deliveryRepository;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
@@ -30,6 +27,8 @@ import store.bookscamp.api.member.repository.MemberRepository;
 import store.bookscamp.api.nonmember.entity.NonMember;
 import store.bookscamp.api.nonmember.repository.NonMemberRepository;
 import store.bookscamp.api.orderinfo.service.dto.DeliveryInfoDto;
+import store.bookscamp.api.orderinfo.service.dto.NonMemberInfoDto;
+import store.bookscamp.api.orderinfo.service.dto.OrderAmountDto;
 import store.bookscamp.api.orderinfo.service.dto.OrderCreateDto;
 import store.bookscamp.api.orderinfo.service.dto.OrderItemCreateDto;
 import store.bookscamp.api.orderinfo.service.dto.OrderRequestDto;
@@ -44,7 +43,6 @@ import store.bookscamp.api.pointhistory.entity.PointType;
 import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 import store.bookscamp.api.common.exception.ApplicationException;
-import store.bookscamp.api.common.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -55,35 +53,76 @@ public class OrderCreateService {
     private final OrderItemRepository orderItemRepository;
     private final deliveryRepository deliveryRepository;
     private final NonMemberRepository nonMemberRepository;
-
     private final BookRepository bookRepository;
-    private final BookCategoryRepository bookCategoryRepository;
     private final PackagingRepository packagingRepository;
     private final MemberRepository memberRepository;
     private final CouponIssueRepository couponIssueRepository;
-    private final CouponIssueSearchQuery couponIssueSearchQuery;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
     private final PointHistoryRepository pointHistoryRepository;
+    private final OrderInfoService orderInfoService;
 
     public OrderCreateDto createOrder(OrderRequestDto request, Long memberId) {
-        DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findAll().stream()
-                .findFirst()
-                .orElseThrow(() -> new ApplicationException(DELIVERY_POLICY_NOT_FOUND));
+        // 회원 검증
+        Member member = validateAndGetMember(memberId, request.nonMemberInfo());
+        DeliveryPolicy deliveryPolicy = getDeliveryPolicy();
 
-        Member member = null;
-        if (memberId != null) {
-            member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
-        } else {
-            if (request.nonMemberInfo() == null) {
-                throw new ApplicationException(NON_MEMBER_INFO_REQUIRED);
+        // 금액 계산
+        OrderAmountDto amounts = calculateOrderAmounts(request.items(), deliveryPolicy);
+
+        // 쿠폰 할인
+        CouponIssue couponIssue = null;
+        int couponDiscountAmount = 0;
+        if (request.couponIssueId() != null) {
+            if (member == null) {
+                throw new ApplicationException(COUPON_NOT_ALLOWED_FOR_NON_MEMBER);
             }
+            couponIssue = validateAndGetCouponIssue(request.couponIssueId(), member, request.items(), amounts.netAmount());
+            int applicableAmount = calculateApplicableAmount(couponIssue.getCoupon(), request.items(), amounts.netAmount());
+            couponDiscountAmount = calculateCouponDiscount(couponIssue, applicableAmount);
         }
 
+        // 포인트 검증
+        int usedPoint = validateAndGetUsedPoint(request.usedPoint(), member);
+
+        // 최종 결제 금액 계산
+        int finalPaymentAmount = Math.max(amounts.totalAmount() - couponDiscountAmount - usedPoint, 0);
+
+        // 주문 저장
+        OrderInfo orderInfo = saveOrder(request, member, deliveryPolicy, amounts, couponIssue, couponDiscountAmount, usedPoint, finalPaymentAmount);
+
+        // 주문 아이템 저장 및 재고 차감
+        saveOrderItems(request.items(), orderInfo);
+
+        // 회원 포인트, 쿠폰 사용 처리
+        processMemberBenefits(member, orderInfo, couponIssue, usedPoint, amounts.netAmount(), request.nonMemberInfo());
+
+        return new OrderCreateDto(orderInfo.getId(), finalPaymentAmount);
+    }
+
+    private Member validateAndGetMember(Long memberId, NonMemberInfoDto nonMemberInfo) {
+        if (memberId != null) {
+            return memberRepository.findById(memberId)
+                    .orElseThrow(() -> new ApplicationException(MEMBER_NOT_FOUND));
+        }
+
+        if (nonMemberInfo == null) {
+            throw new ApplicationException(NON_MEMBER_INFO_REQUIRED);
+        }
+
+        return null;
+    }
+
+    private DeliveryPolicy getDeliveryPolicy() {
+        return deliveryPolicyRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new ApplicationException(DELIVERY_POLICY_NOT_FOUND));
+    }
+
+    private OrderAmountDto calculateOrderAmounts(List<OrderItemCreateDto> items, DeliveryPolicy deliveryPolicy) {
         int netAmount = 0;
         int packagingFee = 0;
 
-        for (OrderItemCreateDto itemRequest : request.items()) {
+        for (OrderItemCreateDto itemRequest : items) {
             Book book = bookRepository.findById(itemRequest.bookId())
                     .orElseThrow(() -> new ApplicationException(BOOK_NOT_FOUND));
 
@@ -104,18 +143,12 @@ public class OrderCreateService {
 
         int totalAmount = netAmount + deliveryFee + packagingFee;
 
-        int discountAmount = 0;
-        CouponIssue couponIssue = null;
-        if (request.couponIssueId() != null) {
-            if (member == null) {
-                throw new ApplicationException(COUPON_NOT_ALLOWED_FOR_NON_MEMBER);
-            }
-            
-            couponIssue = validateAndGetCouponIssue(request.couponIssueId(), member, request.items(), netAmount);
-            discountAmount = calculateCouponDiscount(couponIssue, netAmount);
-        }
+        return new OrderAmountDto(netAmount, packagingFee, deliveryFee, totalAmount);
+    }
 
-        int usedPoint = (request.usedPoint() != null) ? request.usedPoint() : 0;
+    private int validateAndGetUsedPoint(Integer usedPointRequest, Member member) {
+        int usedPoint = (usedPointRequest != null) ? usedPointRequest : 0;
+
         if (usedPoint > 0) {
             if (member == null) {
                 throw new ApplicationException(POINT_NOT_ALLOWED_FOR_NON_MEMBER);
@@ -125,11 +158,11 @@ public class OrderCreateService {
             }
         }
 
-        int finalPaymentAmount = totalAmount - discountAmount - usedPoint;
-        if (finalPaymentAmount < 0) {
-            finalPaymentAmount = 0;
-        }
+        return usedPoint;
+    }
 
+    private OrderInfo saveOrder(OrderRequestDto request, Member member, DeliveryPolicy deliveryPolicy,
+                                 OrderAmountDto amounts, CouponIssue couponIssue, int couponDiscountAmount, int usedPoint, int finalPaymentAmount) {
         DeliveryInfoDto deliveryInfo = request.deliveryInfo();
         LocalDate shippingDate = calculateShippingDate(deliveryInfo.desiredDeliveryDate());
 
@@ -150,18 +183,20 @@ public class OrderCreateService {
                 member,
                 couponIssue,
                 delivery,
-                netAmount,
-                totalAmount,
-                deliveryFee,
-                packagingFee,
-                discountAmount,
+                amounts.netAmount(),
+                amounts.totalAmount(),
+                amounts.deliveryFee(),
+                amounts.packagingFee(),
+                couponDiscountAmount,
                 finalPaymentAmount,
                 PENDING,
                 usedPoint
         );
-        orderInfoRepository.save(orderInfo);
+        return orderInfoRepository.save(orderInfo);
+    }
 
-        for (OrderItemCreateDto itemRequest : request.items()) {
+    private void saveOrderItems(List<OrderItemCreateDto> items, OrderInfo orderInfo) {
+        for (OrderItemCreateDto itemRequest : items) {
             Book book = bookRepository.findById(itemRequest.bookId())
                     .orElseThrow(() -> new ApplicationException(BOOK_NOT_FOUND));
 
@@ -185,39 +220,42 @@ public class OrderCreateService {
 
             book.decreaseStock(itemRequest.quantity());
         }
+    }
 
+    private void processMemberBenefits(Member member, OrderInfo orderInfo, CouponIssue couponIssue,
+                                       int usedPoint, int netAmount, NonMemberInfoDto nonMemberInfo) {
         if (member != null) {
-            if (usedPoint > 0) {
-                member.usePoint(usedPoint);
-                PointHistory useHistory = new PointHistory(
-                        orderInfo,
-                        member,
-                        PointType.USE,
-                        usedPoint
-                );
-                pointHistoryRepository.save(useHistory);
-            }
-            if (couponIssue != null) {
-                couponIssue.use();
-            }
-            int earnedPoint = calculateEarnedPoint(member, netAmount);
-            if (earnedPoint > 0) {
-                member.earnPoint(earnedPoint);
-                PointHistory earnHistory = new PointHistory(
-                        orderInfo,
-                        member,
-                        PointType.EARN,
-                        earnedPoint
-                );
-                pointHistoryRepository.save(earnHistory);
-            }
+            processMemberPointAndCoupon(member, orderInfo, couponIssue, usedPoint, netAmount);
         } else {
-            NonMember nonMember = new NonMember(orderInfo, request.nonMemberInfo().password());
-            nonMemberRepository.save(nonMember);
+            processNonMember(orderInfo, nonMemberInfo);
+        }
+    }
+
+    private void processMemberPointAndCoupon(Member member, OrderInfo orderInfo, CouponIssue couponIssue,
+                                             int usedPoint, int netAmount) {
+        if (usedPoint > 0) {
+            member.usePoint(usedPoint);
+            PointHistory useHistory = new PointHistory(orderInfo, member, PointType.USE, usedPoint);
+            pointHistoryRepository.save(useHistory);
         }
 
-        return new OrderCreateDto(orderInfo.getId(), finalPaymentAmount);
+        if (couponIssue != null) {
+            couponIssue.use();
+        }
+
+        int earnedPoint = calculateEarnedPoint(member, netAmount);
+        if (earnedPoint > 0) {
+            member.earnPoint(earnedPoint);
+            PointHistory earnHistory = new PointHistory(orderInfo, member, PointType.EARN, earnedPoint);
+            pointHistoryRepository.save(earnHistory);
+        }
     }
+
+    private void processNonMember(OrderInfo orderInfo, NonMemberInfoDto nonMemberInfo) {
+        NonMember nonMember = new NonMember(orderInfo, nonMemberInfo.password());
+        nonMemberRepository.save(nonMember);
+    }
+
 
     private void validateBook(Book book, int requestQuantity) {
         if (book.getStatus() != BookStatus.AVAILABLE) {
@@ -230,31 +268,17 @@ public class OrderCreateService {
     }
 
     private CouponIssue validateAndGetCouponIssue(Long couponIssueId, Member member, List<OrderItemCreateDto> items, int netAmount) {
+        CouponIssue couponIssue = couponIssueRepository.findById(couponIssueId)
+                .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
+
         List<Long> bookIds = items.stream()
                 .map(OrderItemCreateDto::bookId)
                 .toList();
 
-        List<Long> categoryIds = bookIds.stream()
-                .flatMap(bookId -> bookCategoryRepository.findByBook_Id(bookId).stream())
-                .map(bc -> bc.getCategory().getId())
-                .distinct()
-                .toList();
+        boolean isAvailable = orderInfoService.isAvailableCoupon(couponIssueId, member, bookIds, netAmount);
 
-        CouponSearchConditionDto searchCondition = new CouponSearchConditionDto(
-                member.getId(),
-                categoryIds,
-                bookIds
-        );
-
-        List<CouponIssue> availableCoupons = couponIssueSearchQuery.searchCouponIssue(searchCondition);
-
-        CouponIssue couponIssue = availableCoupons.stream()
-                .filter(issue -> issue.getId().equals(couponIssueId))
-                .findFirst()
-                .orElseThrow(() -> new ApplicationException(COUPON_NOT_FOUND));
-
-        if (netAmount < couponIssue.getCoupon().getMinOrderAmount()) {
-            throw new ApplicationException(COUPON_MIN_ORDER_AMOUNT_NOT_MET);
+        if (!isAvailable) {
+            throw new ApplicationException(COUPON_NOT_FOUND);
         }
 
         return couponIssue;
@@ -277,19 +301,7 @@ public class OrderCreateService {
     }
 
     private int calculateCouponDiscount(CouponIssue couponIssue, int netAmount) {
-        Coupon coupon = couponIssue.getCoupon();
-
-        if (coupon.getDiscountType() == RATE) {
-            int discount = (int) Math.floor(netAmount * coupon.getDiscountValue() / 100.0);
-            if (coupon.getMaxDiscountAmount() != null) {
-                discount = Math.min(discount, coupon.getMaxDiscountAmount());
-            }
-            return discount;
-        } else if (coupon.getDiscountType() == AMOUNT) {
-            return coupon.getDiscountValue();
-        } else {
-            throw new ApplicationException(INVALID_COUPON_DISCOUNT_TYPE);
-        }
+        return orderInfoService.calculateCouponDiscount(couponIssue, netAmount);
     }
 
     private LocalDate calculateShippingDate(LocalDate desiredDeliveryDate) {
@@ -306,5 +318,16 @@ public class OrderCreateService {
         }
 
         return shippingDate;
+    }
+
+    private int calculateApplicableAmount(Coupon coupon, List<OrderItemCreateDto> items, int netAmount) {
+        if (coupon.getTargetType() == WELCOME || coupon.getTargetType() == BIRTHDAY) {
+            return netAmount;
+        }
+
+        return items.stream()
+                .filter(item -> orderInfoService.isApplicableItem(item.bookId(), coupon.getTargetType(), coupon.getTargetId()))
+                .mapToInt(item -> orderInfoService.calculateItemAmount(item.bookId(), item.quantity()))
+                .sum();
     }
 }
