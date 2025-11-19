@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
 import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.book.entity.BookDocument;
+import store.bookscamp.api.book.entity.BookProjection;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
@@ -60,6 +62,7 @@ public class BookService {
     private final BookLikeRepository bookLikeRepository;
     private final BookLikeService bookLikeService;
     private final MemberRepository memberRepository;
+    private final BookCachingIndexService bookCachingIndexService;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
@@ -147,6 +150,15 @@ public class BookService {
             if (!exists) {
                 bookCategoryRepository.save(new BookCategory(book, category));
             }
+            List<BookProjection>bookProjections=bookRepository.findAllBooksWithRatingAndReview();
+            BookDocument doc = null;
+            for (BookProjection bookProjection : bookProjections) {
+                if(bookProjection.getId()==book.getId()){
+                    doc=bookIndexService.projectionToDoc(bookProjection);
+                }
+            }
+            doc.setCategory(category.getName());
+            bookIndexService.indexBook(doc);
         }
 
         if (dto.tagIds() != null) {
@@ -155,6 +167,28 @@ public class BookService {
                 Tag tag = tagRepository.getTagById(tagId);
                 bookTagRepository.save(new BookTag(book, tag));
             }
+        }
+        bookCachingIndexService.invalidateCachesContainingBook(id);
+    }
+
+    @Transactional
+    public void deleteBook(Long id) {
+
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
+
+        book.softDelete();
+        bookIndexService.deleteBookIndex(id);
+        bookCachingIndexService.invalidateCachesContainingBook(id);
+
+        List<BookTag> bookTags = bookTagRepository.findAllByBookId(id);
+        for (BookTag bt : bookTags) {
+            bt.softDelete();
+        }
+
+        List<BookCategory> bookCategories = bookCategoryRepository.findAllByBookId(id);
+        for (BookCategory bc : bookCategories) {
+            bc.softDelete();
         }
     }
 

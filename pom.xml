@@ -175,6 +175,11 @@
 			<artifactId>json</artifactId>
 			<version>20240303</version> <!-- 최신 안정버전 -->
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
