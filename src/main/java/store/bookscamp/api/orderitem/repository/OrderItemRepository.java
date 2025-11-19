@@ -6,6 +6,8 @@ import store.bookscamp.api.orderitem.entity.OrderItem;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
-    // TODO : 주문 내역 상세 조회
-    List<OrderItem> findByOrderId(Long orderId);
+    /**
+     * 주문 한 건에 포함된 OrderItem 전체 조회
+     */
+    List<OrderItem> findByOrderInfoId(Long orderId);
 }
