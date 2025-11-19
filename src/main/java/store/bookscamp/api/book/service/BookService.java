@@ -62,6 +62,7 @@ public class BookService {
     private final BookLikeRepository bookLikeRepository;
     private final BookLikeService bookLikeService;
     private final MemberRepository memberRepository;
+    private final BookCachingIndexService bookCachingIndexService;
 
     @Transactional
     public void createBook(BookCreateDto dto) {
@@ -167,6 +168,7 @@ public class BookService {
                 bookTagRepository.save(new BookTag(book, tag));
             }
         }
+        bookCachingIndexService.invalidateCachesContainingBook(id);
     }
 
     @Transactional
@@ -176,6 +178,8 @@ public class BookService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
 
         book.softDelete();
+        bookIndexService.deleteBookIndex(id);
+        bookCachingIndexService.invalidateCachesContainingBook(id);
 
         List<BookTag> bookTags = bookTagRepository.findAllByBookId(id);
         for (BookTag bt : bookTags) {

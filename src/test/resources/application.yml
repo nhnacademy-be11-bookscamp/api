@@ -6,7 +6,12 @@ spring:
     url: jdbc:h2:mem:;MODE=MySQL;DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE;
     generate-unique-name: true
     username: sa
-
+  elasticsearch:
+    uris: http://s4.java21.net:9200
+    username: elastic
+    password: nhnacademy123!
+    ssl:
+      verification-mode: none
   jpa:
     show-sql: true
     hibernate:
