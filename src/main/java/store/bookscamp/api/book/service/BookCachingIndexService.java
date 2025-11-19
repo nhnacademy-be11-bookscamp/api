@@ -11,6 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStreamReader;
@@ -28,6 +33,7 @@ public class BookCachingIndexService {
     private final ElasticsearchClient esClient;
     private final BookCachingRepository bookCachingRepository;
     private final long TTL_MILLIS = 60 * 60 * 1000;
+    private final ElasticsearchOperations elasticsearchOperations;
 
     @Value("bookscamp-caching")
     private String CACHING_INDEX;
@@ -94,6 +100,22 @@ public class BookCachingIndexService {
 
         bookCachingRepository.save(cache);
         log.info("[Cache Saved] keyword = {}", keyword);
+    }
+
+    public void invalidateCachesContainingBook(Long bookId) {
+
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(q -> q.nested(n -> n
+                        .path("books")
+                        .query(nq -> nq.term(t -> t.field("books.id").value(bookId)))))
+                .withPageable(PageRequest.of(0, 1000))
+                .build();
+
+        SearchHits<BookCaching> hits = elasticsearchOperations.search(query, BookCaching.class);
+
+        for (SearchHit<BookCaching> hit : hits.getSearchHits()) {
+            elasticsearchOperations.delete(hit.getId(), BookCaching.class);
+        }
     }
 
 }

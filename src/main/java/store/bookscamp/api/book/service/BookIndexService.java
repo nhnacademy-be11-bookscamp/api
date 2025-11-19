@@ -1,9 +1,11 @@
 package store.bookscamp.api.book.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.Refresh;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.elasticsearch.core.RefreshPolicy;
 import org.springframework.stereotype.Service;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookDocument;
@@ -81,6 +84,7 @@ public class BookIndexService {
 
             esClient.bulk(b -> {
                 b.index(INDEX_NAME);
+                b.refresh(Refresh.False);
                 for (BookProjection row : rows) {
                     // 1️⃣ Projection → Document 변환
                     BookDocument doc = projectionToDoc(row);
@@ -91,6 +95,8 @@ public class BookIndexService {
                             doc.getCategory() != null ? doc.getCategory() : ""
                     );
                     float[] embedding = generateEmbedding(combinedText);
+                    log.info("embedding length = {}", embedding.length);
+
                     doc.setBookVector(embedding);
 
                     // 3️⃣ JSON 변환
@@ -106,9 +112,11 @@ public class BookIndexService {
                             )
                     );
                 }
+
+
                 return b;
             });
-
+            esClient.indices().refresh(r -> r.index(INDEX_NAME));
             log.info("[BookIndexService] ✅ Indexed {} books into {}", rows.size(), INDEX_NAME);
         } catch (Exception e) {
             log.error("[BookIndexService] index init failed", e);
@@ -142,12 +150,26 @@ public class BookIndexService {
      */
     public void indexBook(Book book) {
         BookDocument doc = mapBookToDocument(book);
-        elasticsearchOperations.save(doc);
+        ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+        ops.save(doc);
         log.info("[BookIndexService] indexed book → {}", book.getTitle());
     }
     public void indexBook(BookDocument book) {
-        elasticsearchOperations.save(book);
+        ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+        ops.save(book);
         log.info("[BookIndexService] indexed book → {}", book.getTitle());
+    }
+
+    public void deleteBookIndex(Long bookId) {
+        try {
+            esClient.delete(d -> d
+                    .index(INDEX_NAME)
+                    .id(String.valueOf(bookId))
+            );
+            log.info("[BookIndexService] deleted book from index → id={}", bookId);
+        } catch (Exception e) {
+            log.error("[BookIndexService] delete failed → id={}", bookId, e);
+        }
     }
 
     public BookDocument projectionToDoc(BookProjection row) {
@@ -163,6 +185,7 @@ public class BookIndexService {
                 .explanation(row.getExplanation())
                 .content(row.getContent())
                 .publisher(row.getPublisher())
+                .category(row.getCategory())
                 .publishDate(row.getPublishDate())
                 .isbn(row.getIsbn())
                 .contributors(row.getContributors())
