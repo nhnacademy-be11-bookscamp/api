@@ -126,7 +126,7 @@ public class BookIndexService {
     /**
      * ✅ DB Book → ES BookDocument 변환
      */
-    private BookDocument mapBookToDocument(Book book) {
+    public BookDocument mapBookToDocument(Book book) {
         return BookDocument.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -145,15 +145,6 @@ public class BookIndexService {
                 .build();
     }
 
-    /**
-     * ✅ 단일 도서 인덱싱
-     */
-    public void indexBook(Book book) {
-        BookDocument doc = mapBookToDocument(book);
-        ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-        ops.save(doc);
-        log.info("[BookIndexService] indexed book → {}", book.getTitle());
-    }
     public void indexBook(BookDocument book) {
         ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
         ops.save(book);

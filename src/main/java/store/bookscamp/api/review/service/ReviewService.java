@@ -3,6 +3,10 @@ package store.bookscamp.api.review.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.bookscamp.api.book.entity.BookDocument;
+import store.bookscamp.api.book.entity.BookProjection;
+import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.BookIndexService;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
@@ -43,6 +47,8 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final PointPolicyRepository pointPolicyRepository;
     private final ReviewQueryRepository reviewQueryRepository;
+    private final BookRepository bookRepository;
+    private final BookIndexService bookIndexService;
 
     @Transactional
     public void createReview(ReviewCreateDto dto) {
@@ -55,7 +61,10 @@ public class ReviewService {
         }
 
         Review review = new Review(orderItem, member, dto.content(), dto.score());
-        reviewRepository.save(review);
+        reviewRepository.saveAndFlush(review);
+        BookProjection projection = bookRepository.findByIdWithRatingAndReview(orderItem.getBook().getId());
+        BookDocument doc = bookIndexService.projectionToDoc(projection);
+        bookIndexService.indexBook(doc);
 
         reviewImageService.createReviewImage(new ReviewImageCreateDto(review, dto.imageUrls()));
 
@@ -83,6 +92,9 @@ public class ReviewService {
 
         review.update(dto.content(), dto.score());
 
+        BookProjection projection = bookRepository.findByIdWithRatingAndReview(review.getOrderItem().getBook().getId());
+        BookDocument doc = bookIndexService.projectionToDoc(projection);
+        bookIndexService.indexBook(doc);
         reviewImageService.deleteReviewImage(new ReviewImageDeleteDto(dto.removedImageUrls()));
         reviewImageService.createReviewImage(new ReviewImageCreateDto(review, dto.imageUrls()));
     }
