@@ -10,8 +10,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +55,6 @@ public class BookIndexService {
                     if (deleteResp.acknowledged()) {
                         log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
                     }
-                    //return; // ✅ 반드시 리턴*/
                 }//이미 존재하는 인덱스 삭제
 
             try (Reader r = new InputStreamReader(
@@ -98,7 +95,7 @@ public class BookIndexService {
 
                     // 3️⃣ JSON 변환
                     Map<String, Object> jsonDoc = convertDocumentToMap(doc);
-                    jsonDoc.put("book_vector", embedding); // ✅ 벡터 추가
+                    jsonDoc.put("bookVector", embedding); // ✅ 벡터 추가
 
                     // 4️⃣ 인덱스 연산 추가
                     b.operations(op -> op
@@ -148,16 +145,9 @@ public class BookIndexService {
         elasticsearchOperations.save(doc);
         log.info("[BookIndexService] indexed book → {}", book.getTitle());
     }
-
-    /**
-     * ✅ 전체 도서 인덱싱
-     */
-    public void indexAllBooks(List<Book> books) {
-        List<BookDocument> docs = books.stream()
-                .map(this::mapBookToDocument)
-                .toList();
-        elasticsearchOperations.save(docs);
-        log.info("[BookIndexService] indexed {} books ✅", docs.size());
+    public void indexBook(BookDocument book) {
+        elasticsearchOperations.save(book);
+        log.info("[BookIndexService] indexed book → {}", book.getTitle());
     }
 
     public BookDocument projectionToDoc(BookProjection row) {
@@ -195,6 +185,7 @@ public class BookIndexService {
         map.put("explanation", doc.getExplanation());
         map.put("content", doc.getContent());
         map.put("publisher", doc.getPublisher());
+        map.put("category", doc.getCategory());
         map.put("publishDate", doc.getPublishDate() != null ? doc.getPublishDate().toString() : null); // ✅ LocalDate → String
         map.put("isbn", doc.getIsbn());
         map.put("contributors", doc.getContributors());
