@@ -10,16 +10,16 @@ spring:
 
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=MYSQL
+    url: jdbc:h2:mem:;MODE=MySQL;DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE;
+    generate-unique-name: true
     username: sa
-    password:
 
   jpa:
     hibernate:
       ddl-auto: create-drop
     properties:
       hibernate:
-        globally_quoted_identifiers: true
+        globally_quoted_identifiers: false
 
   data:
     redis:
@@ -32,9 +32,9 @@ spring:
     type: none
 
   elasticsearch:
-    uris: http://localhost:9200
-    username:
-    password:
+    uris: http://s4.java21.net:9200
+    username: elastic
+    password: nhnacademy123!
     ssl:
       verification-mode: none
 
