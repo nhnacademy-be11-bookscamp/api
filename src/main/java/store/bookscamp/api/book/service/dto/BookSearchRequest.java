@@ -6,5 +6,6 @@ public record BookSearchRequest(
         Long categoryId,
         String keyword,
         String sortType,
-        Pageable pageable
+        Pageable pageable,
+        String role
 ) {}

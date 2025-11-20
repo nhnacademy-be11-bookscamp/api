@@ -4,6 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.bookscamp.api.common.annotation.RequiredRole;
@@ -39,7 +43,7 @@ public class ReviewController {
     }
 
     @GetMapping("/member/review/{reviewId}")
-    @Operation(summary = "read update page", description = "리뷰 수정 페이지")
+    @Operation(summary = "read update page", description = "리뷰 수정 페이지 API")
     @RequiredRole("USER")
     public ResponseEntity<MyReviewDto> getUpdateReview(
             @PathVariable Long reviewId,
@@ -47,6 +51,25 @@ public class ReviewController {
     ) {
         Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
         return ResponseEntity.ok(reviewService.getUpdateReview(reviewId, memberId));
+    }
+
+    @GetMapping("/review/book/{bookId}")
+    @Operation(summary = "read book review", description = "도서 리뷰 리스트 API")
+    public ResponseEntity<Page<BookReviewDto>> getBookReviews(
+            @PathVariable Long bookId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return ResponseEntity.ok(
+                reviewService.getBookReviews(bookId, pageable)
+        );
+    }
+
+    @GetMapping("/review/book/{bookId}/avg")
+    public ResponseEntity<Double> getBookAvgScore(@PathVariable Long bookId) {
+        return ResponseEntity.ok(reviewService.getReviewAverageScore(bookId));
     }
 
     @PostMapping("/member/review")
