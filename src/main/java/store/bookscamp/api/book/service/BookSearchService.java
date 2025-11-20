@@ -55,7 +55,12 @@ public class BookSearchService {
         if (request.keyword() != null && !request.keyword().equals("")) {
             Optional<BookCaching> cache = cachingIndexService.getCache(request.keyword());
             if (cache.isPresent()) {
-                return convertToSearchResponse(cache.get(), request);
+                for(int i=0; i<cache.orElseGet(null).getBooks().size();i++){
+                    String aiRecommand = cache.orElseGet(null).getBooks().get(i).getAiRecommand();
+                    if(aiRecommand!=null && !aiRecommand.isBlank()){
+                        return convertToSearchResponse(cache.get(), request);
+                    }
+                }
             }
         }
         if (request.keyword() == null || request.keyword().isEmpty()) {
@@ -68,6 +73,7 @@ public class BookSearchService {
         return hybridSearchWithLLM(request);
     }
 
+    //keyword 없을 시 전체검색 혹은 카테고리 분류
     public Page<BookSortDto> noKeyWordSearch(NativeQueryBuilder qb, BookSearchRequest request, Category category) {
         if (category != null && !category.getName().isBlank()) {
             qb.withFilter(f -> f.term(t -> t.field("category").value(category.getName())));
@@ -93,26 +99,26 @@ public class BookSearchService {
     }
 
 
-    // ================================================
-    // ✅ Gemini LLM 검증
-    // ================================================
+    // Gemini LLM 검증
     public Page<BookSortDto> hybridSearchWithLLM(BookSearchRequest request) {
-        // 🔹 기존 hybridSearchWithRRF 결과 가져오기
+        // 기존 hybridSearchWithRRF 결과 가져오기
         List<BookDocument> docs = hybridSearchWithRRF(request);
         List<BookDocument> topDocs = docs.stream().limit(10).toList();
-        // 🔹 Gemini 호출
+        // Gemini 응답 호출
         Map<String, Object> aiResponse = null;
         aiResponse = bookAnswerService.generateAnswer(request.keyword(), topDocs);
         List<BookSortDto> dtoList;
 
         if (aiResponse.containsKey("result")) {
-            // 🔹 LLM 실패
+            // LLM 실패
             dtoList = docs.stream()
                     .map(BookSortDto::fromDocument)
                     .toList();
-
+            for(int i=0;i<dtoList.size();i++){
+                dtoList.get(i).setAiRank(i+1);
+            }
         } else {
-            // 🔹 LLM 성공
+            // LLM 성공
             List<Long> idList = (List<Long>) aiResponse.get("idList");
             List<String> recList = (List<String>) aiResponse.get("recList");
             dtoList = buildDtoWithAiInfo(docs, idList, recList);
@@ -132,18 +138,10 @@ public class BookSearchService {
 
         List<BookSortDto> pageSlice = sorted.subList(start, end);
         return new PageImpl<>(pageSlice, pageable, sorted.size());
-        /*
-        Page<BookSortDto> page = new PageImpl<>(sortedDtos,
-                request.pageable(), dtoList.size());
-
-        // 🔹 결과 통합
-        return page;*/
     }
 
 
-    // ================================================
-    // ✅ 통합 검색 (BM25 + Reranker + KNN + RRF)
-    // ================================================
+    // 통합 검색 (BM25 + Reranker + KNN + RRF)
     public List<BookDocument> hybridSearchWithRRF(BookSearchRequest request) {
         String keyword = request.keyword();
         Category category = null;
@@ -151,41 +149,36 @@ public class BookSearchService {
             category = categoryRepository.getCategoryById(request.categoryId());
         }
 
-        // 1️⃣ BM25 검색 (키워드)
+        // BM25 검색 (키워드)
         List<BookDocument> bm25Results = runBm25Search(category, keyword, 100);
         System.out.println("bm25Results size : " + bm25Results.size());
         for (BookDocument bm : bm25Results) {
             System.out.println("bm25Results: " + bm.getTitle());
         }
 
-        // 2️⃣ KNN 검색 (벡터)
+        // KNN 검색 (벡터)
         List<BookDocument> knnResults = runKnnSearch(category, keyword, 10);
         System.out.println("knnResults size : " + knnResults.size());
         for (BookDocument kn : knnResults) {
             System.out.println("knnResults: " + kn.getTitle());
         }
 
-        // 3️⃣ RRF 융합
+        // RRF 융합
         List<BookDocument> fused = rrfFusion(bm25Results, knnResults);
         System.out.println("fused results size : " + fused.size());
 
-        // 4️⃣ Reranker 적용
+        // Reranker 적용
         List<BookDocument> reranked = rerankResults(keyword, fused);
         for (BookDocument rerank : reranked) {
             System.out.println("rerank : " + rerank.getTitle());
         }
-
-        // 5️⃣ 상위 10개 반환
-        //List<BookDocument> topDocs = reranked.stream().limit(10).toList();
 
         reranked = applySortBookDocument(reranked, request.sortType());
         return reranked;
     }
 
 
-    // ================================================
-    // ✅ BM25 (multiMatch)
-    // ================================================
+    // BM25 (multiMatch)
     private List<BookDocument> runBm25Search(Category category, String keyword, int size) {
         NativeQueryBuilder qb = new NativeQueryBuilder();
         if (keyword != null && !keyword.isBlank()) {
@@ -205,9 +198,7 @@ public class BookSearchService {
         return hits.getSearchHits().stream().map(SearchHit::getContent).toList();
     }
 
-    // ================================================
-    // ✅ KNN (벡터 기반 의미 검색)
-    // ================================================
+    // KNN (벡터 기반 의미 검색)
     private List<BookDocument> runKnnSearch(Category category, String keyword, int size) {
         String combinedText = "";
         if (category != null && category.getName() != null && !category.getName().isBlank()) {
@@ -221,7 +212,7 @@ public class BookSearchService {
         NativeQuery query = NativeQuery.builder()
                 .withKnnSearches(knn -> knn
                         .field("bookVector")
-                        .queryVector(vectorList)  // ✅ 여기서 List<Float> 사용
+                        .queryVector(vectorList)
                         .k(size)
                         .numCandidates(Math.max(150, size))
                 )
@@ -235,9 +226,7 @@ public class BookSearchService {
     }
 
 
-    // ================================================
-    // ✅ Reranker API (문맥 재정렬)
-    // ================================================
+    // Reranker API (문맥 재정렬)
     private List<BookDocument> rerankResults(String keyword, List<BookDocument> docs) {
         if (docs.isEmpty()) {
             return docs;
@@ -266,9 +255,7 @@ public class BookSearchService {
         return reordered;
     }
 
-    // ================================================
-    // ✅ RRF 융합 알고리즘
-    // ================================================
+    // RRF 융합 알고리즘
     private List<BookDocument> rrfFusion(List<BookDocument> listA, List<BookDocument> listB) {
         int k = 20; // 안정화 상수
         Map<Long, Double> scores = new HashMap<>();
@@ -276,14 +263,14 @@ public class BookSearchService {
         double weightA = 1.0;  // BM25
         double weightB = 4.0;  // KNN
 
-        // A리스트 (BM25+Reranker)
+        // (BM25+Reranker)
         for (int i = 0; i < listA.size(); i++) {
             BookDocument doc = listA.get(i);
             allDocs.putIfAbsent(doc.getId(), doc);
             scores.merge(doc.getId(), weightA * (1.0 / (k + i + 1)), Double::sum);
         }
 
-        // B리스트 (KNN)
+        // (KNN)
         for (int i = 0; i < listB.size(); i++) {
             BookDocument doc = listB.get(i);
             allDocs.putIfAbsent(doc.getId(), doc);
@@ -296,9 +283,7 @@ public class BookSearchService {
                 .toList();
     }
 
-    // ================================================
-    // ✅ Ollama 임베딩 호출
-    // ================================================
+    // Ollama 임베딩 호출
     private float[] generateEmbedding(String text) {
         try {
             String queryText = "Represent the meaning of the following user query: " + text;
@@ -335,6 +320,7 @@ public class BookSearchService {
         return list;
     }
 
+    //BookDoc단에서 정렬
     private List<BookDocument> applySortBookDocument(List<BookDocument> docs, String sortType) {
         return switch (sortType) {
             case "title" -> docs.stream()
@@ -363,34 +349,47 @@ public class BookSearchService {
         };
     }
 
+    //Ai정보를 기반으로 DTO 빌드
     private List<BookSortDto> buildDtoWithAiInfo(List<BookDocument> docs,
                                                  List<Long> idList,
                                                  List<String> recList) {
-        List<BookSortDto> sortDtoList = new ArrayList<>();
-        List<BookDocument> notRanked = new ArrayList<>();
-
+        Map<Long, Integer> rankMap = new HashMap<>();
         for (int i = 0; i < idList.size(); i++) {
-            Long id = idList.get(i);
-            for (BookDocument doc : docs) {
-                if (doc.getId().equals(id)) {
-                    BookSortDto dto = BookSortDto.fromDocument(doc);
-                    if (i <= 2) { // 상위 3개만 노출
-                        dto.setAiRank(i + 1);
-                        dto.setAiRecommand(recList.get(i));
-                    }
-                    sortDtoList.add(dto);
-                } else {
-                    notRanked.add(doc);
-                    break;
+            rankMap.put(idList.get(i), i + 1);
+        }
+
+        List<BookSortDto> ranked = new ArrayList<>();
+        List<BookSortDto> notRanked = new ArrayList<>();
+
+        for (BookDocument doc : docs) {
+            Long id = doc.getId();
+
+            if (rankMap.containsKey(id)) {
+                int rank = rankMap.get(id);
+                BookSortDto dto = BookSortDto.fromDocument(doc);
+                dto.setAiRank(rank);
+
+                if (rank <= 3) {
+                    dto.setAiRecommand(recList.get(rank - 1));
                 }
+
+                ranked.add(dto);
+
+            } else {
+                BookSortDto dto = BookSortDto.fromDocument(doc);
+                notRanked.add(dto);
             }
         }
-        for (BookDocument doc : notRanked) {
-            BookSortDto dto = BookSortDto.fromDocument(doc);
-            sortDtoList.add(dto);
+
+        ranked.sort(Comparator.comparingInt(BookSortDto::getAiRank));
+
+        int currentRank = ranked.size() + 1;
+        for (BookSortDto dto : notRanked) {
+            dto.setAiRank(currentRank++);
         }
 
-        return sortDtoList;
+        ranked.addAll(notRanked);
+        return ranked;
     }
 
     private Page<BookSortDto> convertToSearchResponse(BookCaching cache, BookSearchRequest request) {
@@ -398,13 +397,10 @@ public class BookSearchService {
         String sortType = request.sortType();
         Pageable pageable = request.pageable();
 
-        // 1) 전체 리스트 가져옴
         List<BookSortDto> docs = new ArrayList<>(cache.getBooks());
 
-        // 2) 정렬은 전체 리스트에 대해 수행해야 한다
         docs = applySortAfterSortDto(docs, sortType);
 
-        // 3) 정렬된 리스트에서 page 범위만 자른다
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), docs.size());
 
@@ -414,7 +410,6 @@ public class BookSearchService {
 
         List<BookSortDto> pageSlice = docs.subList(start, end);
 
-        // 4) 그걸 PageImpl 로 감싸서 리턴
         return new PageImpl<>(pageSlice, pageable, docs.size());
     }
 
@@ -459,10 +454,9 @@ public class BookSearchService {
                     .sorted(Comparator.comparingLong(BookSortDto::getReviewCount)
                             .reversed())
                     .toList();
-            default -> dtos;
+            default -> dtos.stream().sorted(Comparator.comparingInt(BookSortDto::getAiRank)).toList();
         };
        return dtos;
-
 
     }
 
@@ -473,6 +467,9 @@ public class BookSearchService {
         List<BookSortDto> dtoList = docs.stream()
                 .map(BookSortDto::fromDocument)
                 .toList();
+        for(int i =0;i<dtoList.size();i++){
+            dtoList.get(i).setAiRank(i+1);
+        }
         List<BookSortDto> sorted =
                 applySortAfterSortDto(dtoList, request.sortType());
 

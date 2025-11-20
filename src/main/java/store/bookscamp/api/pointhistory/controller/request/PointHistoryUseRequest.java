@@ -3,7 +3,6 @@ package store.bookscamp.api.pointhistory.controller.request;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import store.bookscamp.api.pointhistory.entity.PointType;
-import store.bookscamp.api.pointhistory.service.dto.PointHistoryEarnDto;
 import store.bookscamp.api.pointhistory.service.dto.PointHistoryUseDto;
 
 public record PointHistoryUseRequest(
@@ -14,7 +13,9 @@ public record PointHistoryUseRequest(
         Long orderId,
 
         @NotNull @Min(0)
-        Integer pointAmount
+        Integer pointAmount,
+
+        String description
 ) {
 
         public PointHistoryUseDto toDto() {
@@ -22,7 +23,8 @@ public record PointHistoryUseRequest(
                         memberId,
                         orderId,
                         PointType.USE,
-                        pointAmount
+                        pointAmount,
+                        description
                 );
         }
 }

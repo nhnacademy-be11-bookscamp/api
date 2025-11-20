@@ -1,6 +1,6 @@
 package store.bookscamp.api.book.service.dto;
 
-import lombok.Data; /** 개별 아이템 */
+import lombok.Data;
 @Data
 public class AladinItem {
     private String title;

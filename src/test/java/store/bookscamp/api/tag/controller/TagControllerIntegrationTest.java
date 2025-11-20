@@ -20,6 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
 
+/**
+ * TagController의 통합 테스트 클래스입니다.
+ * MockMvc를 사용하여 HTTP 요청을 시뮬레이션하고 결과를 검증합니다.
+ * @Transactional 어노테이션을 사용하여 각 테스트 후 데이터베이스를 롤백합니다.
+ * 모든 API가 @RequiredRole("ADMIN")으로 보호되므로, 요청 헤더를 통해 ADMIN 권한을 부여합니다.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
