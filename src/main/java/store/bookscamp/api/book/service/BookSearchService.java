@@ -41,7 +41,7 @@ public class BookSearchService {
 
     public Page<BookSortDto> searchBooks(BookSearchRequest request) {
         NativeQueryBuilder qb = new NativeQueryBuilder();
-        if(request.role().equals("admin")){
+        if (request.role().equals("admin")) {
             if (request.keyword() == null || request.keyword().isEmpty()) {
                 Category category = null;
                 if (request.categoryId() != null) {
@@ -55,12 +55,7 @@ public class BookSearchService {
         if (request.keyword() != null && !request.keyword().equals("")) {
             Optional<BookCaching> cache = cachingIndexService.getCache(request.keyword());
             if (cache.isPresent()) {
-                for(int i=0; i<cache.orElseGet(null).getBooks().size();i++){
-                    String aiRecommand = cache.orElseGet(null).getBooks().get(i).getAiRecommand();
-                    if(aiRecommand!=null && !aiRecommand.isBlank()){
-                        return convertToSearchResponse(cache.get(), request);
-                    }
-                }
+                return convertToSearchResponse(cache.get(), request);
             }
         }
         if (request.keyword() == null || request.keyword().isEmpty()) {
@@ -114,8 +109,8 @@ public class BookSearchService {
             dtoList = docs.stream()
                     .map(BookSortDto::fromDocument)
                     .toList();
-            for(int i=0;i<dtoList.size();i++){
-                dtoList.get(i).setAiRank(i+1);
+            for (int i = 0; i < dtoList.size(); i++) {
+                dtoList.get(i).setAiRank(i + 1);
             }
         } else {
             // LLM 성공
@@ -150,7 +145,7 @@ public class BookSearchService {
         }
 
         // BM25 검색 (키워드)
-        List<BookDocument> bm25Results = runBm25Search(category, keyword, 100);
+        List<BookDocument> bm25Results = runBm25Search(category, keyword, 20);
         System.out.println("bm25Results size : " + bm25Results.size());
         for (BookDocument bm : bm25Results) {
             System.out.println("bm25Results: " + bm.getTitle());
@@ -173,7 +168,6 @@ public class BookSearchService {
             System.out.println("rerank : " + rerank.getTitle());
         }
 
-        reranked = applySortBookDocument(reranked, request.sortType());
         return reranked;
     }
 
@@ -456,19 +450,19 @@ public class BookSearchService {
                     .toList();
             default -> dtos.stream().sorted(Comparator.comparingInt(BookSortDto::getAiRank)).toList();
         };
-       return dtos;
+        return dtos;
 
     }
 
 
-    private Page<BookSortDto> adminSearchWithRRF(BookSearchRequest request){
+    private Page<BookSortDto> adminSearchWithRRF(BookSearchRequest request) {
         List<BookDocument> docs = hybridSearchWithRRF(request);
 
         List<BookSortDto> dtoList = docs.stream()
                 .map(BookSortDto::fromDocument)
                 .toList();
-        for(int i =0;i<dtoList.size();i++){
-            dtoList.get(i).setAiRank(i+1);
+        for (int i = 0; i < dtoList.size(); i++) {
+            dtoList.get(i).setAiRank(i + 1);
         }
         List<BookSortDto> sorted =
                 applySortAfterSortDto(dtoList, request.sortType());
