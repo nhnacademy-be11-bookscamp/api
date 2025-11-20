@@ -35,7 +35,6 @@ public class BookSortDto {
     private String aiRecommand;
     private Integer aiRank;
 
-    // 기존 record의 from(Book)
     public static BookSortDto from(Book book) {
         return BookSortDto.builder()
                 .id(book.getId())
@@ -52,10 +51,10 @@ public class BookSortDto {
                 .averageRating(0.0)
                 .reviewCount(0L)
                 .aiRecommand("")
+                .aiRank(0)
                 .build();
     }
 
-    // 기존 record의 fromDocument(BookDocument)
     public static BookSortDto fromDocument(BookDocument doc) {
         return BookSortDto.builder()
                 .id(doc.getId())
@@ -72,6 +71,7 @@ public class BookSortDto {
                 .packable(doc.isPackable())
                 .regularPrice(doc.getRegularPrice())
                 .aiRecommand("")
+                .aiRank(0)
                 .build();
     }
 }

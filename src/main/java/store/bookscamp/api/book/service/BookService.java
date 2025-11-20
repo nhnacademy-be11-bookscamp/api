@@ -59,7 +59,6 @@ public class BookService {
     private final BookImageRepository bookImageRepository;
     private final BookImageService bookImageService;
     private final BookIndexService bookIndexService;
-    private final BookLikeRepository bookLikeRepository;
     private final BookLikeService bookLikeService;
     private final MemberRepository memberRepository;
     private final BookCachingIndexService bookCachingIndexService;
@@ -83,7 +82,6 @@ public class BookService {
                 0                          // viewCount
         );
         bookRepository.saveAndFlush(book);
-        bookIndexService.indexBook(book);
 
         if (dto.imageUrls() != null && !dto.imageUrls().isEmpty()) {
             bookImageService.createBookImage(new BookImageCreateDto(book, dto.imageUrls()));
@@ -92,6 +90,9 @@ public class BookService {
         if (dto.categoryId() != null) {
             Category category = categoryRepository.getCategoryById(dto.categoryId());
             bookCategoryRepository.save(new BookCategory(book, category));
+            BookDocument doc = bookIndexService.mapBookToDocument(book);
+            doc.setCategory(category.getName());
+            bookIndexService.indexBook(doc);
         }
 
         if (dto.tagIds() != null) {
@@ -144,20 +145,14 @@ public class BookService {
         if (dto.categoryId() != null) {
             bookCategoryRepository.deleteByBook(book);
             Category category = categoryRepository.findById(dto.categoryId())
-                            .orElseThrow(() -> new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND));
+                    .orElseThrow(() -> new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND));
 
             boolean exists = bookCategoryRepository.existsByBookAndCategory(book, category);
             if (!exists) {
-                bookCategoryRepository.save(new BookCategory(book, category));
+                bookCategoryRepository.saveAndFlush(new BookCategory(book, category));
             }
-            List<BookProjection>bookProjections=bookRepository.findAllBooksWithRatingAndReview();
-            BookDocument doc = null;
-            for (BookProjection bookProjection : bookProjections) {
-                if(bookProjection.getId()==book.getId()){
-                    doc=bookIndexService.projectionToDoc(bookProjection);
-                }
-            }
-            doc.setCategory(category.getName());
+            BookProjection bookProjection = bookRepository.findByIdWithRatingAndReview(book.getId());
+            BookDocument doc = bookIndexService.projectionToDoc(bookProjection);
             bookIndexService.indexBook(doc);
         }
 
@@ -193,20 +188,43 @@ public class BookService {
     }
 
     @Transactional
+    public void deleteBook(Long id) {
+
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
+
+        book.softDelete();
+
+        List<BookTag> bookTags = bookTagRepository.findAllByBookId(id);
+        for (BookTag bt : bookTags) {
+            bt.softDelete();
+        }
+
+        List<BookCategory> bookCategories = bookCategoryRepository.findAllByBookId(id);
+        for (BookCategory bc : bookCategories) {
+            bc.softDelete();
+        }
+    }
+
+    @Transactional
     public BookDetailDto getBookDetail(Long bookId) {
 
         Book book = bookRepository.getBookById(bookId);
 
-        if (book==null){
+        if (book == null) {
             throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
         }
 
         book.increaseViewCount();
+        BookProjection bookProjection = bookRepository.findByIdWithRatingAndReview(bookId);
+        BookDocument doc = bookIndexService.projectionToDoc(bookProjection);
+        doc.setViewCount(book.getViewCount());
+        bookIndexService.indexBook(doc);
 
         List<CategoryDto> categoryList = new ArrayList<>();
         List<BookCategory> bookCategoryList = bookCategoryRepository.findByBook_Id(bookId);
 
-        for(BookCategory bookCategory : bookCategoryList){
+        for (BookCategory bookCategory : bookCategoryList) {
             categoryList.add(new CategoryDto(
                     bookCategory.getCategory().getId(),
                     bookCategory.getCategory().getName()
@@ -216,7 +234,7 @@ public class BookService {
         List<TagDto> tagList = new ArrayList<>();
         List<BookTag> bookTagList = bookTagRepository.findByBook_Id(bookId);
 
-        for(BookTag bookTag : bookTagList){
+        for (BookTag bookTag : bookTagList) {
             tagList.add(new TagDto(
                     bookTag.getTag().getId(),
                     bookTag.getTag().getName()
@@ -226,7 +244,7 @@ public class BookService {
         List<String> imageUrlList = new ArrayList<>();
         List<BookImage> bookImageList = bookImageRepository.findByBook_Id(bookId);
 
-        for(BookImage bookImage : bookImageList){
+        for (BookImage bookImage : bookImageList) {
             imageUrlList.add(bookImage.getImageUrl());
         }
         return BookDetailDto.from(book, categoryList, tagList, imageUrlList);
@@ -256,28 +274,28 @@ public class BookService {
         }).toList();
     }
 
-    public Page<BookWishListDto> getWishList(Long memberId, Pageable pageable){
-        if (memberId == null){
+    public Page<BookWishListDto> getWishList(Long memberId, Pageable pageable) {
+        if (memberId == null) {
             throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
         List<Book> wishListByMemberId = getWishListByMemberId(memberId);
         List<BookWishListDto> wishListDtoList = new ArrayList<>();
 
-        for (Book book : wishListByMemberId){
+        for (Book book : wishListByMemberId) {
             String thumbnailUrl = bookImageService.getThumbnailUrl(book.getId());
             wishListDtoList.add(new BookWishListDto(
-                   book.getId(),
-                   book.getTitle(),
-                   book.getPublisher(),
-                   book.getPublishDate(),
-                   book.getContributors(),
-                   book.isPackable(),
-                   book.getRegularPrice(),
-                   book.getSalePrice(),
-                   book.getStatus(),
-                   thumbnailUrl
-           ));
+                    book.getId(),
+                    book.getTitle(),
+                    book.getPublisher(),
+                    book.getPublishDate(),
+                    book.getContributors(),
+                    book.isPackable(),
+                    book.getRegularPrice(),
+                    book.getSalePrice(),
+                    book.getStatus(),
+                    thumbnailUrl
+            ));
         }
 
         int start = (int) pageable.getOffset();
@@ -288,19 +306,19 @@ public class BookService {
         return new PageImpl<>(pagedList, pageable, wishListDtoList.size());
     }
 
-    public void deleteWishList(Long bookId, Long memberId){
-        if (memberRepository.findById(memberId).isEmpty()){
+    public void deleteWishList(Long bookId, Long memberId) {
+        if (memberRepository.findById(memberId).isEmpty()) {
             throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
         }
 
-        if (bookRepository.findById(bookId).isEmpty()){
+        if (bookRepository.findById(bookId).isEmpty()) {
             throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
         }
 
         bookLikeService.unlikeBook(bookId, memberId);
     }
 
-    public List<Book> getWishListByMemberId(Long memberId){
+    public List<Book> getWishListByMemberId(Long memberId) {
         return bookLikeService.getWishListByMemberId(memberId);
     }
 }

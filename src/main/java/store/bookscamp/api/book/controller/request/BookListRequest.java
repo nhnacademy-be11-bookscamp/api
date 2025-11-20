@@ -9,8 +9,8 @@ import lombok.Data;
 @Data
 public class BookListRequest {
     @NotBlank
-    private String queryType;   // Bestseller, NewItem, BlogBest ...
-    private Integer categoryId; // 선택
+    private String queryType;
+    private Integer categoryId;
     @Min(1) private Integer start = 1;
     @Min(1) private Integer maxResults = 10;
 }

@@ -31,7 +31,7 @@ public class AladinService {
     private String version;
 
 
-    /** 1) 리스트(베스트셀러/신간 등) - ItemList.aspx */
+    // 리스트(베스트셀러/신간 등)
     public Mono<AladinResponse> fetchList(String queryType,
                                           Integer categoryId,
                                           Integer start,
@@ -40,7 +40,7 @@ public class AladinService {
         return aladinWebClient.get()
                 .uri(b -> b.path("/ItemList.aspx")
                         .queryParam("ttbkey", ttbKey)
-                        .queryParam("QueryType", queryType)                 // e.g., Bestseller, ItemNewAll ...
+                        .queryParam("QueryType", queryType)
                         .queryParamIfPresent("CategoryId", Optional.ofNullable(categoryId))
                         .queryParam("MaxResults", defaultInt(maxResults, 10))
                         .queryParam("start", defaultInt(start, 1))
@@ -53,7 +53,7 @@ public class AladinService {
                 .bodyToMono(AladinResponse.class);
     }
 
-    /** 2) ISBN 단건 조회 - ItemLookUp.aspx */
+    // ISBN 단건 조회
     public Mono<AladinResponse> lookupByIsbn13(String isbn13) {
         return aladinWebClient.get()
                 .uri(b -> b.path("/ItemLookUp.aspx")
@@ -68,12 +68,12 @@ public class AladinService {
                 .bodyToMono(AladinResponse.class);
     }
 
-    /** 3) 키워드 검색 - ItemSearch.aspx */
+    // 키워드 검색
     public Mono<AladinResponse> search(String query,
-                                       String queryType,   // Title | Author | Publisher | Keyword ...
+                                       String queryType,
                                        Integer start,
                                        Integer maxResults,
-                                       String sort) {       // Accuracy | PublishTime | SalesPoint ...
+                                       String sort) {
         return aladinWebClient.get()
                 .uri(b -> b.path("/ItemSearch.aspx")
                         .queryParam("ttbkey", ttbKey)
@@ -90,7 +90,7 @@ public class AladinService {
                 .bodyToMono(AladinResponse.class);
     }
 
-    // ===== 유틸 & 매핑 (엔티티용) =====
+    // 유틸 & 매핑 (엔티티용)
     private int defaultInt(Integer v, int d) {
         return v == null ? d : v;
     }
@@ -123,7 +123,6 @@ public class AladinService {
         if (s == null || s.isBlank()) {
             return LocalDate.now();
         }
-        // pubDate 표기가 다양해서 느슨하게 처리
         try {
             if (s.length() == 10) {
                 return LocalDate.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd"));

@@ -73,7 +73,7 @@ public class BookCachingIndexService {
         } catch (Exception e) {
             log.error("[BookCachingIndexService] index init failed", e);
         }
-    }//서버 부트 시 caching index 초기화
+    }// 서버 부트 시 caching index 초기화
 
 
 

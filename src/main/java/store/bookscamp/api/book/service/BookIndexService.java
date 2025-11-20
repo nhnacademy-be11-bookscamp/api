@@ -43,9 +43,7 @@ public class BookIndexService {
     private static final String SETTINGS_PATH = "elasticsearch/books-settings.json";
     private final BookRepository bookRepository;
 
-    /**
-     * ✅ 애플리케이션 시작 시 인덱스 존재 여부 확인
-     */
+    // 애플리케이션 시작 시 인덱스 존재 여부 확인
     @PostConstruct
     public void init() {
         try {
@@ -86,9 +84,9 @@ public class BookIndexService {
                 b.index(INDEX_NAME);
                 b.refresh(Refresh.False);
                 for (BookProjection row : rows) {
-                    // 1️⃣ Projection → Document 변환
+                    // Projection → Document 변환
                     BookDocument doc = projectionToDoc(row);
-                    // 2️⃣ 임베딩 생성
+                    // 임베딩 생성
                     String combinedText = String.join(" ",
                             doc.getTitle() != null ? doc.getTitle() : "",
                             doc.getExplanation() != null ? doc.getExplanation() : "",
@@ -99,11 +97,11 @@ public class BookIndexService {
 
                     doc.setBookVector(embedding);
 
-                    // 3️⃣ JSON 변환
+                    // JSON 변환
                     Map<String, Object> jsonDoc = convertDocumentToMap(doc);
-                    jsonDoc.put("bookVector", embedding); // ✅ 벡터 추가
+                    jsonDoc.put("bookVector", embedding); // 벡터 추가
 
-                    // 4️⃣ 인덱스 연산 추가
+                    // 인덱스 연산 추가
                     b.operations(op -> op
                             .index(idx -> idx
                                     .index(INDEX_NAME)
@@ -117,16 +115,14 @@ public class BookIndexService {
                 return b;
             });
             esClient.indices().refresh(r -> r.index(INDEX_NAME));
-            log.info("[BookIndexService] ✅ Indexed {} books into {}", rows.size(), INDEX_NAME);
+            log.info("[BookIndexService] Indexed {} books into {}", rows.size(), INDEX_NAME);
         } catch (Exception e) {
             log.error("[BookIndexService] index init failed", e);
         }
     }
 
-    /**
-     * ✅ DB Book → ES BookDocument 변환
-     */
-    private BookDocument mapBookToDocument(Book book) {
+    // DB Book → ES BookDocument 변환
+    public BookDocument mapBookToDocument(Book book) {
         return BookDocument.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -145,15 +141,6 @@ public class BookIndexService {
                 .build();
     }
 
-    /**
-     * ✅ 단일 도서 인덱싱
-     */
-    public void indexBook(Book book) {
-        BookDocument doc = mapBookToDocument(book);
-        ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-        ops.save(doc);
-        log.info("[BookIndexService] indexed book → {}", book.getTitle());
-    }
     public void indexBook(BookDocument book) {
         ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
         ops.save(book);
@@ -174,7 +161,7 @@ public class BookIndexService {
 
     public BookDocument projectionToDoc(BookProjection row) {
 
-        // ✅ LocalDate를 문자열로 변환
+        // LocalDate를 문자열로 변환
         String dateStr = (row.getPublishDate() != null)
                 ? row.getPublishDate().toString()
                 : null;

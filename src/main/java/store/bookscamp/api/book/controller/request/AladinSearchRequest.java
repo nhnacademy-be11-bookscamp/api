@@ -8,8 +8,8 @@ import lombok.Data;
 public class AladinSearchRequest {
     @NotBlank
     private String query;
-    private String queryType;   // Title/Author/Publisher/Keyword (기본 Keyword)
+    private String queryType;
     @Min(1) private Integer start;
     @Min(1) private Integer maxResults;
-    private String sort;        // Accuracy/PublishTime 등
+    private String sort;
 }
