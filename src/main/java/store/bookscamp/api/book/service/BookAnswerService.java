@@ -29,23 +29,21 @@ public class BookAnswerService {
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 
-    /**
-     * ✅ Gemini LLM 호출 - 도서 기반 추천문 생성
-     */
+    // Gemini LLM 호출 - 도서 기반 추천문 생성
     public Map<String, Object> generateAnswer(String query, List<BookDocument> docs) {
         Map<String,Object> result=new HashMap<>();
         try {
-            // 1️⃣ 프롬프트 구성
+            // 프롬프트 구성
             String prompt = buildPrompt(query, docs);
 
-            // 2️⃣ 요청 본문
+            // 요청 본문
             JSONObject body = new JSONObject()
                     .put("contents", new JSONArray()
                             .put(new JSONObject()
                                     .put("parts", new JSONArray()
                                             .put(new JSONObject().put("text", prompt)))));
 
-            // 3️⃣ HTTP 요청
+            // HTTP 요청
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(GEMINI_URL + "?key=" + geminiApiKey))
                     .header("Content-Type", "application/json")
@@ -64,7 +62,7 @@ public class BookAnswerService {
                 return result;
             }
 
-            // 📌 Gemini content.parts는 1개 뿐임 → 내부에 JSON 문자열이 들어있음
+            // Gemini content.parts는 1개 뿐임 → 내부에 JSON 문자열이 들어있음
             String rawText = candidates.getJSONObject(0)
                     .getJSONObject("content")
                     .getJSONArray("parts")
@@ -74,7 +72,7 @@ public class BookAnswerService {
 
             log.info("[BookAnswerService] rawText: '{}'", rawText);
 
-            // 📌 ```json ... ``` 제거
+            // ```json ... ``` 제거
             String cleaned = rawText
                     .replace("```json", "")
                     .replace("```", "")
@@ -109,9 +107,7 @@ public class BookAnswerService {
         }
     }
 
-    /**
-     * ✅ 사용자 검색어 + 도서 리스트 기반으로 프롬프트 생성
-     */
+    // 사용자 검색어 + 도서 리스트 기반으로 프롬프트 생성
     private String buildPrompt(String userQuery, List<BookDocument> books) {
         StringBuilder sb = new StringBuilder();
         sb.append("사용자가 다음과 같은 검색을 했습니다: '").append(userQuery).append("'\n");

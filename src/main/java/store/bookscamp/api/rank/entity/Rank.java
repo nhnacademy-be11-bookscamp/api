@@ -43,4 +43,10 @@ public class Rank {
         this.cumulativeMinAmount = cumulativeMinAmount;
         this.cumulativeMaxAmount = cumulativeMaxAmount;
     }
+
+    public boolean contains(int amount) {
+        int max = this.cumulativeMaxAmount;
+
+        return amount >= this.cumulativeMinAmount && amount < max;
+    }
 }

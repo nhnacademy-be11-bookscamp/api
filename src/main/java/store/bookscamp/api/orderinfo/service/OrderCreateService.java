@@ -235,7 +235,7 @@ public class OrderCreateService {
                                              int usedPoint, int netAmount) {
         if (usedPoint > 0) {
             member.usePoint(usedPoint);
-            PointHistory useHistory = new PointHistory(orderInfo, member, PointType.USE, usedPoint);
+            PointHistory useHistory = new PointHistory(orderInfo, member, PointType.USE, usedPoint, "주문 사용");
             pointHistoryRepository.save(useHistory);
         }
 
@@ -246,7 +246,7 @@ public class OrderCreateService {
         int earnedPoint = calculateEarnedPoint(member, netAmount);
         if (earnedPoint > 0) {
             member.earnPoint(earnedPoint);
-            PointHistory earnHistory = new PointHistory(orderInfo, member, PointType.EARN, earnedPoint);
+            PointHistory earnHistory = new PointHistory(orderInfo, member, PointType.EARN, earnedPoint, "주문 적립");
             pointHistoryRepository.save(earnHistory);
         }
     }

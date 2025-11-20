@@ -2,7 +2,9 @@ package store.bookscamp.api.pointhistory.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
@@ -34,7 +36,7 @@ public class PointHistoryService {
 
         member.earnPoint(dto.pointAmount());
 
-        PointHistory history = PointHistory.earn(orderInfo, member, dto.pointAmount());
+        PointHistory history = PointHistory.earn(orderInfo, member, dto.pointAmount(), dto.description());
         pointHistoryRepository.save(history);
     }
 
@@ -46,13 +48,19 @@ public class PointHistoryService {
 
         member.usePoint(dto.pointAmount());
 
-        PointHistory history = PointHistory.use(orderInfo, member, dto.pointAmount());
+        PointHistory history = PointHistory.use(orderInfo, member, dto.pointAmount(), dto.description());
         pointHistoryRepository.save(history);
     }
 
     // 마이페이지 조회
     public Page<PointHistory> listMemberPoints(Long memberId, Pageable pageable) {
-        return pointHistoryRepository.findAllHistoryByMemberId(memberId, pageable);
+        Pageable sorted = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        return pointHistoryRepository.findAllHistoryByMemberId(memberId, sorted);
     }
 
     private Member getMember(Long memberId) {
