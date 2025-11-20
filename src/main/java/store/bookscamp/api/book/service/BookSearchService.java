@@ -40,14 +40,24 @@ public class BookSearchService {
     private final BookCachingIndexService cachingIndexService;
 
     public Page<BookSortDto> searchBooks(BookSearchRequest request) {
+        NativeQueryBuilder qb = new NativeQueryBuilder();
+        if(request.role().equals("admin")){
+            if (request.keyword() == null || request.keyword().isEmpty()) {
+                Category category = null;
+                if (request.categoryId() != null) {
+                    category = categoryRepository.getCategoryById(request.categoryId());
+                }
+                return noKeyWordSearch(qb, request, category);
+            }// 키워드 없이 카테고리만 검색
+            return adminSearchWithRRF(request);
+        }
+
         if (request.keyword() != null && !request.keyword().equals("")) {
             Optional<BookCaching> cache = cachingIndexService.getCache(request.keyword());
             if (cache.isPresent()) {
                 return convertToSearchResponse(cache.get(), request);
             }
-
         }
-        NativeQueryBuilder qb = new NativeQueryBuilder();
         if (request.keyword() == null || request.keyword().isEmpty()) {
             Category category = null;
             if (request.categoryId() != null) {
@@ -451,28 +461,31 @@ public class BookSearchService {
                     .toList();
             default -> dtos;
         };
-        List<BookSortDto> aiRank = new ArrayList<>();
-        for(BookSortDto dto : dtos){
-            if(dto.getAiRank() != null){
-                aiRank.add(dto);
-            }
-        }
-        if(aiRank.isEmpty()){
-            aiRank = aiRank.stream().sorted(Comparator.comparingInt(BookSortDto::getAiRank).reversed()).toList();
-            for(int j=0;j<dtos.size();j++){
-                for(int i = 0; i < aiRank.size(); i++){
-                    if(dtos.get(j).getId()!=aiRank.get(i).getId()){
-                        aiRank.add(dtos.get(j));
-                        break;
-                    }
-                }
-            }
-            return aiRank;
-        }else{
-            return dtos;
-        }
+       return dtos;
 
 
+    }
+
+
+    private Page<BookSortDto> adminSearchWithRRF(BookSearchRequest request){
+        List<BookDocument> docs = hybridSearchWithRRF(request);
+
+        List<BookSortDto> dtoList = docs.stream()
+                .map(BookSortDto::fromDocument)
+                .toList();
+        List<BookSortDto> sorted =
+                applySortAfterSortDto(dtoList, request.sortType());
+
+        Pageable pageable = request.pageable();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), sorted.size());
+
+        if (start >= sorted.size()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, sorted.size());
+        }
+
+        List<BookSortDto> pageSlice = sorted.subList(start, end);
+        return new PageImpl<>(pageSlice, pageable, sorted.size());
     }
 
 }
