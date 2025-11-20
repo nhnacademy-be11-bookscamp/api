@@ -40,11 +40,12 @@ public class CustomConfigClientWatch implements Closeable, EnvironmentAware {
     @PostConstruct
     public void start() {
         running.compareAndSet(false, true);
+        log.info("[Config Watch] started");
     }
 
     @Scheduled(
             initialDelayString = "${spring.cloud.config.watch.git.initialDelay:10000}",
-            fixedDelayString = "${spring.cloud.config.watch.git.delay:5000}"
+            fixedDelayString = "${spring.cloud.config.watch.git.delay:20000}"
     )
     public void watchConfigServer() {
         if (!running.get()) {
