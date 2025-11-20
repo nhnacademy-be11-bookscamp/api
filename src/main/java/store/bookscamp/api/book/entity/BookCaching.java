@@ -21,5 +21,5 @@ public class BookCaching {
 
     private List<BookSortDto> books;
 
-    private Long cachedAt;                 // UNIX timestamp 저장 (TTL 비교 용도)
+    private Long cachedAt;                // TTL용
 }
