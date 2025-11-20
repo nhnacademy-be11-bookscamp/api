@@ -16,34 +16,32 @@ import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderListService {
 
     private final OrderInfoRepository orderInfoRepository;
     private final OrderItemRepository orderItemRepository;
 
-
     public Page<OrderListDto> getOrderList(Long memberId, Pageable pageable) {
+        Page<OrderInfo> orderInfoPage = orderInfoRepository.findByMemberId(memberId, pageable); // 아이템
 
-        Page<OrderListDto> olderInfoPage = orderInfoRepository.findByMemberId(memberId, pageable);
-
-        List<OrderListDto> content =  olderInfoPage.getContent().stream()
-                .map(this::toOrderList)
+        List<OrderListDto> content = orderInfoPage.getContent().stream()
+                .map(this::toOrderListDto)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(content, pageable, olderInfoPage.getTotalElements());
+        return new PageImpl<>(content, pageable, orderInfoPage.getTotalElements());
+
     }
 
     private OrderListDto toOrderListDto(OrderInfo orderInfo) {
-
         List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderInfo.getId());
 
         String representationBookTitle = null;
         int totalQuantity = 0;
 
-        if(!orderItems.isEmpty()) {
+        if (!orderItems.isEmpty()) {
             OrderItem firstItem = orderItems.get(0);
-            if(firstItem.getBook() != null) {
+            if (firstItem.getBook() != null) {
                 representationBookTitle = firstItem.getBook().getTitle();
             }
 
@@ -60,6 +58,5 @@ public class OrderListService {
                 totalQuantity,
                 orderInfo.getFinalPaymentAmount()
         );
-
     }
 }

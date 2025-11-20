@@ -6,7 +6,7 @@ import store.bookscamp.api.orderinfo.service.dto.OrderListDto;
 public record OrderListResponse (
         Long orderId,
         LocalDateTime orderDate,
-        String representationBookTitle,
+        String representativeBookTitle,
         int totalQuantity,
         int finalPaymentAmount
         ) {
