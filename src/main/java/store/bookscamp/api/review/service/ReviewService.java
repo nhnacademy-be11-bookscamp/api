@@ -81,7 +81,7 @@ public class ReviewService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.POINT_POLICY_NOT_FOUND));
 
         pointHistoryService.earnPoint(
-                new PointHistoryEarnDto(dto.memberId(), null, PointType.EARN, policy.getRewardValue()),
+                new PointHistoryEarnDto(dto.memberId(), null, PointType.EARN, policy.getRewardValue(), "리뷰 적립"),
                 dto.memberId()
         );
     }
