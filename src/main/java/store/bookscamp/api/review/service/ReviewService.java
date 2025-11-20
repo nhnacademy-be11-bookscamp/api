@@ -1,8 +1,15 @@
 package store.bookscamp.api.review.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.bookscamp.api.book.entity.BookDocument;
+import store.bookscamp.api.book.entity.BookProjection;
+import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.BookIndexService;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
@@ -19,10 +26,12 @@ import store.bookscamp.api.pointpolicy.repository.PointPolicyRepository;
 import store.bookscamp.api.review.entity.Review;
 import store.bookscamp.api.review.repository.ReviewRepository;
 import store.bookscamp.api.review.repository.ReviewQueryRepository;
+import store.bookscamp.api.review.service.dto.BookReviewDto;
 import store.bookscamp.api.review.service.dto.MyReviewDto;
 import store.bookscamp.api.review.service.dto.ReviewCreateDto;
 import store.bookscamp.api.review.service.dto.ReviewUpdateDto;
 import store.bookscamp.api.review.service.dto.ReviewableItemDto;
+import store.bookscamp.api.reviewimage.entity.ReviewImage;
 import store.bookscamp.api.reviewimage.service.ReviewImageService;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageCreateDto;
 import store.bookscamp.api.reviewimage.service.dto.ReviewImageDeleteDto;
@@ -43,6 +52,8 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final PointPolicyRepository pointPolicyRepository;
     private final ReviewQueryRepository reviewQueryRepository;
+    private final BookRepository bookRepository;
+    private final BookIndexService bookIndexService;
 
     @Transactional
     public void createReview(ReviewCreateDto dto) {
@@ -55,7 +66,10 @@ public class ReviewService {
         }
 
         Review review = new Review(orderItem, member, dto.content(), dto.score());
-        reviewRepository.save(review);
+        reviewRepository.saveAndFlush(review);
+        BookProjection projection = bookRepository.findByIdWithRatingAndReview(orderItem.getBook().getId());
+        BookDocument doc = bookIndexService.projectionToDoc(projection);
+        bookIndexService.indexBook(doc);
 
         reviewImageService.createReviewImage(new ReviewImageCreateDto(review, dto.imageUrls()));
 
@@ -83,6 +97,9 @@ public class ReviewService {
 
         review.update(dto.content(), dto.score());
 
+        BookProjection projection = bookRepository.findByIdWithRatingAndReview(review.getOrderItem().getBook().getId());
+        BookDocument doc = bookIndexService.projectionToDoc(projection);
+        bookIndexService.indexBook(doc);
         reviewImageService.deleteReviewImage(new ReviewImageDeleteDto(dto.removedImageUrls()));
         reviewImageService.createReviewImage(new ReviewImageCreateDto(review, dto.imageUrls()));
     }
@@ -122,6 +139,38 @@ public class ReviewService {
                 review.getCreatedAt(),
                 imageUrls
         );
+    }
+
+    public Page<BookReviewDto> getBookReviews(Long bookId, Pageable pageable) {
+
+        Page<Review> page = reviewRepository.findByOrderItemBookId(bookId, pageable);
+
+        List<BookReviewDto> content = page.getContent().stream()
+                .map(r -> {
+                    List<String> images = reviewImageService.getReviewImages(r.getId());
+
+                    return new BookReviewDto(
+                            r.getId(),
+                            r.getMember().getUsername(),
+                            r.getContent(),
+                            r.getScore(),
+                            r.getCreatedAt(),
+                            images
+                    );
+                })
+                .toList();
+
+        return new PageImpl<>(content, pageable, page.getTotalElements());
+    }
+
+    public Double getReviewAverageScore(Long bookId) {
+
+        Double avg = reviewRepository.getAvgScore(bookId);
+        if (avg == null) {
+            return 0.0;
+        }
+        
+        return Math.round(avg * 10) / 10.0;
     }
 
     private Member getMember(Long memberId) {
