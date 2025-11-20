@@ -1,7 +1,5 @@
 package store.bookscamp.api.book.service;
 
-import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
-
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookIndexDto;
-import store.bookscamp.api.book.service.dto.BookSortDto;
 import store.bookscamp.api.book.service.dto.BookUpdateDto;
 import store.bookscamp.api.book.service.dto.BookWishListDto;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
@@ -29,14 +26,11 @@ import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
 import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
 import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
-import store.bookscamp.api.booklike.entity.BookLike;
-import store.bookscamp.api.booklike.repository.BookLikeRepository;
 import store.bookscamp.api.booklike.service.BookLikeService;
 import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
 import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
-import store.bookscamp.api.category.service.CategoryService;
 import store.bookscamp.api.category.service.dto.CategoryDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
@@ -175,25 +169,6 @@ public class BookService {
         book.softDelete();
         bookIndexService.deleteBookIndex(id);
         bookCachingIndexService.invalidateCachesContainingBook(id);
-
-        List<BookTag> bookTags = bookTagRepository.findAllByBookId(id);
-        for (BookTag bt : bookTags) {
-            bt.softDelete();
-        }
-
-        List<BookCategory> bookCategories = bookCategoryRepository.findAllByBookId(id);
-        for (BookCategory bc : bookCategories) {
-            bc.softDelete();
-        }
-    }
-
-    @Transactional
-    public void deleteBook(Long id) {
-
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
-
-        book.softDelete();
 
         List<BookTag> bookTags = bookTagRepository.findAllByBookId(id);
         for (BookTag bt : bookTags) {
