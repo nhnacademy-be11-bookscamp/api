@@ -45,18 +45,22 @@ public class PointHistory extends SoftDeleteEntity {
     @Column(nullable = false)
     private Integer pointAmount;
 
-    public PointHistory(OrderInfo orderInfo, Member member, PointType pointType, Integer pointAmount) {
+    @Column(nullable = false)
+    private String description;
+
+    public PointHistory(OrderInfo orderInfo, Member member, PointType pointType, Integer pointAmount, String description) {
         this.orderInfo = orderInfo;
         this.member = member;
         this.pointType = pointType;
         this.pointAmount = pointAmount;
+        this.description = description;
     }
 
-    public static PointHistory earn(OrderInfo orderInfo, Member member, int pointAmount) {
-        return new PointHistory(orderInfo, member, PointType.EARN, pointAmount);
+    public static PointHistory earn(OrderInfo orderInfo, Member member, int pointAmount, String description) {
+        return new PointHistory(orderInfo, member, PointType.EARN, pointAmount, description);
     }
 
-    public static PointHistory use(OrderInfo orderInfo, Member member, int pointAmount) {
-        return new PointHistory(orderInfo, member, PointType.USE, -pointAmount);
+    public static PointHistory use(OrderInfo orderInfo, Member member, int pointAmount, String description) {
+        return new PointHistory(orderInfo, member, PointType.USE, -pointAmount, description);
     }
 }

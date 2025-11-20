@@ -41,7 +41,8 @@ public class SignupEventConsumer {
                             dto.memberId(),
                             null,
                             PointType.EARN,
-                            rewardValue
+                            rewardValue,
+                            "회원가입 적립"
             );
             pointHistoryService.earnPoint(earnDto, dto.memberId());
             log.info("회원가입 포인트 5000점 적립 완료. memberId = {}", dto.memberId());
