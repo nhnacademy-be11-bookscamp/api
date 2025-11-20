@@ -101,9 +101,10 @@ public class BookController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyWord,
             @RequestParam(defaultValue = "id") String sortType,
-            @PageableDefault(size = 10, page = 0) Pageable pageable
+            @PageableDefault(size = 10, page = 0) Pageable pageable,
+            @RequestParam(required = false) String role
     ) {
-        BookSearchRequest searchRequest = new BookSearchRequest(categoryId, keyWord, sortType, pageable);
+        BookSearchRequest searchRequest = new BookSearchRequest(categoryId, keyWord, sortType, pageable,role);
         Page<BookSortDto> bookSortDtoPage = bookSearchService.searchBooks(searchRequest);
         List<BookSortResponse> bookSortResponseList = new ArrayList<>();
 

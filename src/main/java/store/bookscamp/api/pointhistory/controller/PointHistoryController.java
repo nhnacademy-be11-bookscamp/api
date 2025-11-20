@@ -19,8 +19,6 @@ import store.bookscamp.api.pointhistory.controller.request.PointHistoryUseReques
 import store.bookscamp.api.pointhistory.controller.response.PointHistoryResponse;
 import store.bookscamp.api.pointhistory.service.PointHistoryService;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "포인트내역 API", description = "PointHistory API입니다.")

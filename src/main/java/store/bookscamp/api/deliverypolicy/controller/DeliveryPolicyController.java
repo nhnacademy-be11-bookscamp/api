@@ -34,7 +34,6 @@ public class DeliveryPolicyController {
         return ResponseEntity.ok(deliveryPolicyService.create(req));
     }
 
-
     @GetMapping
     @Operation(summary = "현재 배송비 정책 조회")
     @RequiredRole("ADMIN")
@@ -42,7 +41,6 @@ public class DeliveryPolicyController {
         return ResponseEntity.ok(deliveryPolicyService.getDeliveryPolicy());
     }
 
-    // TODO : update는 PUT 으로 설정한거 프론트에서 잊지 말기!
     @PutMapping
     @Operation(summary = "배송비 정책 수정(관리자)")
     @RequiredRole("ADMIN")
