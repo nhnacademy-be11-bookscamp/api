@@ -112,4 +112,8 @@ public class Member extends SoftDeleteEntity {
     public void earnPoint(int point) {
         this.point += point;
     }
+
+    public void updateRank(Rank newRank) {
+        this.rank = newRank;
+    }
 }

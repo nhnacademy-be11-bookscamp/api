@@ -9,6 +9,7 @@ public record PointHistoryResponse(
         Long orderId,
         PointType pointType,
         Integer pointAmount,
+        String description,
         LocalDateTime createdAt
 ) {
     public static PointHistoryResponse from(PointHistory pointHistory) {
@@ -17,6 +18,7 @@ public record PointHistoryResponse(
                 pointHistory.getOrderInfo() != null ? pointHistory.getOrderInfo().getId() : null,
                 pointHistory.getPointType(),
                 pointHistory.getPointAmount(),
+                pointHistory.getDescription(),
                 pointHistory.getCreatedAt()
         );
     }

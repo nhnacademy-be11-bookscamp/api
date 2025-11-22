@@ -13,7 +13,9 @@ public record PointHistoryEarnRequest(
         Long orderId,
 
         @NotNull @Min(0)
-        Integer pointAmount
+        Integer pointAmount,
+
+        String description
 ) {
 
         public PointHistoryEarnDto toDto() {
@@ -21,7 +23,8 @@ public record PointHistoryEarnRequest(
                         memberId,
                         orderId,
                         PointType.EARN,
-                        pointAmount
+                        pointAmount,
+                        description
                 );
         }
 }

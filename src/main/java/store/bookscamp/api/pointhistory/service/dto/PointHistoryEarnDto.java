@@ -6,5 +6,6 @@ public record PointHistoryEarnDto(
         Long memberId,
         Long orderId,
         PointType pointType,
-        Integer pointAmount
+        Integer pointAmount,
+        String description
 ) {}
