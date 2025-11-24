@@ -7,7 +7,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import store.bookscamp.api.orderinfo.entity.OrderStatus;
 import store.bookscamp.api.rank.repository.custom.RankRepositoryCustom;
 import store.bookscamp.api.rank.service.dto.RankSummaryDto;
@@ -30,12 +29,18 @@ public class RankRepositoryCustomImpl implements RankRepositoryCustom {
                         Projections.constructor(
                                 RankSummaryDto.class,
                                 orderInfo.member.id,
-                                orderInfo.netAmount.sum().coalesce(0)
+                                // [핵심] DB의 Long 결과를 Integer로 변환하여 DTO에 전달
+                                orderInfo.netAmount.sum().coalesce(0).intValue()
                         )
                 )
                 .from(orderInfo)
                 .where(
-                        orderInfo.orderStatus.eq(OrderStatus.DELIVERED),
+                        // [필수] 배송 중(1), 배송 완료(2) 모두 포함 (DB값 1을 읽기 위함)
+                        orderInfo.orderStatus.in(
+                                OrderStatus.PENDING,
+                                OrderStatus.SHIPPING,
+                                OrderStatus.DELIVERED
+                        ),
                         orderInfo.createdAt.goe(threeMonthsAgo),
                         orderInfo.deletedAt.isNull()
                 )

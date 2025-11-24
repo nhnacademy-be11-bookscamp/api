@@ -9,7 +9,6 @@ import jakarta.servlet.http.Cookie;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,10 @@ import store.bookscamp.api.cart.repository.CartRepository;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.repository.MemberRepository;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
+import store.bookscamp.api.pointpolicy.repository.PointPolicyRepository;
 import store.bookscamp.api.rank.entity.Rank;
+import store.bookscamp.api.rank.repository.RankRepository;
 
-@Disabled
 @SpringBootTest
 @Transactional
 class CartCookieServiceTest {
@@ -38,6 +38,12 @@ class CartCookieServiceTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private RankRepository rankRepository;
+
+    @Autowired
+    private PointPolicyRepository pointPolicyRepository;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -95,13 +101,15 @@ class CartCookieServiceTest {
     @DisplayName("회원 요청 시 기존 카트가 없으면 새로 생성되고 해당 회원과 연결된다")
     void memberCreateCart() {
         // given
+        PointPolicy pointPolicy = pointPolicyRepository.save(new PointPolicy(STANDARD, RATE, 3));
+        Rank rank = rankRepository.save(new Rank(pointPolicy, "랭크", 0, 0));
         Member member = memberRepository.save(new Member(
                 "회원",
                 "1234",
                 "member@naver.com",
                 "01012345678",
                 0,
-                new Rank(new PointPolicy(STANDARD, RATE, 3), "랭크", 0, 0),
+                rank,
                 NORMAL,
                 LocalDate.now(),
                 "member",
@@ -110,7 +118,7 @@ class CartCookieServiceTest {
         ));
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        request.addHeader("X-USER-ID", member.getId().toString());
+        request.addHeader("X-User-ID", member.getId().toString());
 
         // when
         Long cartId = cartCookieService.extractCartId(request, response);
