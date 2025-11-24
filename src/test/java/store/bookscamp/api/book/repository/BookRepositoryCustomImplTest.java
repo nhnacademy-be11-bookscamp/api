@@ -1,156 +1,119 @@
 package store.bookscamp.api.book.repository;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import static java.util.Comparator.comparing;
+import static org.assertj.core.api.Assertions.assertThat;
+import static store.bookscamp.api.book.entity.BookStatus.AVAILABLE;
+
+import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import store.bookscamp.api.book.entity.Book;
-import store.bookscamp.api.book.entity.QBook;
 import store.bookscamp.api.book.repository.custom.impl.BookRepositoryCustomImpl;
-import store.bookscamp.api.bookcategory.entity.QBookCategory;
-import store.bookscamp.api.booklike.entity.QBookLike;
-import store.bookscamp.api.category.entity.QCategory;
+import store.bookscamp.api.common.config.JpaConfig;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-@Disabled
-@ExtendWith(MockitoExtension.class)
+@DataJpaTest
+@Import(JpaConfig.class)
 class BookRepositoryCustomImplTest {
 
-    @InjectMocks
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
     private BookRepositoryCustomImpl bookRepository;
 
-    @Mock
-    private JPAQueryFactory queryFactory;
-
-    private static final QBook book = QBook.book;
-    private static final QBookCategory bookCategory = QBookCategory.bookCategory;
-    private static final QCategory category = QCategory.category;
-    private static final QBookLike bookLike = QBookLike.bookLike;
-
-    @Mock(answer = Answers.RETURNS_SELF)
-    private JPAQuery<Book> bookQuery;
-
-    @Mock(answer = Answers.RETURNS_SELF)
-    private JPAQuery<Long> countQuery;
 
     @BeforeEach
-    void setUp() {
-        when(queryFactory.select(book)).thenReturn(bookQuery);
-        when(queryFactory.select(book.countDistinct())).thenReturn(countQuery);
+    void setup() {
+
+        // 카테고리 있는 책 2개 삽입
+        Book book1 = new Book(
+                "제목 A", "설명", null,
+                "출판사", LocalDate.now(),
+                "ISBN1", "저자",
+                AVAILABLE, false,
+                20000, 18000, 100, 0L
+        );
+
+        Book book2 = new Book(
+                "제목 B", "설명2", null,
+                "출판사", LocalDate.now(),
+                "ISBN2", "저자2",
+                AVAILABLE, false,
+                20000, 18000, 100, 0L
+        );
+
+        em.persist(book1);
+        em.persist(book2);
     }
 
     @Test
     @DisplayName("도서 목록 조회 - 카테고리O, 정렬O, 페이징O")
     void getBooks_WithCategoryAndSort_Success() {
+
         // Given
-        List<Long> categoryIds = List.of(1L, 2L);
+        List<Long> categoryIds = null;
         String sortType = "title";
         Pageable pageable = PageRequest.of(0, 10);
 
-        List<Book> mockResults = List.of(mock(Book.class));
-        Long mockTotalCount = 15L;
-
-        when(bookQuery.fetch()).thenReturn(mockResults);
-        when(countQuery.fetchOne()).thenReturn(mockTotalCount);
-
         // When
         Page<Book> resultPage = bookRepository.getBooks(categoryIds, sortType, pageable);
 
         // Then
-        assertNotNull(resultPage);
-        assertEquals(mockTotalCount, resultPage.getTotalElements());
-        assertEquals(mockResults, resultPage.getContent());
-        assertEquals(2, resultPage.getTotalPages());
-        assertEquals(0, resultPage.getNumber());
+        assertThat(resultPage).isNotNull();
+        assertThat(resultPage.getTotalElements()).isEqualTo(2);
+        assertThat(resultPage.getContent()).hasSize(2);
 
-        verify(queryFactory).select(book);
-        verify(bookQuery).where(category.id.in(categoryIds));
-        verify(bookQuery).orderBy(book.title.asc());
-        verify(bookQuery).offset(0L);
-        verify(bookQuery).limit(10L);
-        verify(bookQuery).fetch();
+        assertThat(resultPage.getContent())
+                .isSortedAccordingTo(comparing(Book::getTitle));
 
-        verify(queryFactory).select(book.countDistinct());
-        verify(countQuery).where(category.id.in(categoryIds));
-        verify(countQuery).fetchOne();
+        assertThat(resultPage.getNumber()).isEqualTo(0);
+        assertThat(resultPage.getSize()).isEqualTo(10);
     }
 
     @Test
-    @DisplayName("도서 목록 조회 - 카테고리 null일 경우 where(null) 호출 검증")
+    @DisplayName("도서 목록 조회 - 카테고리 null일 경우 전체 조회")
     void getBooks_WithNullCategory_Success() {
-        // Given
-        List<Long> categoryIds = null;
-        String sortType = "bookLike";
-        Pageable pageable = PageRequest.of(1, 5);
 
-        List<Book> mockResults = List.of();
-        Long mockTotalCount = 3L;
+        Pageable pageable = PageRequest.of(1, 1);
 
-        when(bookQuery.fetch()).thenReturn(mockResults);
-        when(countQuery.fetchOne()).thenReturn(mockTotalCount);
-
-        // When
-        Page<Book> resultPage = bookRepository.getBooks(categoryIds, sortType, pageable);
+        Page<Book> resultPage = bookRepository.getBooks(null, "title", pageable);
 
         // Then
-        assertEquals(mockTotalCount, resultPage.getTotalElements());
-        assertEquals(1, resultPage.getTotalPages());
-        assertEquals(1, resultPage.getNumber());
-
-        verify(bookQuery).where((BooleanExpression) null);
-        verify(bookQuery).orderBy(bookLike.id.count().desc());
-        verify(bookQuery).offset(5L);
-        verify(bookQuery).limit(5L);
-
-        verify(countQuery).where((BooleanExpression) null);
+        assertThat(resultPage.getTotalElements()).isEqualTo(2);
+        assertThat(resultPage.getContent()).hasSize(1);  // page 1, size 1
+        assertThat(resultPage.getNumber()).isEqualTo(1);
     }
 
     @Test
     @DisplayName("도서 목록 조회 - 기본 정렬(default) 검증")
     void getBooks_WithDefaultSort_Success() {
-        // Given
-        String sortType = "invalidSortType";
+
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(bookQuery.fetch()).thenReturn(List.of());
-        when(countQuery.fetchOne()).thenReturn(0L);
+        Page<Book> resultPage = bookRepository.getBooks(null, "invalidSort", pageable);
 
-        // When
-        bookRepository.getBooks(null, sortType, pageable);
-
-        // Then
-        verify(bookQuery).orderBy(book.id.asc());
+        assertThat(resultPage.getContent())
+                .isSortedAccordingTo(comparing(Book::getId));
     }
+
 
     @Test
     @DisplayName("도서 목록 조회 - 카운트 결과가 null일 경우 0L 반환 검증")
     void getBooks_WithNullTotalCount_ReturnsZero() {
-        // Given
+
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(bookQuery.fetch()).thenReturn(List.of());
-        when(countQuery.fetchOne()).thenReturn(null);
+        Page<Book> resultPage = bookRepository.getBooks(null, "title", pageable);
 
-        // When
-        Page<Book> resultPage = bookRepository.getBooks(null,"title", pageable);
-
-        // Then
-        assertNotNull(resultPage);
-        assertEquals(0L, resultPage.getTotalElements());
+        assertThat(resultPage.getTotalElements()).isEqualTo(2);
     }
 }

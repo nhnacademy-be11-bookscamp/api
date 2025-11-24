@@ -1,8 +1,19 @@
 package store.bookscamp.api.booklike.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.lettuce.core.RedisCommandExecutionException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.booklike.entity.BookLike;
@@ -20,11 +32,6 @@ import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 import store.bookscamp.api.member.repository.MemberRepository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
-@Disabled
 @SpringBootTest
 class BookLikeServiceTest {
 
@@ -42,6 +49,8 @@ class BookLikeServiceTest {
 
     private HashOperations hashOperations;
 
+    private SetOperations setOperations;
+
     private static final String LIKE_UPDATE_KEY = "like:update";
     private static final String LIKE_COUNT_KEY = "like:count";
 
@@ -50,7 +59,9 @@ class BookLikeServiceTest {
     void setUp() {
         // given
         hashOperations = mock(HashOperations.class);
+        setOperations = mock(SetOperations.class);
         when(redisTemplate.opsForHash()).thenReturn(hashOperations);
+        when(redisTemplate.opsForSet()).thenReturn(setOperations);
     }
 
     @Test
