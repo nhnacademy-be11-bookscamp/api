@@ -47,7 +47,7 @@ public class TossPaymentAdapter implements PaymentAdapter {
             return result;
         } catch (Exception e) {
             log.error("[TOSS-ADAPTER] Approve FAILED - paymentKey={}, orderId={}, error: {}", paymentKey, orderId, e.getMessage(), e);
-            throw new ApplicationException(ErrorCode.PAYMENT_APPROVAL_FAILED, e);
+            throw new ApplicationException(ErrorCode.PAYMENT_APPROVAL_FAILED);
         }
     }
 

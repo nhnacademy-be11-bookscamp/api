@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
-import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.member.entity.Member;

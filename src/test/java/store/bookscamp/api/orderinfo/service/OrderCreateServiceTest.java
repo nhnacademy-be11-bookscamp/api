@@ -221,9 +221,9 @@ class OrderCreateServiceTest {
             assertThat(orderItems.get(0).getBook().getId()).isEqualTo(book1.getId());
             assertThat(orderItems.get(0).getOrderQuantity()).isEqualTo(2);
 
-            // 재고 차감 확인
+            // 재고는 주문 생성 시점에 차감되지 않음 (결제 완료 시 차감)
             Book updatedBook = bookRepository.findById(book1.getId()).orElseThrow();
-            assertThat(updatedBook.getStock()).isEqualTo(initialStock - 2);
+            assertThat(updatedBook.getStock()).isEqualTo(initialStock);
         }
 
         @Test
@@ -247,24 +247,13 @@ class OrderCreateServiceTest {
             // then
             assertThat(result.finalPaymentAmount()).isEqualTo(31000); // 36000 - 5000
 
-            // 회원 포인트 확인 (사용 -5000, 적립 +1800)
+            // 주문 생성 시점에는 포인트 차감/적립이 일어나지 않음 (결제 완료 시 처리)
             Member updatedMember = memberRepository.findById(member.getId()).orElseThrow();
-            int earnedPoint = (int) Math.floor(36000 * 0.05); // 1800
-            assertThat(updatedMember.getPoint()).isEqualTo(initialPoint - 5000 + earnedPoint);
+            assertThat(updatedMember.getPoint()).isEqualTo(initialPoint);
 
-            // 포인트 사용 내역 확인
-            List<PointHistory> useHistories = pointHistoryRepository.findAll().stream()
-                    .filter(h -> h.getPointType() == PointType.USE)
-                    .toList();
-            assertThat(useHistories).hasSize(1);
-            assertThat(useHistories.get(0).getPointAmount()).isEqualTo(5000);
-
-            // 포인트 적립 내역 확인
-            List<PointHistory> earnHistories = pointHistoryRepository.findAll().stream()
-                    .filter(h -> h.getPointType() == PointType.EARN)
-                    .toList();
-            assertThat(earnHistories).hasSize(1);
-            assertThat(earnHistories.get(0).getPointAmount()).isEqualTo(earnedPoint);
+            // 포인트 내역도 아직 생성되지 않음
+            List<PointHistory> pointHistories = pointHistoryRepository.findAll();
+            assertThat(pointHistories).isEmpty();
         }
 
         @Test
@@ -300,9 +289,9 @@ class OrderCreateServiceTest {
             // then
             assertThat(result.finalPaymentAmount()).isEqualTo(33000); // 36000 - 3000(쿠폰)
 
-            // 쿠폰 사용 확인
+            // 쿠폰은 주문 생성 시점에 사용되지 않음 (결제 완료 시 사용 처리)
             CouponIssue updatedCoupon = couponIssueRepository.findById(couponIssue.getId()).orElseThrow();
-            assertThat(updatedCoupon.getUsedAt()).isNotNull();
+            assertThat(updatedCoupon.getUsedAt()).isNull();
         }
 
         @Test
@@ -325,15 +314,13 @@ class OrderCreateServiceTest {
             orderCreateService.createOrder(request, member.getId());
 
             // then
+            // 주문 생성 시점에는 포인트 적립이 일어나지 않음 (결제 완료 시 적립)
             Member updatedMember = memberRepository.findById(member.getId()).orElseThrow();
-            assertThat(updatedMember.getPoint()).isEqualTo(initialPoint + expectedEarnPoint);
+            assertThat(updatedMember.getPoint()).isEqualTo(initialPoint);
 
-            // 포인트 적립 내역 확인
-            List<PointHistory> earnHistories = pointHistoryRepository.findAll().stream()
-                    .filter(h -> h.getPointType() == PointType.EARN)
-                    .toList();
-            assertThat(earnHistories).hasSize(1);
-            assertThat(earnHistories.get(0).getPointAmount()).isEqualTo(expectedEarnPoint);
+            // 포인트 적립 내역도 아직 생성되지 않음
+            List<PointHistory> pointHistories = pointHistoryRepository.findAll();
+            assertThat(pointHistories).isEmpty();
         }
 
         @Test
