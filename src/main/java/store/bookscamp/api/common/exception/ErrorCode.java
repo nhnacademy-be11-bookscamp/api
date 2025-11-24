@@ -84,7 +84,15 @@ public enum ErrorCode {
     REVIEW_NOT_FOUND(NOT_FOUND, "리뷰를 찾을 수 없습니다."),
     REVIEW_ALREADY_EXISTS(BAD_REQUEST, "이미 존재하는 리뷰입니다"),
     ORDER_ITEM_NOT_FOUND(NOT_FOUND, "주문상품을 찾을 수 없습니다"),
-    NO_PERMISSION(FORBIDDEN, "권한이 없습니다.")
+    NO_PERMISSION(FORBIDDEN, "권한이 없습니다."),
+
+    PAYMENT_NOT_FOUND(NOT_FOUND, "결제 정보를 찾을 수 없습니다."),
+    PAYMENT_APPROVAL_FAILED(BAD_REQUEST, "결제 승인에 실패했습니다."),
+    PAYMENT_CANCEL_FAILED(BAD_REQUEST, "결제 취소에 실패했습니다."),
+    PAYMENT_AMOUNT_MISMATCH(BAD_REQUEST, "결제 금액이 일치하지 않습니다."),
+    ORDER_ALREADY_PAID(BAD_REQUEST, "이미 결제된 주문입니다."),
+    ORDER_NOT_AWAITING_PAYMENT(BAD_REQUEST, "결제 대기 중인 주문이 아닙니다."),
+    ORDER_CANNOT_BE_CANCELLED(BAD_REQUEST, "취소할 수 없는 주문입니다.")
     ;
 
 
