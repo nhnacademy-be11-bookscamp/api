@@ -98,6 +98,11 @@ public class Member extends SoftDeleteEntity {
         this.phone=phone;
     }
 
+    public void updateStatus(MemberStatus status){
+        this.status = status;
+        this.statusUpdateDate = LocalDate.now();
+    }
+
     public void changePassword(String password){
         this.password = password;
     }
