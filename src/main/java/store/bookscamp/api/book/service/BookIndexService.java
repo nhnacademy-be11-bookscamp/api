@@ -47,16 +47,16 @@ public class BookIndexService {
     @PostConstruct
     public void init() {
         try {
-            if(INDEX_NAME.equals("bookscamp-dev")) {
+            if (INDEX_NAME.equals("bookscamp-dev")) {
                 return;
             }
-            BooleanResponse exists=esClient.indices().exists(e -> e.index(INDEX_NAME));
-                if (exists.value()) {
-                    DeleteIndexResponse deleteResp = esClient.indices().delete(d -> d.index(INDEX_NAME));
-                    if (deleteResp.acknowledged()) {
-                        log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
-                    }
-                }//이미 존재하는 인덱스 삭제
+            BooleanResponse exists = esClient.indices().exists(e -> e.index(INDEX_NAME));
+            if (exists.value()) {
+                DeleteIndexResponse deleteResp = esClient.indices().delete(d -> d.index(INDEX_NAME));
+                if (deleteResp.acknowledged()) {
+                    log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
+                }
+            }//이미 존재하는 인덱스 삭제
 
             try (Reader r = new InputStreamReader(
                     new ClassPathResource(SETTINGS_PATH).getInputStream(),
@@ -75,7 +75,7 @@ public class BookIndexService {
             }//인덱스 생성
 
             List<BookProjection> rows = bookRepository.findAllBooksWithRatingAndReview();
-            if(rows.isEmpty()){
+            if (rows.isEmpty()) {
                 log.warn("[BookIndexService] no books found in DB, skipping indexing.");
                 return;
             }
@@ -111,7 +111,6 @@ public class BookIndexService {
                     );
                 }
 
-
                 return b;
             });
             esClient.indices().refresh(r -> r.index(INDEX_NAME));
@@ -135,6 +134,7 @@ public class BookIndexService {
                 .stock(book.getStock())
                 .viewCount(book.getViewCount())
                 .status(book.getStatus().name())
+                .packable(book.isPackable())
                 .explanation(book.getExplanation())
                 .averageRating(0.0)
                 .reviewCount(0)
@@ -149,10 +149,8 @@ public class BookIndexService {
 
     public void deleteBookIndex(Long bookId) {
         try {
-            esClient.delete(d -> d
-                    .index(INDEX_NAME)
-                    .id(String.valueOf(bookId))
-            );
+            ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.IMMEDIATE);
+            ops.delete(String.valueOf(bookId), BookDocument.class);
             log.info("[BookIndexService] deleted book from index → id={}", bookId);
         } catch (Exception e) {
             log.error("[BookIndexService] delete failed → id={}", bookId, e);
@@ -196,7 +194,7 @@ public class BookIndexService {
         map.put("content", doc.getContent());
         map.put("publisher", doc.getPublisher());
         map.put("category", doc.getCategory());
-        map.put("publishDate", doc.getPublishDate() != null ? doc.getPublishDate().toString() : null); // ✅ LocalDate → String
+        map.put("publishDate", doc.getPublishDate() != null ? doc.getPublishDate().toString() : null);
         map.put("isbn", doc.getIsbn());
         map.put("contributors", doc.getContributors());
         map.put("regularPrice", doc.getRegularPrice());
@@ -216,8 +214,8 @@ public class BookIndexService {
                     .uri(URI.create("http://ollama.java21.net/api/embeddings"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString("""
-                    { "model": "bge-m3", "prompt": "%s" }
-                """.formatted(text)))
+                                { "model": "bge-m3", "prompt": "%s" }
+                            """.formatted(text)))
                     .build();
 
             HttpResponse<String> response = HttpClient.newHttpClient()
