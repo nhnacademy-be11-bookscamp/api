@@ -3,7 +3,7 @@ package store.bookscamp.api.orderinfo.service;
 import static store.bookscamp.api.common.exception.ErrorCode.*;
 import static store.bookscamp.api.coupon.entity.TargetType.BIRTHDAY;
 import static store.bookscamp.api.coupon.entity.TargetType.WELCOME;
-import static store.bookscamp.api.orderinfo.entity.OrderStatus.PENDING;
+import static store.bookscamp.api.orderinfo.entity.OrderStatus.AWAITING_PAYMENT;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -38,11 +38,8 @@ import store.bookscamp.api.orderitem.entity.OrderItem;
 import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 import store.bookscamp.api.packaging.entity.Packaging;
 import store.bookscamp.api.packaging.repository.PackagingRepository;
-import store.bookscamp.api.pointhistory.entity.PointHistory;
-import store.bookscamp.api.pointhistory.entity.PointType;
-import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
-import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 import store.bookscamp.api.common.exception.ApplicationException;
+import store.bookscamp.api.common.util.OrderNumberGenerator;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +55,6 @@ public class OrderCreateService {
     private final MemberRepository memberRepository;
     private final CouponIssueRepository couponIssueRepository;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
-    private final PointHistoryRepository pointHistoryRepository;
     private final OrderInfoService orderInfoService;
 
     public OrderCreateDto createOrder(OrderRequestDto request, Long memberId) {
@@ -87,16 +83,18 @@ public class OrderCreateService {
         // 최종 결제 금액 계산
         int finalPaymentAmount = Math.max(amounts.totalAmount() - couponDiscountAmount - usedPoint, 0);
 
-        // 주문 저장
+        // 주문 저장 (결제 대기 상태)
         OrderInfo orderInfo = saveOrder(request, member, deliveryPolicy, amounts, couponIssue, couponDiscountAmount, usedPoint, finalPaymentAmount);
 
-        // 주문 아이템 저장 및 재고 차감
+        // 주문 아이템 저장 (재고 차감 없음)
         saveOrderItems(request.items(), orderInfo);
 
-        // 회원 포인트, 쿠폰 사용 처리
-        processMemberBenefits(member, orderInfo, couponIssue, usedPoint, amounts.netAmount(), request.nonMemberInfo());
+        // 비회원 정보만 저장 (포인트/쿠폰 처리는 결제 승인 시)
+        if (member == null) {
+            processNonMember(orderInfo, request.nonMemberInfo());
+        }
 
-        return new OrderCreateDto(orderInfo.getId(), finalPaymentAmount);
+        return new OrderCreateDto(orderInfo.getId(), orderInfo.getOrderNumber(), finalPaymentAmount);
     }
 
     private Member validateAndGetMember(Long memberId, NonMemberInfoDto nonMemberInfo) {
@@ -179,7 +177,10 @@ public class OrderCreateService {
         );
         deliveryRepository.save(delivery);
 
+        String orderNumber = OrderNumberGenerator.generate();
+
         OrderInfo orderInfo = new OrderInfo(
+                orderNumber,
                 member,
                 couponIssue,
                 delivery,
@@ -189,7 +190,7 @@ public class OrderCreateService {
                 amounts.packagingFee(),
                 couponDiscountAmount,
                 finalPaymentAmount,
-                PENDING,
+                AWAITING_PAYMENT,
                 usedPoint
         );
         return orderInfoRepository.save(orderInfo);
@@ -217,37 +218,6 @@ public class OrderCreateService {
                     bookTotalAmount
             );
             orderItemRepository.save(orderItem);
-
-            book.decreaseStock(itemRequest.quantity());
-        }
-    }
-
-    private void processMemberBenefits(Member member, OrderInfo orderInfo, CouponIssue couponIssue,
-                                       int usedPoint, int netAmount, NonMemberInfoDto nonMemberInfo) {
-        if (member != null) {
-            processMemberPointAndCoupon(member, orderInfo, couponIssue, usedPoint, netAmount);
-        } else {
-            processNonMember(orderInfo, nonMemberInfo);
-        }
-    }
-
-    private void processMemberPointAndCoupon(Member member, OrderInfo orderInfo, CouponIssue couponIssue,
-                                             int usedPoint, int netAmount) {
-        if (usedPoint > 0) {
-            member.usePoint(usedPoint);
-            PointHistory useHistory = new PointHistory(orderInfo, member, PointType.USE, usedPoint, "주문 사용");
-            pointHistoryRepository.save(useHistory);
-        }
-
-        if (couponIssue != null) {
-            couponIssue.use();
-        }
-
-        int earnedPoint = calculateEarnedPoint(member, netAmount);
-        if (earnedPoint > 0) {
-            member.earnPoint(earnedPoint);
-            PointHistory earnHistory = new PointHistory(orderInfo, member, PointType.EARN, earnedPoint, "주문 적립");
-            pointHistoryRepository.save(earnHistory);
         }
     }
 
@@ -255,7 +225,6 @@ public class OrderCreateService {
         NonMember nonMember = new NonMember(orderInfo, nonMemberInfo.password());
         nonMemberRepository.save(nonMember);
     }
-
 
     private void validateBook(Book book, int requestQuantity) {
         if (book.getStatus() != BookStatus.AVAILABLE) {
@@ -282,22 +251,6 @@ public class OrderCreateService {
         }
 
         return couponIssue;
-    }
-
-    private int calculateEarnedPoint(Member member, int netAmount) {
-        if (member.getRank() == null) {
-            return 0;
-        }
-
-        PointPolicy pointPolicy = member.getRank().getPointPolicy();
-        if (pointPolicy == null) {
-            return 0;
-        }
-
-        return switch (pointPolicy.getRewardType()) {
-            case RATE -> (int) Math.floor(netAmount * pointPolicy.getRewardValue() / 100.0);
-            case AMOUNT -> pointPolicy.getRewardValue();
-        };
     }
 
     private int calculateCouponDiscount(CouponIssue couponIssue, int netAmount) {
