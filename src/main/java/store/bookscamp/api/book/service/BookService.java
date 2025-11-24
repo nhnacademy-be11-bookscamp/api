@@ -59,7 +59,6 @@ public class BookService {
     private final BookImageRepository bookImageRepository;
     private final BookImageService bookImageService;
     private final BookIndexService bookIndexService;
-    private final BookLikeRepository bookLikeRepository;
     private final BookLikeService bookLikeService;
     private final MemberRepository memberRepository;
     private final BookCachingIndexService bookCachingIndexService;
