@@ -29,6 +29,9 @@ public class OrderInfo extends SoftDeleteEntity {
     @Id @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, length = 64)
+    private String orderNumber;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -65,7 +68,8 @@ public class OrderInfo extends SoftDeleteEntity {
     @Column(nullable = false)
     private int usedPoint;
 
-    public OrderInfo(Member member,
+    public OrderInfo(String orderNumber,
+                 Member member,
                  CouponIssue couponIssue,
                  Delivery delivery,
                  Integer netAmount,
@@ -77,6 +81,7 @@ public class OrderInfo extends SoftDeleteEntity {
                  OrderStatus orderStatus,
                  int usedPoint
     ) {
+        this.orderNumber = orderNumber;
         this.member = member;
         this.couponIssue = couponIssue;
         this.delivery = delivery;

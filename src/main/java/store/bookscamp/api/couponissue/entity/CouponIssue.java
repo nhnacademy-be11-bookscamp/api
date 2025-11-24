@@ -72,4 +72,8 @@ public class CouponIssue extends SoftDeleteEntity {
         }
         this.usedAt = LocalDateTime.now();
     }
+
+    public void restore() {
+        this.usedAt = null;
+    }
 }

@@ -5,12 +5,15 @@ import static lombok.AccessLevel.PROTECTED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
@@ -29,15 +32,34 @@ public class Payment extends SoftDeleteEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private OrderInfo orderInfo;
 
     @Column(nullable = false)
     private Integer paidAmount;
 
     @Column(nullable = false)
-    private LocalDate paidAt;
+    private LocalDateTime paidAt;
 
     @Column(nullable = false, unique = true)
-    private String paymentsKey;
+    private String paymentKey;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentProvider paymentProvider;
+
+    @Builder
+    public Payment(OrderInfo orderInfo, Integer paidAmount, LocalDateTime paidAt,
+                   String paymentKey, PaymentMethod paymentMethod, PaymentProvider paymentProvider) {
+        this.orderInfo = orderInfo;
+        this.paidAmount = paidAmount;
+        this.paidAt = paidAt;
+        this.paymentKey = paymentKey;
+        this.paymentMethod = paymentMethod;
+        this.paymentProvider = paymentProvider;
+    }
 }
