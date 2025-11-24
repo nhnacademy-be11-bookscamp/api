@@ -9,7 +9,6 @@ import jakarta.servlet.http.Cookie;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import store.bookscamp.api.pointpolicy.repository.PointPolicyRepository;
 import store.bookscamp.api.rank.entity.Rank;
 import store.bookscamp.api.rank.repository.RankRepository;
 
-@Disabled
 @SpringBootTest
 @Transactional
 class CartCookieServiceTest {
