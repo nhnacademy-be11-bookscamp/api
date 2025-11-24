@@ -58,8 +58,7 @@ public class RankService {
         List<Member> members = memberRepository.findAll();
 
         for (Member member : members) {
-            Integer amountInteger = memberAmountMap.getOrDefault(member.getId(), 0);
-            int amount = amountInteger;
+            int amount = memberAmountMap.getOrDefault(member.getId(), 0);
 
             Rank targetRank = findMatchingRank(allRanks, amount);
 
