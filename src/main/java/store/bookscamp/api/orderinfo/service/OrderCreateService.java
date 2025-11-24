@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
@@ -41,6 +42,7 @@ import store.bookscamp.api.packaging.repository.PackagingRepository;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.util.OrderNumberGenerator;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -58,42 +60,56 @@ public class OrderCreateService {
     private final OrderInfoService orderInfoService;
 
     public OrderCreateDto createOrder(OrderRequestDto request, Long memberId) {
+        log.info("[ORDER-CREATE] 주문 생성 시작 - memberId: {}, items: {}", memberId, request.items().size());
+
         // 회원 검증
         Member member = validateAndGetMember(memberId, request.nonMemberInfo());
+        log.info("[ORDER-CREATE] 회원 검증 완료 - isMember: {}", member != null);
+
         DeliveryPolicy deliveryPolicy = getDeliveryPolicy();
+        log.info("[ORDER-CREATE] 배송 정책 조회 완료");
 
         // 금액 계산
         OrderAmountDto amounts = calculateOrderAmounts(request.items(), deliveryPolicy);
+        log.info("[ORDER-CREATE] 금액 계산 완료 - netAmount: {}, totalAmount: {}", amounts.netAmount(), amounts.totalAmount());
 
         // 쿠폰 할인
         CouponIssue couponIssue = null;
         int couponDiscountAmount = 0;
         if (request.couponIssueId() != null) {
+            log.info("[ORDER-CREATE] 쿠폰 처리 시작 - couponIssueId: {}", request.couponIssueId());
             if (member == null) {
                 throw new ApplicationException(COUPON_NOT_ALLOWED_FOR_NON_MEMBER);
             }
             couponIssue = validateAndGetCouponIssue(request.couponIssueId(), member, request.items(), amounts.netAmount());
             int applicableAmount = calculateApplicableAmount(couponIssue.getCoupon(), request.items(), amounts.netAmount());
             couponDiscountAmount = calculateCouponDiscount(couponIssue, applicableAmount);
+            log.info("[ORDER-CREATE] 쿠폰 할인 계산 완료 - discountAmount: {}", couponDiscountAmount);
         }
 
         // 포인트 검증
         int usedPoint = validateAndGetUsedPoint(request.usedPoint(), member);
+        log.info("[ORDER-CREATE] 포인트 검증 완료 - usedPoint: {}", usedPoint);
 
         // 최종 결제 금액 계산
         int finalPaymentAmount = Math.max(amounts.totalAmount() - couponDiscountAmount - usedPoint, 0);
+        log.info("[ORDER-CREATE] 최종 결제 금액 계산 완료 - finalPaymentAmount: {}", finalPaymentAmount);
 
         // 주문 저장 (결제 대기 상태)
         OrderInfo orderInfo = saveOrder(request, member, deliveryPolicy, amounts, couponIssue, couponDiscountAmount, usedPoint, finalPaymentAmount);
+        log.info("[ORDER-CREATE] 주문 저장 완료 - orderId: {}, orderNumber: {}", orderInfo.getId(), orderInfo.getOrderNumber());
 
         // 주문 아이템 저장 (재고 차감 없음)
         saveOrderItems(request.items(), orderInfo);
+        log.info("[ORDER-CREATE] 주문 아이템 저장 완료 - itemCount: {}", request.items().size());
 
         // 비회원 정보만 저장 (포인트/쿠폰 처리는 결제 승인 시)
         if (member == null) {
             processNonMember(orderInfo, request.nonMemberInfo());
+            log.info("[ORDER-CREATE] 비회원 정보 저장 완료");
         }
 
+        log.info("[ORDER-CREATE] 주문 생성 성공 - orderNumber: {}, finalAmount: {}", orderInfo.getOrderNumber(), finalPaymentAmount);
         return new OrderCreateDto(orderInfo.getId(), orderInfo.getOrderNumber(), finalPaymentAmount);
     }
 
