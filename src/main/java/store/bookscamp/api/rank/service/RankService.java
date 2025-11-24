@@ -1,6 +1,5 @@
 package store.bookscamp.api.rank.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,9 +25,14 @@ public class RankService {
     private final RankRepository rankRepository;
     private final PointPolicyRepository pointPolicyRepository;
 
+    @Transactional(readOnly = true)
     public RankGetDto getMemberRank(Long memberId){
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (member.getRank() == null || member.getRank().getPointPolicy() == null) {
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
 
         Long pointPolicyId = member.getRank().getPointPolicy().getId();
         PointPolicy pointPolicy = pointPolicyRepository.findById(pointPolicyId)
@@ -45,7 +49,7 @@ public class RankService {
 
         List<Rank> allRanks = rankRepository.findAll();
 
-        Map<Long, BigDecimal> memberAmountMap = rankRepository.getMemberNetTotalForGrading().stream()
+        Map<Long, Integer> memberAmountMap = rankRepository.getMemberNetTotalForGrading().stream()
                 .collect(Collectors.toMap(
                         RankSummaryDto::memberId,
                         RankSummaryDto::totalNetAmount
@@ -54,9 +58,7 @@ public class RankService {
         List<Member> members = memberRepository.findAll();
 
         for (Member member : members) {
-            BigDecimal decimalAmount = memberAmountMap.getOrDefault(member.getId(), BigDecimal.ZERO);
-
-            int amount = decimalAmount.intValue();
+            int amount = memberAmountMap.getOrDefault(member.getId(), 0);
 
             Rank targetRank = findMatchingRank(allRanks, amount);
 
