@@ -194,7 +194,7 @@ class OrderControllerTest {
                     null
             );
 
-            OrderCreateDto responseDto = new OrderCreateDto(100L, 39500);
+            OrderCreateDto responseDto = new OrderCreateDto(100L, "ORDER-001", 39500);
 
             given(orderCreateService.createOrder(any(), eq(1L)))
                     .willReturn(responseDto);
@@ -232,7 +232,7 @@ class OrderControllerTest {
                     null
             );
 
-            OrderCreateDto responseDto = new OrderCreateDto(100L, 34000);
+            OrderCreateDto responseDto = new OrderCreateDto(100L, "ORDER-002", 34000);
 
             given(orderCreateService.createOrder(any(), eq(1L)))
                     .willReturn(responseDto);
