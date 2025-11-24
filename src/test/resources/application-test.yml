@@ -58,3 +58,8 @@ aladin:
   ttb-key: dummy-ttb-key
   output: js
   version: "20131101"
+
+payment:
+  toss:
+    api-url: https://api.tosspayments.com
+    secret-key: dummy-test-secret-key
