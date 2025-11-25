@@ -25,13 +25,13 @@ import store.bookscamp.api.address.service.dto.AddressReadDto;
 import store.bookscamp.api.address.service.dto.AddressUpdateRequestDto;
 
 @RestController
-@RequestMapping("/member/{username}/address")
+@RequestMapping("/member/address")
 @Tag(name = "주소 API", description = "Address CRUD API입니다")
 public class AddressController {
 
     private final AddressService addressService;
-
-    public AddressController(AddressService addressService) {
+    private final Long memberId;
+    public AddressController(AddressService addressService, ) {
         this.addressService = addressService;
     }
 
