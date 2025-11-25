@@ -105,15 +105,6 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMemberPassoword(Long id, MemberPasswordUpdateDto memberPasswordUpdateDto){
-        Member member = memberRepository.getById(id);
-        if(Objects.isNull(member)){
-            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
-        }
-        member.changePassword(memberPasswordUpdateDto.password());
-    }
-
-    @Transactional
     public void deleteMember(Long id){
         Member member = memberRepository.getById(id);
         if(Objects.isNull(member)){
