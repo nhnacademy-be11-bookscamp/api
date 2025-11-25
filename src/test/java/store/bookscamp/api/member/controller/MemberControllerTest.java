@@ -155,7 +155,7 @@ class MemberControllerTest {
     @Test
     @DisplayName("DELETE / - 회원탈퇴 성공 (USER 권한)")
     void deleteMember() throws Exception {
-        mockMvc.perform(delete("/")
+        mockMvc.perform(delete("/member")
                         .header(HEADER_USER_ID, String.valueOf(USER_ID))
                         .header(HEADER_USER_ROLE, ROLE_USER))
                 .andDo(print())
