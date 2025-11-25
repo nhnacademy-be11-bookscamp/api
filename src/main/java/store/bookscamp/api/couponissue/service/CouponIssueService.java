@@ -88,11 +88,11 @@ public class CouponIssueService {
 
     @Transactional(readOnly = true)
     public List<Coupon> findDownloadableCoupons(Long memberId, Long bookId) {
-        if (!memberRepository.existsById(memberId)) {
-            throw new ApplicationException(MEMBER_NOT_FOUND);
-        }
         if (!bookRepository.existsById(bookId)) {
             throw new ApplicationException(BOOK_NOT_FOUND);
+        }
+        if (memberId != null && !memberRepository.existsById(memberId)) {
+            throw new ApplicationException(MEMBER_NOT_FOUND);
         }
 
         return couponIssueRepository.findDownloadableCoupons(memberId, bookId);
