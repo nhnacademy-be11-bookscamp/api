@@ -36,13 +36,8 @@ public class OrderListController {
             @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
-        // 비회원 또는 인증되지 않은 경우 memberId == null
-        // 비회원 주문조회 기능은 아직 없음 → 401로 처리
-//        if (memberId == null) {
-//            return ResponseEntity.status(401).build();
-//        }
 
-        Page<OrderListDto> serviceResult = orderListService.getOrderList(memberId, pageable); // getOrderList
+        Page<OrderListDto> serviceResult = orderListService.getOrderList(memberId, pageable);
         Page<OrderListResponse> response = serviceResult.map(OrderListResponse::fromDto);
 
         return ResponseEntity.ok(response);
