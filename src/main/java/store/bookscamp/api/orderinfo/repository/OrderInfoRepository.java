@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import store.bookscamp.api.orderinfo.entity.OrderInfo;
 
 
@@ -15,7 +16,7 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, Long> {
         FROM OrderInfo oi
         WHERE oi.member.id = :memberId
     """)
-    Page<OrderInfo> findByMemberId(Long orderId, Pageable pageable);
+    Page<OrderInfo> findByMemberId(@Param("memberId") Long orderId, Pageable pageable);
 
     // 주문 번호로 조회
     Optional<OrderInfo> findByOrderNumber(String orderNumber);

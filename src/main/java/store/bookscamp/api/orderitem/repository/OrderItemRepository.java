@@ -22,7 +22,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
         SELECT b.title
         FROM order_item oi
         LEFT JOIN book b ON b.id = oi.book_id
-        WHERE oi.order_info_id = :orderInfoId
+        WHERE oi.order_id = :orderInfoId
         ORDER BY oi.id ASC
         LIMIT 1
     """, nativeQuery = true)
