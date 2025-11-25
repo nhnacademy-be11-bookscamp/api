@@ -5,6 +5,6 @@ import java.math.BigDecimal;
 public record RankSummaryDto(
 
         Long memberId,
-        BigDecimal totalNetAmount
+        Integer totalNetAmount
 ) {
 }

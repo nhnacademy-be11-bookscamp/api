@@ -1,9 +1,14 @@
 package store.bookscamp.api.cart.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import jakarta.servlet.http.Cookie;
@@ -16,7 +21,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import store.bookscamp.api.cart.config.CartCookieConfig;
 import store.bookscamp.api.cart.cookie.CartCookieService;
 import store.bookscamp.api.cart.service.CartService;
@@ -48,7 +52,7 @@ class CartControllerTest {
             """;
 
         mockMvc.perform(
-                MockMvcRequestBuilders.post("/carts")
+                post("/carts")
                         .cookie(new Cookie("cartToken", "abc"))
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -70,7 +74,7 @@ class CartControllerTest {
             """;
 
         mockMvc.perform(
-                MockMvcRequestBuilders.put("/carts/5")
+                put("/carts/5")
                         .cookie(new Cookie("cartToken", "abc"))
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,7 +90,7 @@ class CartControllerTest {
         doNothing().when(cartService).deleteCartItem(cartId, 5L);
 
         mockMvc.perform(
-                MockMvcRequestBuilders.delete("/carts/5")
+                delete("/carts/5")
                         .cookie(new Cookie("cartToken", "abc"))
         ).andExpect(status().isOk());
     }
@@ -100,8 +104,20 @@ class CartControllerTest {
         when(cartService.getCartItems(cartId)).thenReturn(List.of());
 
         mockMvc.perform(
-                MockMvcRequestBuilders.get("/carts")
+                get("/carts")
                         .cookie(new Cookie("cartToken", "abc"))
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("DELETE /carts → 장바구니 비우기 성공")
+    void clearCart() throws Exception {
+        // given
+        doNothing().when(cartService).clearCart(anyLong());
+
+        // when & then
+        mockMvc.perform(delete("/carts")
+                .cookie(new Cookie("cartToken", "abc"))
         ).andExpect(status().isOk());
     }
 }
