@@ -23,10 +23,10 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: s4.java21.net
       port: 6379
-      password:
-      database: 0
+      password: '*N2vya7H@muDTwdNMR!'
+      database: 339
 
   cache:
     type: none

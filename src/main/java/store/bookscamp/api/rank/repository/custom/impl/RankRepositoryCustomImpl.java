@@ -7,7 +7,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import store.bookscamp.api.orderinfo.entity.OrderStatus;
 import store.bookscamp.api.rank.repository.custom.RankRepositoryCustom;
 import store.bookscamp.api.rank.service.dto.RankSummaryDto;
@@ -30,12 +29,16 @@ public class RankRepositoryCustomImpl implements RankRepositoryCustom {
                         Projections.constructor(
                                 RankSummaryDto.class,
                                 orderInfo.member.id,
-                                orderInfo.netAmount.sum().coalesce(0)
+                                orderInfo.netAmount.sum().coalesce(0).intValue()
                         )
                 )
                 .from(orderInfo)
                 .where(
-                        orderInfo.orderStatus.eq(OrderStatus.DELIVERED),
+                        orderInfo.orderStatus.in(
+                                OrderStatus.PENDING,
+                                OrderStatus.SHIPPING,
+                                OrderStatus.DELIVERED
+                        ),
                         orderInfo.createdAt.goe(threeMonthsAgo),
                         orderInfo.deletedAt.isNull()
                 )

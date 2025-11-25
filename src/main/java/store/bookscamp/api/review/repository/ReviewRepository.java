@@ -12,6 +12,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     boolean existsByOrderItemAndMember(OrderItem orderItem, Member member);
 
+    Review findByOrderItemAndMember(OrderItem orderItem, Member member);
+
     Page<Review> findByOrderItemBookId(Long bookId, Pageable pageable);
 
     @Query("select avg(r.score) from Review r where r.orderItem.book.id = :bookId")
