@@ -103,10 +103,6 @@ public class Member extends SoftDeleteEntity {
         this.statusUpdateDate = LocalDate.now();
     }
 
-    public void changePassword(String password){
-        this.password = password;
-    }
-
     public void usePoint(int point) {
         if (this.point < point) {
             throw new ApplicationException(ErrorCode.INSUFFICIENT_POINT);
