@@ -36,19 +36,12 @@ public class OrderListService {
     private OrderListDto toOrderListDto(OrderInfo orderInfo) {
         List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderInfo.getId());
 
-        String representationBookTitle = null;
-        int totalQuantity = 0;
+        String representationBookTitle =
+                orderItemRepository.findRepresentativeBookTitleIncludingDeleted(orderInfo.getId());
 
-        if (!orderItems.isEmpty()) {
-            OrderItem firstItem = orderItems.get(0);
-            if (firstItem.getBook() != null) {
-                representationBookTitle = firstItem.getBook().getTitle();
-            }
-
-            totalQuantity = orderItems.stream()
-                    .mapToInt(OrderItem::getOrderQuantity)
-                    .sum();
-        }
+        int totalQuantity = orderItems.stream()
+                .mapToInt(OrderItem::getOrderQuantity)
+                .sum();
 
         return new OrderListDto(
                 orderInfo.getId(),
