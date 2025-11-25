@@ -302,4 +302,5 @@ public class BookService {
     public List<Book> getWishListByMemberId(Long memberId) {
         return bookLikeService.getWishListByMemberId(memberId);
     }
+
 }
