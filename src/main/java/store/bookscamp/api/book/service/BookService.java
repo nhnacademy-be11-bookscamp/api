@@ -303,4 +303,7 @@ public class BookService {
         return bookLikeService.getWishListByMemberId(memberId);
     }
 
+    public Page<Book> getBooks(String keyword, Pageable pageable){
+        return bookRepository.getBooks(keyword, pageable);
+    }
 }
