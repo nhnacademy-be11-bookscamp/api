@@ -108,6 +108,7 @@ class ReviewQueryRepositoryTest {
     private OrderInfo createOrderInfo(Member member, OrderStatus status) {
         return orderInfoRepository.save(
                 new OrderInfo(
+                        "ORDER-" + System.nanoTime(),
                         member,
                         null,           // CouponIssue
                         null,           // Delivery
