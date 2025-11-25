@@ -29,13 +29,11 @@ public class RankRepositoryCustomImpl implements RankRepositoryCustom {
                         Projections.constructor(
                                 RankSummaryDto.class,
                                 orderInfo.member.id,
-                                // [핵심] DB의 Long 결과를 Integer로 변환하여 DTO에 전달
                                 orderInfo.netAmount.sum().coalesce(0).intValue()
                         )
                 )
                 .from(orderInfo)
                 .where(
-                        // [필수] 배송 중(1), 배송 완료(2) 모두 포함 (DB값 1을 읽기 위함)
                         orderInfo.orderStatus.in(
                                 OrderStatus.PENDING,
                                 OrderStatus.SHIPPING,
