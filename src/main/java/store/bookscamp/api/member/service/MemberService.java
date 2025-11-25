@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
@@ -14,7 +16,9 @@ import store.bookscamp.api.member.publisher.MemberEventPublisher;
 import store.bookscamp.api.member.repository.MemberRepository;
 import store.bookscamp.api.member.service.dto.MemberCreateDto;
 import store.bookscamp.api.member.service.dto.MemberGetDto;
+import store.bookscamp.api.member.service.dto.MemberPageDto;
 import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
+import store.bookscamp.api.member.service.dto.MemberStatusUpdateDto;
 import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 import store.bookscamp.api.pointpolicy.entity.PointPolicyType;
 import store.bookscamp.api.rank.entity.Rank;
@@ -101,20 +105,37 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMemberPassoword(Long id, MemberPasswordUpdateDto memberPasswordUpdateDto){
-        Member member = memberRepository.getById(id);
-        if(Objects.isNull(member)){
-            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
-        }
-        member.changePassword(memberPasswordUpdateDto.password());
-    }
-
-    @Transactional
     public void deleteMember(Long id){
         Member member = memberRepository.getById(id);
         if(Objects.isNull(member)){
             throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
         }
         memberRepository.delete(member);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberPageDto> getAll(Pageable pageable) {
+        Page<Member> members = memberRepository.findAll(pageable);
+
+        return members.map(member -> new MemberPageDto(
+                member.getId(),
+                member.getUsername(),
+                member.getName(),
+                member.getEmail(),
+                member.getPhone(),
+                member.getStatus(),
+                member.getLastLoginAt(),
+                member.getStatusUpdateDate()
+        ));
+    }
+
+    @Transactional
+    public void updateMemberState(MemberStatusUpdateDto dto){
+        Member member = memberRepository.getById(dto.memberId());
+        if(Objects.isNull(member)){
+            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+        member.updateStatus(dto.status());
+        memberRepository.save(member);
     }
 }

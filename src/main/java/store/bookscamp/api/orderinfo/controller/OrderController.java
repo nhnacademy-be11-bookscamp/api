@@ -2,6 +2,7 @@ package store.bookscamp.api.orderinfo.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import store.bookscamp.api.orderinfo.service.OrderPrepareService;
 import store.bookscamp.api.orderinfo.service.dto.OrderCreateDto;
 import store.bookscamp.api.orderinfo.service.dto.OrderPrepareDto;
 
+@Slf4j
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
@@ -30,7 +32,9 @@ public class OrderController {
             @Valid @RequestBody OrderPrepareRequest request,
             @RequestHeader(value = "X-User-ID", required = false) Long memberId
     ) {
+        log.info("[ORDER-CONTROLLER] POST /orders/prepare 요청 수신 - memberId: {}", memberId);
         OrderPrepareDto serviceDto = orderPrepareService.prepare(request.toDto(), memberId);
+        log.info("[ORDER-CONTROLLER] POST /orders/prepare 응답 완료");
         return ResponseEntity.ok(OrderPrepareResponse.fromDto(serviceDto));
     }
 
@@ -39,7 +43,9 @@ public class OrderController {
             @Valid @RequestBody OrderCreateRequest request,
             @RequestHeader(value = "X-User-ID", required = false) Long memberId
     ) {
+        log.info("[ORDER-CONTROLLER] POST /orders 요청 수신 - memberId: {}, items: {}", memberId, request.items().size());
         OrderCreateDto serviceDto = orderCreateService.createOrder(request.toDto(), memberId);
+        log.info("[ORDER-CONTROLLER] POST /orders 응답 완료 - orderNumber: {}, finalAmount: {}", serviceDto.orderNumber(), serviceDto.finalPaymentAmount());
         return ResponseEntity.ok(OrderCreateResponse.fromDto(serviceDto));
     }
 

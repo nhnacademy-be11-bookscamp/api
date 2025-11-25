@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,6 @@ import store.bookscamp.api.member.repository.MemberRepository;
 
 @SpringBootTest
 @Transactional
-@Disabled
 class CartServiceTest {
 
     @Autowired
