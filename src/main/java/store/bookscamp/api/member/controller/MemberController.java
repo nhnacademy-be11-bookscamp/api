@@ -81,7 +81,7 @@ public class MemberController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/member")
     @Operation(summary = "delete Member", description = "회원탈퇴 API")
     @RequiredRole("USER")
     public ResponseEntity<Void> deleteMember(HttpServletRequest request) {
