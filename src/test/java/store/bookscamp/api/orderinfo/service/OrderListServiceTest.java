@@ -121,15 +121,7 @@ class OrderListServiceTest {
         assertThat(resultPage.getContent()).isEmpty();
 
         verify(orderInfoRepository).findByMemberId(eq(TEST_MEMBER_ID), eq(PAGEABLE));
-        // OrderInfo가 없으므로 OrderItemRepository 호출은 발생하지 않아야 합니다.
     }
-
-    // --- Helper Methods ---
-
-    // Note: OrderInfo, Book, OrderItem 엔티티에는 상속받은 createdAt 필드를 Builder로 설정할 수 없으므로,
-    // SuperBuilder 적용을 가정하거나, 테스트코드를 단순화하기 위해 해당 필드 설정을 생략했습니다.
-    // (이전 대화에서 SuperBuilder 문제로 인해 발생했던 이슈는 이 테스트에서는 임시로 무시하고 진행합니다.)
-
     private OrderInfo createOrderInfo(Long id, int finalPaymentAmount, String status) {
         Member mockMember = Member.builder()
                 .id(TEST_MEMBER_ID)
