@@ -1,5 +1,6 @@
 package store.bookscamp.api.cart.controller;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -9,32 +10,39 @@ import static store.bookscamp.api.book.entity.BookStatus.AVAILABLE;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.repository.BookRepository;
 import store.bookscamp.api.cart.controller.request.CartItemAddRequest;
 import store.bookscamp.api.cart.controller.request.CartItemUpdateRequest;
+import store.bookscamp.api.cart.cookie.CartCookieService;
+import store.bookscamp.api.cart.cookie.CartIdArgumentResolver;
 
-@Disabled
+@Import(TestResolverConfig.class)
 @Transactional
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class CartControllerIntegrationTest {
+class CartApiTest {
 
-    @Autowired MockMvc mockMvc;
-    @Autowired ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Autowired BookRepository bookRepository;
+    @Autowired private ObjectMapper objectMapper;
+
+    @Autowired private BookRepository bookRepository;
 
     private Long bookId;
 
@@ -62,21 +70,18 @@ class CartControllerIntegrationTest {
     @DisplayName("비회원 장바구니 생성 및 조회 통합 테스트")
     void guestCart_flow() throws Exception {
 
-        // 1) 장바구니 추가 (쿠키 없음 → 새 cartToken 생성)
         CartItemAddRequest addRequest = new CartItemAddRequest(bookId, 2);
 
         MvcResult addResponse = mockMvc.perform(
                         post("/carts")
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(addRequest))
                 ).andExpect(status().isOk())
                 .andReturn();
 
-        // 응답 Set-Cookie에서 cartToken 찾기
         String setCookie = addResponse.getResponse().getHeader("Set-Cookie");
         String cartToken = setCookie.split("cartToken=")[1].split(";")[0];
 
-        // 2) 장바구니 조회
         mockMvc.perform(
                 get("/carts")
                         .cookie(new Cookie("cartToken", cartToken))
@@ -92,22 +97,32 @@ class CartControllerIntegrationTest {
 
         MvcResult addResponse = mockMvc.perform(
                 post("/carts")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRequest))
         ).andReturn();
 
         String setCookie = addResponse.getResponse().getHeader("Set-Cookie");
         String cartToken = setCookie.split("cartToken=")[1].split(";")[0];
 
-        // 장바구니 조회해서 cartItemId 가져올 수도 있지만
-        // 여기서는 간단히 1번 아이템 업데이트한다고 가정
         CartItemUpdateRequest updateRequest = new CartItemUpdateRequest(5);
 
         mockMvc.perform(
                 put("/carts/1")
                         .cookie(new Cookie("cartToken", cartToken))
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest))
         ).andExpect(status().isOk());
+    }
+}
+
+@TestConfiguration
+public class TestResolverConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private CartCookieService cartCookieService;
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new CartIdArgumentResolver(cartCookieService));
     }
 }
