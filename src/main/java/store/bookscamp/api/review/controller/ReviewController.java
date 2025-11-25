@@ -3,6 +3,7 @@ package store.bookscamp.api.review.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,8 +24,6 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
-
-    // todo: 도서 상세페이지 리뷰 조회 평균 평점
 
     @GetMapping("/member/review/reviewable")
     @Operation(summary = "read reviewable orderItems", description = "작성 가능한 리뷰 상품 조회 API")
@@ -76,7 +75,7 @@ public class ReviewController {
     @Operation(summary = "create review", description = "리뷰 등록 API")
     @RequiredRole("USER")
     public ResponseEntity<Void> createReview(
-            @RequestBody ReviewCreateRequest createReq,
+            @Valid @RequestBody ReviewCreateRequest createReq,
             HttpServletRequest request
     ) {
         Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
