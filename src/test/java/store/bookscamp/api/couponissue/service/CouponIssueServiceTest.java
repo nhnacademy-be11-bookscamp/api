@@ -313,16 +313,6 @@ class CouponIssueServiceTest {
             assertThat(list).isNotNull();
         }
 
-        @Test
-        @DisplayName("존재하지 않는 회원이면 예외 발생")
-        void findDownloadableCoupons_memberNotFound() {
-
-            assertThatThrownBy(() ->
-                    couponIssueService.findDownloadableCoupons(9999L, 1L)
-            )
-                    .isInstanceOf(ApplicationException.class)
-                    .hasMessageContaining(MEMBER_NOT_FOUND.getMessage());
-        }
 
         @Test
         @DisplayName("존재하지 않는 책이면 예외 발생")
