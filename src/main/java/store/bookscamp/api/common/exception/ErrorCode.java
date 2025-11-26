@@ -92,7 +92,8 @@ public enum ErrorCode {
     PAYMENT_AMOUNT_MISMATCH(BAD_REQUEST, "결제 금액이 일치하지 않습니다."),
     ORDER_ALREADY_PAID(BAD_REQUEST, "이미 결제된 주문입니다."),
     ORDER_NOT_AWAITING_PAYMENT(BAD_REQUEST, "결제 대기 중인 주문이 아닙니다."),
-    ORDER_CANNOT_BE_CANCELLED(BAD_REQUEST, "취소할 수 없는 주문입니다.")
+    ORDER_CANNOT_BE_CANCELLED(BAD_REQUEST, "취소할 수 없는 주문입니다."),
+    ORDER_PASSWORD_INVALID(NOT_FOUND, "주문이 존재하지 않습니다.")
     ;
 
 
