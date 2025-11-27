@@ -10,8 +10,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import store.bookscamp.api.common.entity.SoftDeleteEntity;
@@ -21,6 +24,8 @@ import store.bookscamp.api.member.entity.Member;
 
 @Entity
 @Getter
+@SuperBuilder
+@AllArgsConstructor
 @NoArgsConstructor(access = PROTECTED)
 @SQLDelete(sql = "UPDATE `order_info` SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
