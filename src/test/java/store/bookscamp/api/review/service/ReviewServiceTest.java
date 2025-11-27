@@ -112,7 +112,7 @@ class ReviewServiceTest {
         );
     }
 
-    private OrderItem createOrderItem(Member member, Book book) {
+    private OrderItem createOrderItem(Book book) {
 
         return orderItemRepository.save(
                 new OrderItem(
@@ -132,7 +132,7 @@ class ReviewServiceTest {
 
         Member member = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(member, book);
+        OrderItem orderItem = createOrderItem(book);
 
         pointPolicyRepository.save(new PointPolicy(PointPolicyType.REVIEW_IMAGE, RewardType.AMOUNT, 100));
 
@@ -157,7 +157,7 @@ class ReviewServiceTest {
 
         Member member = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(member, book);
+        OrderItem orderItem = createOrderItem(book);
 
         reviewRepository.save(new Review(orderItem, member, "이미 있음", 4));
 
@@ -180,7 +180,7 @@ class ReviewServiceTest {
 
         Member member = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(member, book);
+        OrderItem orderItem = createOrderItem(book);
 
         ReviewCreateDto dto = new ReviewCreateDto(
                 orderItem.getId(),
@@ -201,7 +201,7 @@ class ReviewServiceTest {
 
         Member member = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(member, book);
+        OrderItem orderItem = createOrderItem(book);
 
         Review review = reviewRepository.save(new Review(orderItem, member, "old", 3));
 
@@ -228,7 +228,7 @@ class ReviewServiceTest {
         Member owner = createMember();
         Member other = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(owner, book);
+        OrderItem orderItem = createOrderItem(book);
 
         Review review = reviewRepository.save(new Review(orderItem, owner, "내용", 4));
 
@@ -252,7 +252,7 @@ class ReviewServiceTest {
 
         Member member = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(member, book);
+        OrderItem orderItem = createOrderItem(book);
 
         when(reviewQueryRepository.findReviewableItems(member.getId()))
                 .thenReturn(List.of(new ReviewableItemDto(
@@ -301,7 +301,7 @@ class ReviewServiceTest {
 
         Member member = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(member, book);
+        OrderItem orderItem = createOrderItem(book);
 
         Review review = reviewRepository.save(new Review(orderItem, member, "내용", 4));
 
@@ -319,7 +319,7 @@ class ReviewServiceTest {
 
         Member member = createMember();
         Book book = createBook();
-        OrderItem orderItem = createOrderItem(member, book);
+        OrderItem orderItem = createOrderItem(book);
 
         reviewRepository.save(new Review(orderItem, member, "리뷰", 5));
 
