@@ -11,7 +11,7 @@ public class RankScheduler {
 
     private final RankService rankService;
 
-    @Scheduled(cron = "0 0 0 1 * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void dailyRankUpdate() {
         rankService.updateAllMemberGrades();
     }

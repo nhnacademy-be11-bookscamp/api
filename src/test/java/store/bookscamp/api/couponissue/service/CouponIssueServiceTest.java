@@ -313,7 +313,6 @@ class CouponIssueServiceTest {
             assertThat(list).isNotNull();
         }
 
-
         @Test
         @DisplayName("존재하지 않는 책이면 예외 발생")
         void findDownloadableCoupons_bookNotFound() {
