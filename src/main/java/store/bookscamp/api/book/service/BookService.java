@@ -302,4 +302,8 @@ public class BookService {
     public List<Book> getWishListByMemberId(Long memberId) {
         return bookLikeService.getWishListByMemberId(memberId);
     }
+
+    public Page<Book> getBooks(String keyword, Pageable pageable){
+        return bookRepository.getBooks(keyword, pageable);
+    }
 }
