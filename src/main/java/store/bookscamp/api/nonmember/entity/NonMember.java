@@ -22,8 +22,7 @@ public class NonMember {
 
     @Id
     @Column(name = "order_id")
-    private Long orderId; // TODO : String orderNumber로 변경해야되나?
-    // 변경 했었는데 매핑 문제 생긴거 같아서 일단은 빽뺶뱪뱪
+    private Long orderId;
 
     @OneToOne(fetch = LAZY)
     @MapsId

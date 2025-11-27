@@ -11,6 +11,7 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
@@ -58,6 +59,9 @@ public class OrderCreateService {
     private final CouponIssueRepository couponIssueRepository;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
     private final OrderInfoService orderInfoService;
+
+    private final PasswordEncoder passwordEncoder; // 비회원 주문조회 비밀번호
+
 
     public OrderCreateDto createOrder(OrderRequestDto request, Long memberId) {
         log.info("[ORDER-CREATE] 주문 생성 시작 - memberId: {}, items: {}", memberId, request.items().size());
@@ -238,6 +242,8 @@ public class OrderCreateService {
     }
 
     private void processNonMember(OrderInfo orderInfo, NonMemberInfoDto nonMemberInfo) {
+//        String encodedPassword = passwordEncoder.encode(nonMemberInfo.password());  // 비밀번호 암호화
+//        NonMember nonMember = new NonMember(orderInfo, encodedPassword); // nonMemberInfo.password()
         NonMember nonMember = new NonMember(orderInfo, nonMemberInfo.password());
         nonMemberRepository.save(nonMember);
     }

@@ -29,7 +29,7 @@ public class OrderDetailService {
 
     // 비회원 주문 조회용
     private final NonMemberRepository nonMemberRepository;
-    private final PasswordEncoder passwordEncoder;
+    //private final PasswordEncoder passwordEncoder;
 
     public OrderDetailResponse getOrderDetail(Long memberId, Long orderId) {
 
@@ -103,15 +103,14 @@ public class OrderDetailService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
         // TODO : 비밀번호 검증 어떻게 하는건데....???
-        String rawPassword = nonMemberInfoDto.password();
-        String encodedPassword = nonMember.getPassword();
-
-        if( !passwordEncoder.matches(rawPassword, encodedPassword) ) {
-            throw new ApplicationException(ErrorCode.ORDER_PASSWORD_INVALID);
-        }
+//        String rawPassword = nonMemberInfoDto.password();
+//        String encodedPassword = nonMember.getPassword();
+//
+//        if( !passwordEncoder.matches(rawPassword, encodedPassword) ) {
+//            throw new ApplicationException(ErrorCode.ORDER_PASSWORD_INVALID);
+//        }
 
         OrderInfo orderInfo = nonMember.getOrderInfo();
-
         List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderInfo.getId());
 
         return toOrderDetailResponse(orderInfo, orderItems);
@@ -166,7 +165,6 @@ public class OrderDetailService {
                 usedPoint,
                 finalPaymentAmount
         );
-
     }
 
 }

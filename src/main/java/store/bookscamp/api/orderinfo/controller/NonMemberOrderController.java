@@ -16,7 +16,7 @@ import store.bookscamp.api.orderinfo.service.dto.NonMemberInfoDto;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/non-member/orders")
+@RequestMapping
 public class NonMemberOrderController {
 
     private final OrderDetailService orderDetailService;
@@ -25,7 +25,7 @@ public class NonMemberOrderController {
      * 비회원 주문 상세 조회
      * 주문번호(order_number) + 비밀번호
      */
-    @PostMapping("/{orderNumber}")
+    @PostMapping("/orders/non-member/{orderNumber}")
     public ResponseEntity<OrderDetailResponse> getNonMemberOrderList(
             @PathVariable String orderNumber,
             @RequestBody @Valid NonMemberInfoRequest request
