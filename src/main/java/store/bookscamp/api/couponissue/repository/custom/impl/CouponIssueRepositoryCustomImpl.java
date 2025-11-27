@@ -1,6 +1,5 @@
 package store.bookscamp.api.couponissue.repository.custom.impl;
 
-import static store.bookscamp.api.bookcategory.entity.QBookCategory.bookCategory;
 import static store.bookscamp.api.coupon.entity.QCoupon.coupon;
 import static store.bookscamp.api.couponissue.entity.QCouponIssue.couponIssue;
 
@@ -12,10 +11,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.data.domain.Page; // [수정] Page 임포트
-import org.springframework.data.domain.PageImpl; // [수정] PageImpl 임포트
-import org.springframework.data.domain.Pageable; // [수정] Pageable 임포트
-import store.bookscamp.api.bookcategory.entity.QBookCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.coupon.entity.QCoupon;
 import store.bookscamp.api.coupon.entity.TargetType;
@@ -35,11 +33,12 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
     }
 
     @Override
-    public Page<CouponIssue> findByMemberIdAndFilterStatus(Long memberId, CouponFilterStatus status, Pageable pageable) {
+    public Page<CouponIssue> findByMemberIdAndFilterStatus(Long memberId, CouponFilterStatus status,
+                                                           Pageable pageable) {
 
         QCouponIssue qCouponIssue = couponIssue;
         LocalDateTime now = LocalDateTime.now();
-        BooleanBuilder builder = new BooleanBuilder(); // where 절 조건
+        BooleanBuilder builder = new BooleanBuilder();
 
         builder.and(qCouponIssue.member.id.eq(memberId));
 
@@ -62,16 +61,12 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
                 break;
         }
 
-        // --- [수정] 페이징 쿼리 적용 ---
-
-        // 1. 데이터(Content) 조회 쿼리 (offset, limit 적용)
         JPAQuery<CouponIssue> query = queryFactory
                 .selectFrom(qCouponIssue)
                 .where(builder)
-                .offset(pageable.getOffset()) // 페이징 적용
-                .limit(pageable.getPageSize()); // 페이징 적용
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
 
-        // 2. 정렬 조건 적용 (기존 정렬 로직 유지)
         query = switch (status) {
             case AVAILABLE -> query.orderBy(qCouponIssue.expiredAt.asc().nullsLast());
             case USED -> query.orderBy(qCouponIssue.usedAt.desc());
@@ -79,30 +74,27 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
             default -> query.orderBy(qCouponIssue.createdAt.desc());
         };
 
-        List<CouponIssue> content = query.fetch(); // 데이터 조회 실행
+        List<CouponIssue> content = query.fetch();
 
-        // 3. 전체 카운트 조회 쿼리
         JPAQuery<Long> countQuery = queryFactory
                 .select(qCouponIssue.count())
                 .from(qCouponIssue)
-                .where(builder); // 동일한 where 조건 사용
+                .where(builder);
 
-        Long total = countQuery.fetchOne(); // 카운트 조회 실행
+        Long total = countQuery.fetchOne();
 
-        // 4. PageImpl 객체로 래핑하여 반환
         return new PageImpl<>(content, pageable, total != null ? total : 0);
     }
 
     @Override
     public List<Coupon> findDownloadableCoupons(Long memberId, Long bookId) {
-        // ... (findDownloadableCoupons 로직은 동일) ...
 
         QCoupon qCoupon = coupon;
         QCouponIssue qCouponIssue = couponIssue;
-        QBookCategory qBookCategory = bookCategory;
 
         String recursiveQuery = """
-            WITH RECURSIVE CategoryAncestors (id, parent_id) AS (
+            
+                WITH RECURSIVE CategoryAncestors (id, parent_id) AS (
                 SELECT 
                     c.id, 
                     c.parent_id
@@ -132,25 +124,30 @@ public class CouponIssueRepositoryCustomImpl implements CouponIssueRepositoryCus
         @SuppressWarnings("unchecked")
         List<Long> allCategoryIds = (List<Long>) nativeQuery.getResultList();
 
+        BooleanBuilder builder = new BooleanBuilder();
+
+        builder.and(
+                qCoupon.targetType.eq(TargetType.BOOK).and(qCoupon.targetId.eq(bookId))
+                        .or(
+                                qCoupon.targetType.eq(TargetType.CATEGORY)
+                                        .and(allCategoryIds.isEmpty() ? null : qCoupon.targetId.in(allCategoryIds))
+                        )
+        );
+
+        if (memberId != null) {
+            builder.and(
+                    qCoupon.id.notIn(
+                            JPAExpressions
+                                    .select(qCouponIssue.coupon.id)
+                                    .from(qCouponIssue)
+                                    .where(qCouponIssue.member.id.eq(memberId))
+                    )
+            );
+        }
+
         return queryFactory
-                .select(qCoupon)
-                .from(qCoupon)
-                .where(
-                        (
-                                qCoupon.targetType.eq(TargetType.BOOK)
-                                        .and(qCoupon.targetId.eq(bookId))
-                        )
-                                .or(
-                                        qCoupon.targetType.eq(TargetType.CATEGORY)
-                                                .and(allCategoryIds.isEmpty() ? null : qCoupon.targetId.in(allCategoryIds))
-                                ),
-                        qCoupon.id.notIn(
-                                JPAExpressions
-                                        .select(qCouponIssue.coupon.id)
-                                        .from(qCouponIssue)
-                                        .where(qCouponIssue.member.id.eq(memberId))
-                        )
-                )
+                .selectFrom(qCoupon)
+                .where(builder)
                 .fetch();
     }
 }
