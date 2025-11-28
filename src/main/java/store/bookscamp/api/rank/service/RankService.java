@@ -48,26 +48,12 @@ public class RankService {
 
     @Retryable(noRetryFor = ApplicationException.class, backoff = @Backoff(multiplier = 2.0, maxDelay = 10000), listeners = "customRetryListener")
     @Transactional
-    public void updateAllMemberGrades() {
+    public void updateSingleMemberGrade(Member member, List<Rank> allRanks, int amount) {
+        Rank targetRank = findMatchingRank(allRanks, amount);
 
-        List<Rank> allRanks = rankRepository.findAll();
-
-        Map<Long, Integer> memberAmountMap = rankRepository.getMemberNetTotalForGrading().stream()
-                .collect(Collectors.toMap(
-                        RankSummaryDto::memberId,
-                        RankSummaryDto::totalNetAmount
-                ));
-
-        List<Member> members = memberRepository.findAll();
-
-        for (Member member : members) {
-            int amount = memberAmountMap.getOrDefault(member.getId(), 0);
-
-            Rank targetRank = findMatchingRank(allRanks, amount);
-
-            if (targetRank != null && !targetRank.equals(member.getRank())) {
-                member.updateRank(targetRank);
-            }
+        if (targetRank != null && !targetRank.equals(member.getRank())) {
+            member.updateRank(targetRank);
+            memberRepository.save(member);
         }
     }
 
