@@ -10,7 +10,6 @@ import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,13 +25,11 @@ public class BookImageService {
             throw new ApplicationException(ErrorCode.BOOK_NOT_FOUND);
         }
 
-        List<BookImage> savedImages = new ArrayList<>();
-
         for (int i = 0; i < dto.imgUrls().size(); i++) {
             String url = dto.imgUrls().get(i);
             boolean isThumbnail = (i == 0);
             BookImage image = new BookImage(dto.book(), url, isThumbnail);
-            savedImages.add(bookImageRepository.save(image));
+            bookImageRepository.save(image);
         }
     }
 
