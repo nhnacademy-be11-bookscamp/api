@@ -84,7 +84,23 @@ public enum ErrorCode {
     REVIEW_NOT_FOUND(NOT_FOUND, "리뷰를 찾을 수 없습니다."),
     REVIEW_ALREADY_EXISTS(BAD_REQUEST, "이미 존재하는 리뷰입니다"),
     ORDER_ITEM_NOT_FOUND(NOT_FOUND, "주문상품을 찾을 수 없습니다"),
-    NO_PERMISSION(FORBIDDEN, "권한이 없습니다.")
+    NO_PERMISSION(FORBIDDEN, "권한이 없습니다."),
+
+    PAYMENT_NOT_FOUND(NOT_FOUND, "결제 정보를 찾을 수 없습니다."),
+    PAYMENT_APPROVAL_FAILED(BAD_REQUEST, "결제 승인에 실패했습니다."),
+    PAYMENT_CANCEL_FAILED(BAD_REQUEST, "결제 취소에 실패했습니다."),
+    PAYMENT_AMOUNT_MISMATCH(BAD_REQUEST, "결제 금액이 일치하지 않습니다."),
+    ORDER_ALREADY_PAID(BAD_REQUEST, "이미 결제된 주문입니다."),
+    ORDER_NOT_AWAITING_PAYMENT(BAD_REQUEST, "결제 대기 중인 주문이 아닙니다."),
+    ORDER_CANNOT_BE_CANCELLED(BAD_REQUEST, "취소할 수 없는 주문입니다."),
+    ORDER_PASSWORD_INVALID(NOT_FOUND, "주문이 존재하지 않습니다."),
+
+    ORDER_STATUS_ALREADY_SET(BAD_REQUEST, "이미 해당 상태로 설정되어 있습니다."),
+    CANCELLED_ORDER_CANNOT_BE_UPDATED(BAD_REQUEST, "취소된 주문은 상태를 변경할 수 없습니다."),
+    RETURNED_ORDER_CANNOT_BE_UPDATED(BAD_REQUEST, "반품된 주문은 상태를 변경할 수 없습니다."),
+    DELIVERED_ORDER_CAN_ONLY_BE_RETURNED(BAD_REQUEST, "배송 완료된 주문은 반품만 가능합니다."),
+    AWAITING_PAYMENT_ORDER_CANNOT_BE_UPDATED(BAD_REQUEST, "결제 대기 중인 주문은 관리자가 변경할 수 없습니다."),
+    INVALID_ORDER_STATUS_TRANSITION(BAD_REQUEST, "유효하지 않은 주문 상태 전환입니다.")
     ;
 
 

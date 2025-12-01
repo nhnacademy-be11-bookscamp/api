@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.repository.BookRepository;
-import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.category.service.CategoryHierarchyService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
@@ -25,7 +24,6 @@ import java.util.List;
 public class  OrderInfoService {
 
     private final BookRepository bookRepository;
-    private final BookCategoryRepository bookCategoryRepository;
     private final CategoryHierarchyService categoryHierarchyService;
     private final CouponIssueSearchQuery couponIssueSearchQuery;
 
@@ -35,7 +33,8 @@ public class  OrderInfoService {
         }
 
         if (targetType == TargetType.CATEGORY) {
-            return bookCategoryRepository.existsByBookIdAndCategoryId(bookId, targetId);
+            List<Long> bookCategoryIds = categoryHierarchyService.findAllCategoryIdsIncludingParents(List.of(bookId));
+            return bookCategoryIds.contains(targetId);
         }
 
         return false;
