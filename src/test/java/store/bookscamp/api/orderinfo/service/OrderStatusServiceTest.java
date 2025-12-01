@@ -264,7 +264,7 @@ class OrderStatusServiceTest {
         deliveryRepository.save(delivery);
 
         return new OrderInfo(
-                "ORDER-TEST-" + System.currentTimeMillis(),
+                "ORDER-TEST-" + System.nanoTime() + "-" + Math.random(),
                 null, // member
                 null, // couponIssue
                 delivery,

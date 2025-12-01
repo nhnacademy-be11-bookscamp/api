@@ -9,6 +9,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.bookscamp.api.common.annotation.RequiredRole;
+import store.bookscamp.api.common.pagination.RestPageImpl;
 import store.bookscamp.api.orderinfo.controller.request.OrderStatusUpdateRequest;
 import store.bookscamp.api.orderinfo.controller.response.OrderDetailResponse;
 import store.bookscamp.api.orderinfo.controller.response.OrderListResponse;
@@ -33,14 +34,15 @@ public class AdminOrderController {
 
     @RequiredRole("ADMIN")
     @GetMapping
-    public ResponseEntity<Page<OrderListResponse>> getAllOrders(
+    public ResponseEntity<RestPageImpl<OrderListResponse>> getAllOrders(
             @PageableDefault(size = 20, sort = "createdAt", direction = DESC)
             Pageable pageable
     ) {
         log.info("[ADMIN-ORDER] 전체 주문 조회 요청 - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
 
         Page<OrderListDto> serviceResult = adminOrderListService.getAllOrders(pageable);
-        Page<OrderListResponse> response = serviceResult.map(OrderListResponse::fromDto);
+        Page<OrderListResponse> responsePage = serviceResult.map(OrderListResponse::fromDto);
+        RestPageImpl<OrderListResponse> response = new RestPageImpl<>(responsePage);
 
         log.info("[ADMIN-ORDER] 전체 주문 조회 완료 - totalElements: {}", response.getTotalElements());
 
