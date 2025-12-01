@@ -4,27 +4,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static store.bookscamp.api.common.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static store.bookscamp.api.member.entity.MemberStatus.NORMAL;
-import static store.bookscamp.api.orderinfo.entity.OrderStatus.DELIVERED;
-import static store.bookscamp.api.pointpolicy.entity.PointPolicyType.GOLD;
-import static store.bookscamp.api.pointpolicy.entity.PointPolicyType.PLATINUM;
-import static store.bookscamp.api.pointpolicy.entity.PointPolicyType.STANDARD;
+import static store.bookscamp.api.pointpolicy.entity.PointPolicyType.*;
 import static store.bookscamp.api.pointpolicy.entity.RewardType.RATE;
 
-import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.util.ReflectionTestUtils; // [추가] 리플렉션 유틸
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.repository.MemberRepository;
-import store.bookscamp.api.orderinfo.entity.OrderInfo;
-import store.bookscamp.api.orderinfo.repository.OrderInfoRepository;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 import store.bookscamp.api.pointpolicy.repository.PointPolicyRepository;
 import store.bookscamp.api.rank.entity.Rank;
@@ -47,25 +41,12 @@ class RankServiceTest {
     @Autowired
     private PointPolicyRepository pointPolicyRepository;
 
-    @Autowired
-    private OrderInfoRepository orderInfoRepository;
-
-    @Autowired
-    private EntityManager em;
-
     @Test
     @DisplayName("회원 등급 정보 조회 성공")
     void getMemberRank_success() {
         // given
-        PointPolicy policy = pointPolicyRepository.save(new PointPolicy(
-                GOLD,
-                RATE,
-                5
-        ));
-
-        Rank rank = new Rank(policy, "GOLD", 100000, 200000);
-        rankRepository.save(rank);
-
+        PointPolicy policy = pointPolicyRepository.save(new PointPolicy(GOLD, RATE, 5));
+        Rank rank = rankRepository.save(new Rank(policy, "GOLD", 100000, 200000));
         Member member = createMember("user1", rank);
 
         // when
@@ -77,7 +58,7 @@ class RankServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 회원은 조회 시 MEMBER_NOT_FOUND 예외 발생")
+    @DisplayName("존재하지 않는 회원은 조회 시 예외 발생")
     void getMemberRank_memberNotFound_fail() {
         // given
         Long nonExistentId = 9999L;
@@ -89,25 +70,20 @@ class RankServiceTest {
     }
 
     @Test
-    @DisplayName("주문 실적에 따라 회원 등급이 일괄 업데이트된다")
-    void updateAllMemberGrades_success() {
+    @DisplayName("단일 회원 등급 업데이트 - 실적 충족 시 등급 상승")
+    void updateSingleMemberGrade_upgrade() {
         // given
-        PointPolicy standardPolicy = pointPolicyRepository.save(new PointPolicy(STANDARD, RATE, 1));
-        Rank standardRank = rankRepository.save(new Rank(standardPolicy, "STANDARD", 0, 10000));
+        // 1. 등급 정책 설정 (STANDARD, PLATINUM)
+        Rank standardRank = createRank(STANDARD, "STANDARD", 0, 10000);
+        Rank platinumRank = createRank(PLATINUM, "PLATINUM", 10001, 999999);
+        List<Rank> allRanks = rankRepository.findAll();
 
-        PointPolicy platinumPolicy = pointPolicyRepository.save(new PointPolicy(PLATINUM, RATE, 10));
-        Rank platinumRank = rankRepository.save(new Rank(platinumPolicy, "PLATINUM", 10001, 999999));
-
+        // 2. STANDARD 등급 회원 생성
         Member member = createMember("buyer", standardRank);
 
-        // 20000원 주문 생성 (PLATINUM 기준 충족)
-        createOrder(member, 20000);
-
-        em.flush();
-        em.clear();
-
         // when
-        rankService.updateAllMemberGrades();
+        // 20000원 실적이 있다고 가정하고 서비스 호출
+        rankService.updateSingleMemberGrade(member, allRanks, 20000);
 
         // then
         Member updatedMember = memberRepository.findById(member.getId()).orElseThrow();
@@ -115,58 +91,35 @@ class RankServiceTest {
     }
 
     @Test
-    @DisplayName("주문 실적이 없으면 등급이 유지되거나 기본 등급으로 설정된다")
-    void updateAllMemberGrades_noOrders_maintainRank() {
+    @DisplayName("단일 회원 등급 업데이트 - 실적 부족 시 등급 유지")
+    void updateSingleMemberGrade_maintain() {
         // given
-        PointPolicy policy = pointPolicyRepository.save(new PointPolicy(STANDARD, RATE, 1));
-        Rank standardRank = rankRepository.save(new Rank(policy, "STANDARD", 0, 10000));
+        Rank standardRank = createRank(STANDARD, "STANDARD", 0, 10000);
+        Rank platinumRank = createRank(PLATINUM, "PLATINUM", 10001, 999999);
+        List<Rank> allRanks = rankRepository.findAll();
 
         Member member = createMember("ghostUser", standardRank);
 
-        em.flush();
-        em.clear();
-
         // when
-        rankService.updateAllMemberGrades();
+        // 실적이 0원이라고 가정
+        rankService.updateSingleMemberGrade(member, allRanks, 0);
 
         // then
         Member updatedMember = memberRepository.findById(member.getId()).orElseThrow();
         assertThat(updatedMember.getRank().getName()).isEqualTo("STANDARD");
     }
 
-    private Member createMember(String username, Rank rank) {
-        String uniqueVal = UUID.randomUUID().toString().substring(0, 8);
-        Member member = new Member(
-                "test",
-                "password",
-                username + uniqueVal + "@test.com",
-                "010-" + uniqueVal,
-                0,
-                rank,
-                NORMAL,
-                LocalDate.now(),
-                username + uniqueVal,
-                LocalDateTime.now(),
-                LocalDate.of(2000, 1, 1)
-        );
-        return memberRepository.save(member);
+    private Rank createRank(store.bookscamp.api.pointpolicy.entity.PointPolicyType type, String name, int min, int max) {
+        PointPolicy policy = pointPolicyRepository.save(new PointPolicy(type, RATE, 1));
+        return rankRepository.save(new Rank(policy, name, min, max));
     }
 
-    private void createOrder(Member member, int netAmount) {
-        OrderInfo order = new OrderInfo(
-                UUID.randomUUID().toString(),
-                member,
-                null, null,
-                netAmount,
-                netAmount + 2500,
-                2500, 0, 0,
-                netAmount + 2500,
-                DELIVERED,
-                0
-        );
-
-        ReflectionTestUtils.setField(order, "createdAt", LocalDateTime.now());
-
-        orderInfoRepository.save(order);
+    private Member createMember(String username, Rank rank) {
+        String uniqueVal = UUID.randomUUID().toString().substring(0, 8);
+        return memberRepository.save(new Member(
+                "test", "password", username + uniqueVal + "@test.com", "010-" + uniqueVal,
+                0, rank, NORMAL, LocalDate.now(), username + uniqueVal,
+                LocalDateTime.now(), LocalDate.of(2000, 1, 1)
+        ));
     }
 }
