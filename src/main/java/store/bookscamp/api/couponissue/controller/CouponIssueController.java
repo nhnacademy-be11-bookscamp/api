@@ -66,12 +66,14 @@ public class CouponIssueController {
     }
 
     @GetMapping("/downloadable/{bookId}")
-    @RequiredRole("USER")
     public ResponseEntity<List<CouponIssueDownloadResponse>> getDownloadableCoupons(
             HttpServletRequest request,
             @PathVariable Long bookId
     ) {
-        Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
+        String userIdHeader = request.getHeader("X-User-ID");
+        Long memberId = (userIdHeader != null && !userIdHeader.isEmpty())
+                ? Long.valueOf(userIdHeader)
+                : null;
 
         List<Coupon> coupons = couponIssueService.findDownloadableCoupons(memberId, bookId);
 
