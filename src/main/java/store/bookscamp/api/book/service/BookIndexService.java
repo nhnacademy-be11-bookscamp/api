@@ -37,88 +37,6 @@ import store.bookscamp.api.book.repository.BookRepository;
 public class BookIndexService {
 
     private final ElasticsearchOperations elasticsearchOperations;
-    private final ElasticsearchClient esClient;
-    @Value("${elasticsearch.index.name}")
-    private String INDEX_NAME;
-    private static final String SETTINGS_PATH = "elasticsearch/books-settings.json";
-    private final BookRepository bookRepository;
-
-    // 애플리케이션 시작 시 인덱스 존재 여부 확인
-    @PostConstruct
-    public void init() {
-        try {
-            if (INDEX_NAME.equals("bookscamp-dev")) {
-                return;
-            }
-            BooleanResponse exists = esClient.indices().exists(e -> e.index(INDEX_NAME));
-            if (exists.value()) {
-                DeleteIndexResponse deleteResp = esClient.indices().delete(d -> d.index(INDEX_NAME));
-                if (deleteResp.acknowledged()) {
-                    log.info("[BookIndexService] index '{}' deleted", INDEX_NAME);
-                }
-            }//이미 존재하는 인덱스 삭제
-
-            try (Reader r = new InputStreamReader(
-                    new ClassPathResource(SETTINGS_PATH).getInputStream(),
-                    StandardCharsets.UTF_8)) {
-
-                CreateIndexResponse resp = esClient.indices().create(c -> c
-                        .index(INDEX_NAME)
-                        .withJson(r)
-                );
-
-                if (resp.acknowledged()) {
-                    log.info("[BookIndexService] index '{}' created", INDEX_NAME);
-                } else {
-                    log.warn("[BookIndexService] create index '{}' not acknowledged", INDEX_NAME);
-                }
-            }//인덱스 생성
-
-            List<BookProjection> rows = bookRepository.findAllBooksWithRatingAndReview();
-            if (rows.isEmpty()) {
-                log.warn("[BookIndexService] no books found in DB, skipping indexing.");
-                return;
-            }
-
-            esClient.bulk(b -> {
-                b.index(INDEX_NAME);
-                b.refresh(Refresh.False);
-                for (BookProjection row : rows) {
-                    // Projection → Document 변환
-                    BookDocument doc = projectionToDoc(row);
-                    // 임베딩 생성
-                    String combinedText = String.join(" ",
-                            doc.getTitle() != null ? doc.getTitle() : "",
-                            doc.getExplanation() != null ? doc.getExplanation() : "",
-                            doc.getCategory() != null ? doc.getCategory() : ""
-                    );
-                    float[] embedding = generateEmbedding(combinedText);
-                    log.info("embedding length = {}", embedding.length);
-
-                    doc.setBookVector(embedding);
-
-                    // JSON 변환
-                    Map<String, Object> jsonDoc = convertDocumentToMap(doc);
-                    jsonDoc.put("bookVector", embedding); // 벡터 추가
-
-                    // 인덱스 연산 추가
-                    b.operations(op -> op
-                            .index(idx -> idx
-                                    .index(INDEX_NAME)
-                                    .id(String.valueOf(doc.getId()))
-                                    .document(jsonDoc)
-                            )
-                    );
-                }
-
-                return b;
-            });
-            esClient.indices().refresh(r -> r.index(INDEX_NAME));
-            log.info("[BookIndexService] Indexed {} books into {}", rows.size(), INDEX_NAME);
-        } catch (Exception e) {
-            log.error("[BookIndexService] index init failed", e);
-        }
-    }
 
     // DB Book → ES BookDocument 변환
     public BookDocument mapBookToDocument(Book book) {
@@ -143,6 +61,7 @@ public class BookIndexService {
 
     public void indexBook(BookDocument book) {
         ElasticsearchOperations ops = elasticsearchOperations.withRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+
         ops.save(book);
         log.info("[BookIndexService] indexed book → {}", book.getTitle());
     }
@@ -186,29 +105,7 @@ public class BookIndexService {
         return doc;
     }
 
-    private Map<String, Object> convertDocumentToMap(BookDocument doc) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", doc.getId());
-        map.put("title", doc.getTitle());
-        map.put("explanation", doc.getExplanation());
-        map.put("content", doc.getContent());
-        map.put("publisher", doc.getPublisher());
-        map.put("category", doc.getCategory());
-        map.put("publishDate", doc.getPublishDate() != null ? doc.getPublishDate().toString() : null);
-        map.put("isbn", doc.getIsbn());
-        map.put("contributors", doc.getContributors());
-        map.put("regularPrice", doc.getRegularPrice());
-        map.put("salePrice", doc.getSalePrice());
-        map.put("stock", doc.getStock());
-        map.put("viewCount", doc.getViewCount());
-        map.put("packable", doc.isPackable());
-        map.put("status", doc.getStatus());
-        map.put("averageRating", doc.getAverageRating());
-        map.put("reviewCount", doc.getReviewCount());
-        return map;
-    }
-
-    private float[] generateEmbedding(String text) {
+    public float[] generateEmbedding(String text) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://ollama.java21.net/api/embeddings"))
