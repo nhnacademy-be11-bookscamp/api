@@ -25,13 +25,14 @@ public class OrderCartMappingService {
 
     public Long getAndDeleteMapping(String orderNumber) {
         String key = ORDER_CART_PREFIX + orderNumber;
-        String cartIdStr = redisTemplate.opsForValue().getAndDelete(key);
+        String cartIdStr = redisTemplate.opsForValue().get(key);
 
         if (cartIdStr == null) {
             log.info("[ORDER-CART-MAPPING] 매핑 없음 - orderNumber: {}", orderNumber);
             return null;
         }
 
+        redisTemplate.delete(key);
         Long cartId = Long.parseLong(cartIdStr);
         log.info("[ORDER-CART-MAPPING] 매핑 조회 및 삭제 - orderNumber: {}, cartId: {}", orderNumber, cartId);
         return cartId;
