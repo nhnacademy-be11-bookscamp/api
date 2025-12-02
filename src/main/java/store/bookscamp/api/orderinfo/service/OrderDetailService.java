@@ -45,6 +45,18 @@ public class OrderDetailService {
         return toOrderDetailResponse(orderInfo, orderItems);
     }
 
+<<<<<<< HEAD
+=======
+    public OrderDetailResponse getOrderDetailForAdmin(Long orderId) {
+        OrderInfo orderInfo = orderInfoRepository.findById(orderId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
+
+        List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderId);
+
+        return toOrderDetailResponse(orderInfo, orderItems);
+    }
+
+>>>>>>> ddba3c09e4bbf95bade7403bc78214ae00f98e11
 
 
 //        List<OrderDetailItemResponse> itemResponses = orderItems.stream()

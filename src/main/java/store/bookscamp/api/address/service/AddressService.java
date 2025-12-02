@@ -20,15 +20,26 @@ import store.bookscamp.api.member.repository.MemberRepository;
 @Transactional(readOnly = true)
 @Service
 public class AddressService {
+
     private final AddressRepository addressRepository;
     private final MemberRepository memberRepository;
 
+    /**
+     * 회원 주소 생성
+     */
     @Transactional
-    public void createMemberAddress(AddressCreateDto addressCreateDto, String username) {
+    public void createMemberAddress(Long memberId, AddressCreateDto addressCreateDto) {
 
-        Member member = memberRepository.getByUsername(username).orElseThrow(
+        // memberId로 회원 존재 여부 확인 및 연관관계 설정용 엔티티 조회
+        Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
         );
+
+        long count = addressRepository.countByMemberId(memberId);
+        log.info("memberId={} address count={}", memberId, count);
+        if (count >= 10) {
+            throw new ApplicationException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
+        }
 
         Address address = new Address(
                 member,
@@ -39,35 +50,34 @@ public class AddressService {
                 addressCreateDto.detailAddress()
         );
 
-        long count = addressRepository.countByMember(member);
-        log.info("{}", count);
-        if (count >= 10) {
-            throw new ApplicationException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
-        }
-
         Address saved = addressRepository.save(address);
 
         if (Boolean.TRUE.equals(addressCreateDto.isDefault())) {
-            addressRepository.clearDefaultForMember(member, saved.getId());
+            // 해당 회원의 다른 기본 주소들 false 처리
+            addressRepository.clearDefaultForMember(memberId, saved.getId());
         }
     }
 
-    public List<AddressReadDto> getMemberAddresses(String username) {
-        List<Address> addresses = addressRepository.getAllByMemberUserName(username);
+    /**
+     * 회원 주소 목록 조회
+     */
+    public List<AddressReadDto> getMemberAddresses(Long memberId) {
+        List<Address> addresses = addressRepository.findAllByMemberId(memberId);
         return addresses.stream()
                 .map(AddressReadDto::from)
                 .toList();
     }
 
+    /**
+     * 회원 주소 수정
+     */
     @Transactional
-    public void updateMemberAddress(String username,
+    public void updateMemberAddress(Long memberId,
                                     Long addressId,
                                     AddressUpdateRequestDto addressUpdateRequestDto) {
 
-        Member member = memberRepository.getByUsername(username).orElseThrow(
-                () -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
-        );
-        Address address = addressRepository.getByIdAndMemberUserName(addressId, username).orElseThrow(
+        // 이 회원의 주소가 맞는지 검증하면서 조회
+        Address address = addressRepository.findByIdAndMemberId(addressId, memberId).orElseThrow(
                 () -> new ApplicationException(ErrorCode.ADDRESS_NOT_FOUND)
         );
 
@@ -80,14 +90,17 @@ public class AddressService {
         );
 
         if (addressUpdateRequestDto.isDefault()) {
-            addressRepository.clearDefaultForMember(address.getMember(), address.getId());
+            // 이 회원의 다른 기본 주소들 false 처리
+            addressRepository.clearDefaultForMember(memberId, address.getId());
         }
-
     }
 
+    /**
+     * 회원 주소 삭제
+     */
     @Transactional
-    public void deleteMemberAddress(String username, Long addressId) {
-        Address address = addressRepository.getByIdAndMemberUserName(addressId, username).orElseThrow(
+    public void deleteMemberAddress(Long memberId, Long addressId) {
+        Address address = addressRepository.findByIdAndMemberId(addressId, memberId).orElseThrow(
                 () -> new ApplicationException(ErrorCode.ADDRESS_NOT_FOUND)
         );
         addressRepository.delete(address);
