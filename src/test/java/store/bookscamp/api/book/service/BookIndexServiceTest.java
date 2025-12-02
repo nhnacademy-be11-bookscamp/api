@@ -3,51 +3,25 @@ package store.bookscamp.api.book.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import java.io.IOException;
-import java.util.List;
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.RefreshPolicy;
-import org.springframework.test.context.ActiveProfiles;
+
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookDocument;
 import store.bookscamp.api.book.entity.BookProjection;
 import store.bookscamp.api.book.entity.BookStatus;
-import store.bookscamp.api.book.repository.BookRepository;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.time.LocalDate;
-import java.util.Map;
 
-@SpringBootTest
-@ActiveProfiles("test")
 class BookIndexServiceTest {
 
     private final ElasticsearchOperations esOps = mock(ElasticsearchOperations.class);
-    private final ElasticsearchClient esClient = mock(ElasticsearchClient.class);
-    private final BookRepository bookRepository = mock(BookRepository.class);
 
     private BookIndexService createService() {
-        BookIndexService service =
-                new BookIndexService(esOps, esClient, bookRepository);
-
-        setField(service, "INDEX_NAME", "bookscamp-test");
-
-        return service;
-    }
-
-    private void setField(Object target, String field, Object value) {
-        try {
-            Field f = target.getClass().getDeclaredField(field);
-            f.setAccessible(true);
-            f.set(target, value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return new BookIndexService(esOps);
     }
 
     private void setId(Object target, Long id) {
@@ -61,19 +35,7 @@ class BookIndexServiceTest {
     }
 
     @Test
-    @DisplayName("init 성공")
-    void init_simple_mocking() throws Exception {
-        BookIndexService service = createService();
-        when(esClient.indices()).thenThrow(new RuntimeException("ignored"));
-        when(bookRepository.findAllBooksWithRatingAndReview()).thenReturn(List.of());
-
-        assertDoesNotThrow(() -> service.init());
-    }
-
-
-
-    @Test
-    @DisplayName("mapBookToDocument 성공")
+    @DisplayName("mapBookToDocument - Book 엔티티를 BookDocument로 매핑 성공")
     void mapBookToDocument_success() {
         BookIndexService service = createService();
 
@@ -101,10 +63,12 @@ class BookIndexServiceTest {
         assertThat(doc.getPublisher()).isEqualTo("출판사");
         assertThat(doc.getIsbn()).isEqualTo("1234567890123");
         assertThat(doc.getRegularPrice()).isEqualTo(20000);
+        assertThat(doc.getStatus()).isEqualTo(BookStatus.AVAILABLE.name());
+        assertThat(doc.isPackable()).isTrue();
     }
 
     @Test
-    @DisplayName("projectionToDoc 필드 매핑 성공")
+    @DisplayName("projectionToDoc - Projection → Document 매핑 성공")
     void projectionToDoc_success() {
         BookIndexService service = createService();
 
@@ -133,53 +97,23 @@ class BookIndexServiceTest {
         assertThat(doc.getCategory()).isEqualTo("소설");
         assertThat(doc.getSalePrice()).isEqualTo(9000);
         assertThat(doc.getReviewCount()).isEqualTo(8);
+        assertThat(doc.getAverageRating()).isEqualTo(4.7);
+        assertThat(doc.isPackable()).isTrue();
     }
-
     @Test
-    @DisplayName("convertDocumentToMap 성공")
-    void convertDocumentToMap_success() throws Exception {
+    @DisplayName("generateEmbedding - HTTP 실패 시 fallback 1024 길이 배열")
+    void generateEmbedding_fallback() {
         BookIndexService service = createService();
 
-        BookDocument doc = BookDocument.builder()
-                .id(1L)
-                .title("책")
-                .publisher("출판")
-                .isbn("123")
-                .publishDate(LocalDate.of(2021, 5, 1))
-                .contributors("저자")
-                .explanation("설명")
-                .regularPrice(15000)
-                .salePrice(12000)
-                .stock(30)
-                .status("AVAILABLE")
-                .build();
+        // 실제 Ollama 서버가 없어도, 예외 발생 → fallback 배열(길이 1024) 리턴
+        float[] vec = service.generateEmbedding("test text");
 
-        Method m = BookIndexService.class.getDeclaredMethod("convertDocumentToMap", BookDocument.class);
-        m.setAccessible(true);
-
-        Map<String, Object> map = (Map<String, Object>) m.invoke(service, doc);
-
-        assertThat(map.get("id")).isEqualTo(1L);
-        assertThat(map.get("title")).isEqualTo("책");
-        assertThat(map.get("publishDate")).isEqualTo("2021-05-01");
-        assertThat(map.get("regularPrice")).isEqualTo(15000);
-    }
-
-    @Test
-    @DisplayName("generateEmbedding - HTTP 실패시 fallback 1024 길이 배열")
-    void generateEmbedding_fallback() throws Exception {
-        BookIndexService service = createService();
-
-        Method m = BookIndexService.class.getDeclaredMethod("generateEmbedding", String.class);
-        m.setAccessible(true);
-
-        float[] vec = (float[]) m.invoke(service, "test text");
-
+        assertThat(vec).isNotNull();
         assertThat(vec.length).isEqualTo(1024);
     }
 
     @Test
-    @DisplayName("indexBook() - Elastic save 호출 확인")
+    @DisplayName("indexBook - Elastic save 호출 확인")
     void indexBook_success() {
         BookIndexService service = createService();
 
@@ -195,7 +129,7 @@ class BookIndexServiceTest {
     }
 
     @Test
-    @DisplayName("deleteBookIndex() - Elastic delete 호출 확인")
+    @DisplayName("deleteBookIndex - Elastic delete 호출 확인")
     void deleteBook_success() {
         BookIndexService service = createService();
 
