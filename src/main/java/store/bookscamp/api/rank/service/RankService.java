@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
@@ -44,27 +46,14 @@ public class RankService {
         return new RankGetDto(name, value);
     }
 
+    @Retryable(noRetryFor = ApplicationException.class, backoff = @Backoff(multiplier = 2.0, maxDelay = 10000), listeners = "customRetryListener")
     @Transactional
-    public void updateAllMemberGrades() {
+    public void updateSingleMemberGrade(Member member, List<Rank> allRanks, int amount) {
+        Rank targetRank = findMatchingRank(allRanks, amount);
 
-        List<Rank> allRanks = rankRepository.findAll();
-
-        Map<Long, Integer> memberAmountMap = rankRepository.getMemberNetTotalForGrading().stream()
-                .collect(Collectors.toMap(
-                        RankSummaryDto::memberId,
-                        RankSummaryDto::totalNetAmount
-                ));
-
-        List<Member> members = memberRepository.findAll();
-
-        for (Member member : members) {
-            int amount = memberAmountMap.getOrDefault(member.getId(), 0);
-
-            Rank targetRank = findMatchingRank(allRanks, amount);
-
-            if (targetRank != null && !targetRank.equals(member.getRank())) {
-                member.updateRank(targetRank);
-            }
+        if (targetRank != null && !targetRank.equals(member.getRank())) {
+            member.updateRank(targetRank);
+            memberRepository.save(member);
         }
     }
 

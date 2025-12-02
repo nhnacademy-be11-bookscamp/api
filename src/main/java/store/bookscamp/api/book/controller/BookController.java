@@ -22,11 +22,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store.bookscamp.api.book.controller.request.AladinCreateRequest;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
+import store.bookscamp.api.book.controller.response.BookCouponResponse;
 import store.bookscamp.api.book.controller.response.BookIndexResponse;
 import store.bookscamp.api.book.controller.response.BookInfoResponse;
 import store.bookscamp.api.book.controller.response.BookSortResponse;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.controller.response.BookWishListResponse;
+import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.service.BookSearchService;
 import store.bookscamp.api.book.service.BookService;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
@@ -177,6 +179,21 @@ public class BookController {
         bookService.deleteWishList(itemId, memberId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/admin/books/coupon")
+    @RequiredRole("ADMIN")
+    public ResponseEntity<RestPageImpl<BookCouponResponse>> getBooks(
+            @RequestParam String keyword,
+            @PageableDefault(size = 10, sort = "createdAt,desc") Pageable pageable
+    ){
+        Page<Book> books = bookService.getBooks(keyword, pageable);
+        Page<BookCouponResponse> bookList = books
+                .map(BookCouponResponse::from);
+
+        RestPageImpl<BookCouponResponse> restPage = new RestPageImpl<>(bookList);
+
+        return ResponseEntity.ok(restPage);
     }
 }
 

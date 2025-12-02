@@ -18,9 +18,6 @@ public record CouponIssueResponse(
         String name
 ) {
 
-    /**
-     * CouponIssue Entity를 CouponIssueResponse 레코드로 변환하는 정적 팩토리 메서드
-     */
     public static CouponIssueResponse from(CouponIssue couponIssue) {
         CouponIssueStatus status;
         Coupon coupon = couponIssue.getCoupon();
