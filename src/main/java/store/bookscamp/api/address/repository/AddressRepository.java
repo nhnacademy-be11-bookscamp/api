@@ -7,40 +7,37 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import store.bookscamp.api.address.entity.Address;
-import store.bookscamp.api.member.entity.Member;
 
 public interface AddressRepository extends JpaRepository<Address, Long> {
 
     @Query("""
-            SELECT a 
-            FROM Address a 
-            JOIN a.member m 
-            WHERE m.username = :username
+            SELECT a
+            FROM Address a
+            WHERE a.member.id = :memberId
             """)
-    List<Address> getAllByMemberUserName(@Param("username") String username);
+    List<Address> findAllByMemberId(@Param("memberId") Long memberId);
 
-    long countByMember(Member member);
+    long countByMemberId(Long memberId);
 
     @Query("""
-            SELECT a 
-            FROM Address a 
-            JOIN a.member m 
-            WHERE a.id = :addressId 
-            AND m.username = :username
+            SELECT a
+            FROM Address a
+            WHERE a.id = :addressId
+              AND a.member.id = :memberId
             """)
-    Optional<Address> getByIdAndMemberUserName(
+    Optional<Address> findByIdAndMemberId(
             @Param("addressId") Long addressId,
-            @Param("username") String username);
+            @Param("memberId") Long memberId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             UPDATE Address a
             SET a.isDefault = false
-            WHERE a.member = :member
+            WHERE a.member.id = :memberId
               AND a.isDefault = true
               AND (:excludeId IS NULL OR a.id <> :excludeId)
             """)
-    int clearDefaultForMember(@Param("member") Member member,
+    int clearDefaultForMember(@Param("memberId") Long memberId,
                               @Param("excludeId") Long excludeId);
 
 }
