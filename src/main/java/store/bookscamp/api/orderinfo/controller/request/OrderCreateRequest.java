@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import store.bookscamp.api.orderinfo.entity.OrderType;
 import store.bookscamp.api.orderinfo.service.dto.DeliveryInfoDto;
 import store.bookscamp.api.orderinfo.service.dto.NonMemberInfoDto;
 import store.bookscamp.api.orderinfo.service.dto.OrderItemCreateDto;
@@ -25,7 +26,10 @@ public record OrderCreateRequest(
         Integer usedPoint,
 
         @Valid
-        NonMemberInfoRequest nonMemberInfo
+        NonMemberInfoRequest nonMemberInfo,
+
+        @NotNull(message = "주문 타입은 필수입니다.")
+        OrderType orderType
 ) {
     public OrderRequestDto toDto() {
         return new OrderRequestDto(
