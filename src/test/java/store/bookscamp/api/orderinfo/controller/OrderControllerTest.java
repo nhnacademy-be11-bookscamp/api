@@ -24,6 +24,8 @@ import store.bookscamp.api.orderinfo.controller.request.OrderCreateRequest;
 import store.bookscamp.api.orderinfo.controller.request.OrderItemCreateRequest;
 import store.bookscamp.api.orderinfo.controller.request.OrderItemRequest;
 import store.bookscamp.api.orderinfo.controller.request.OrderPrepareRequest;
+import store.bookscamp.api.orderinfo.entity.OrderType;
+import store.bookscamp.api.orderinfo.service.OrderCartMappingService;
 import store.bookscamp.api.orderinfo.service.OrderCreateService;
 import store.bookscamp.api.orderinfo.service.OrderPrepareService;
 import store.bookscamp.api.orderinfo.service.dto.CouponDto;
@@ -48,6 +50,9 @@ class OrderControllerTest {
     @MockitoBean
     private OrderCreateService orderCreateService;
 
+    @MockitoBean
+    private OrderCartMappingService orderCartMappingService;
+
     @Nested
     @DisplayName("POST /orders/prepare")
     class PrepareOrderTest {
@@ -57,7 +62,7 @@ class OrderControllerTest {
         void prepare_success() throws Exception {
             // given
             OrderItemRequest itemRequest = new OrderItemRequest(1L, 2);
-            OrderPrepareRequest request = new OrderPrepareRequest(List.of(itemRequest));
+            OrderPrepareRequest request = new OrderPrepareRequest(List.of(itemRequest), OrderType.CART);
 
             OrderItemDto itemDto = new OrderItemDto(
                     1L,
@@ -119,7 +124,7 @@ class OrderControllerTest {
         void prepare_nonMember_success() throws Exception {
             // given
             OrderItemRequest itemRequest = new OrderItemRequest(1L, 1);
-            OrderPrepareRequest request = new OrderPrepareRequest(List.of(itemRequest));
+            OrderPrepareRequest request = new OrderPrepareRequest(List.of(itemRequest), OrderType.CART);
 
             OrderItemDto itemDto = new OrderItemDto(
                     1L,
@@ -157,7 +162,7 @@ class OrderControllerTest {
         @DisplayName("빈 주문 목록으로 요청 시 400 에러")
         void prepare_emptyItems_badRequest() throws Exception {
             // given
-            OrderPrepareRequest request = new OrderPrepareRequest(List.of());
+            OrderPrepareRequest request = new OrderPrepareRequest(List.of(), OrderType.CART);
 
             // when & then
             mockMvc.perform(post("/orders/prepare")
@@ -191,7 +196,8 @@ class OrderControllerTest {
                     deliveryInfo,
                     null,
                     0,
-                    null
+                    null,
+                    OrderType.DIRECT
             );
 
             OrderCreateDto responseDto = new OrderCreateDto(100L, "ORDER-001", 39500);
@@ -229,7 +235,8 @@ class OrderControllerTest {
                     deliveryInfo,
                     null,
                     5000,  // 포인트 사용
-                    null
+                    null,
+                    OrderType.CART
             );
 
             OrderCreateDto responseDto = new OrderCreateDto(100L, "ORDER-002", 34000);
@@ -257,7 +264,8 @@ class OrderControllerTest {
                     null,  // 배송 정보 없음
                     null,
                     0,
-                    null
+                    null,
+                    OrderType.DIRECT
             );
 
             // when & then
@@ -288,7 +296,8 @@ class OrderControllerTest {
                     deliveryInfo,
                     null,
                     -1000,  // 음수 포인트
-                    null
+                    null,
+                    OrderType.DIRECT
             );
 
             // when & then
