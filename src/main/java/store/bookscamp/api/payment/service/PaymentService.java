@@ -8,11 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.cart.service.CartService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.orderinfo.entity.OrderInfo;
 import store.bookscamp.api.orderinfo.repository.OrderInfoRepository;
+import store.bookscamp.api.orderinfo.service.OrderCartMappingService;
 import store.bookscamp.api.orderitem.entity.OrderItem;
 import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 import store.bookscamp.api.payment.adapter.PaymentAdapter;
@@ -39,6 +41,8 @@ public class PaymentService {
     private final OrderItemRepository orderItemRepository;
     private final PointHistoryRepository pointHistoryRepository;
     private final PaymentAdapter paymentAdapter;
+    private final OrderCartMappingService orderCartMappingService;
+    private final CartService cartService;
 
     public Payment confirmPayment(String paymentKey, String orderNumber, int amount) {
         OrderInfo orderInfo = orderInfoRepository.findByOrderNumber(orderNumber)
@@ -76,6 +80,12 @@ public class PaymentService {
 
         if (orderInfo.getMember() != null) {
             processMemberBenefits(orderInfo);
+        }
+
+        Long cartId = orderCartMappingService.getAndDeleteMapping(orderNumber);
+        if (cartId != null) {
+            cartService.clearCart(cartId);
+            log.info("[PAYMENT] 장바구니 비우기 완료 - cartId: {}", cartId);
         }
 
         orderInfo.changeOrderStatus(PENDING);
