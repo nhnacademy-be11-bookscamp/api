@@ -27,6 +27,8 @@ import store.bookscamp.api.orderinfo.controller.response.OrderDetailResponse.Ord
 import store.bookscamp.api.orderinfo.entity.OrderStatus;
 import store.bookscamp.api.orderinfo.service.OrderDetailService;
 import store.bookscamp.api.orderinfo.service.OrderListService;
+import store.bookscamp.api.orderinfo.service.OrderReturnService;
+import store.bookscamp.api.orderinfo.service.OrderStatusService;
 import store.bookscamp.api.orderinfo.service.dto.OrderListDto;
 
 @WebMvcTest(OrderListController.class)
@@ -43,6 +45,12 @@ class OrderListControllerTest {
 
     @MockitoBean
     private OrderDetailService orderDetailService;
+
+    @MockitoBean
+    private OrderReturnService orderReturnService;
+
+    @MockitoBean
+    private OrderStatusService orderStatusService;
 
     @Nested
     @DisplayName("GET /orders/list")
