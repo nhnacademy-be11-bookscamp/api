@@ -9,7 +9,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.bookscamp.api.member.service.dto.MemberCreateDto;
 
 @Entity
 @Getter

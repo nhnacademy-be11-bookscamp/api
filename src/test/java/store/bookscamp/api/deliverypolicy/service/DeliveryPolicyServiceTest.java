@@ -22,9 +22,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * DeliveryPolicyService 단위 테스트 (Mockito 사용)
- */
 @ExtendWith(MockitoExtension.class)
 class DeliveryPolicyServiceTest {
 
@@ -34,29 +31,22 @@ class DeliveryPolicyServiceTest {
     @Mock
     private DeliveryPolicyRepository deliveryPolicyRepository;
 
-    private final int FREE_DELIVERY_THRESHOLD = 30000;
-    private final int BASE_DELIVERY_FEE = 3000;
-
-    // --- create 테스트 ---
+    private final int freeDeliveryThreshold = 30000;
+    private final int baseDeliveryFee = 3000;
 
     @Test
     @DisplayName("배송 정책을 성공적으로 생성한다")
     void create_success() {
-        // given
-        DeliveryPolicyCreateRequest req = new DeliveryPolicyCreateRequest(FREE_DELIVERY_THRESHOLD, BASE_DELIVERY_FEE);
-        DeliveryPolicy newPolicy = new DeliveryPolicy(FREE_DELIVERY_THRESHOLD, BASE_DELIVERY_FEE);
+        DeliveryPolicyCreateRequest req = new DeliveryPolicyCreateRequest(freeDeliveryThreshold, baseDeliveryFee);
+        DeliveryPolicy newPolicy = new DeliveryPolicy(freeDeliveryThreshold, baseDeliveryFee);
 
-        // findTopByOrderByIdAsc 호출 시 정책이 없음을 가정
         when(deliveryPolicyRepository.findTopByOrderByIdAsc()).thenReturn(Optional.empty());
-        // save 호출 시 저장된 정책 반환을 가정
         when(deliveryPolicyRepository.save(any(DeliveryPolicy.class))).thenReturn(newPolicy);
 
-        // when
         DeliveryPolicyGetResponse response = deliveryPolicyService.create(req);
 
-        // then
-        assertThat(response.getFreeDeliveryThreshold()).isEqualTo(FREE_DELIVERY_THRESHOLD);
-        assertThat(response.getBaseDeliveryFee()).isEqualTo(BASE_DELIVERY_FEE);
+        assertThat(response.getFreeDeliveryThreshold()).isEqualTo(freeDeliveryThreshold);
+        assertThat(response.getBaseDeliveryFee()).isEqualTo(baseDeliveryFee);
         verify(deliveryPolicyRepository).save(any(DeliveryPolicy.class)); // save 메서드 호출 검증
     }
 
@@ -64,10 +54,9 @@ class DeliveryPolicyServiceTest {
     @DisplayName("이미 정책이 존재할 경우 생성 시도 시 예외가 발생한다")
     void create_policyAlreadyExists_throwsException() {
         // given
-        DeliveryPolicyCreateRequest req = new DeliveryPolicyCreateRequest(FREE_DELIVERY_THRESHOLD, BASE_DELIVERY_FEE);
+        DeliveryPolicyCreateRequest req = new DeliveryPolicyCreateRequest(freeDeliveryThreshold, baseDeliveryFee);
         DeliveryPolicy existingPolicy = new DeliveryPolicy(0, 5000);
 
-        // findTopByOrderByIdAsc 호출 시 정책이 이미 존재함을 가정
         when(deliveryPolicyRepository.findTopByOrderByIdAsc()).thenReturn(Optional.of(existingPolicy));
 
         // when & then
@@ -76,7 +65,6 @@ class DeliveryPolicyServiceTest {
                 .hasMessage(ErrorCode.DELIVERY_POLICY_ALREADY_EXISTS.getMessage());
     }
 
-    // --- update 테스트 ---
 
     @Test
     @DisplayName("배송 정책을 성공적으로 수정한다")
@@ -87,20 +75,16 @@ class DeliveryPolicyServiceTest {
         DeliveryPolicyUpdateRequest req = new DeliveryPolicyUpdateRequest(newFreeDeliveryThreshold, newBaseDeliveryFee);
 
         // 기존 정책 객체
-        DeliveryPolicy existingPolicy = new DeliveryPolicy(FREE_DELIVERY_THRESHOLD, BASE_DELIVERY_FEE);
+        DeliveryPolicy existingPolicy = new DeliveryPolicy(freeDeliveryThreshold, baseDeliveryFee);
 
-        // findTopByOrderByIdAsc 호출 시 기존 정책 객체 반환을 가정
         when(deliveryPolicyRepository.findTopByOrderByIdAsc()).thenReturn(Optional.of(existingPolicy));
 
         // when
         DeliveryPolicyGetResponse response = deliveryPolicyService.update(req);
 
-        // then
-        // 반환된 응답 확인
         assertThat(response.getFreeDeliveryThreshold()).isEqualTo(newFreeDeliveryThreshold);
         assertThat(response.getBaseDeliveryFee()).isEqualTo(newBaseDeliveryFee);
 
-        // 실제 policy 객체의 상태 변경 확인 (Entity의 update 메서드 호출 및 영속성 컨텍스트를 통한 변경을 가정)
         assertThat(existingPolicy.getFreeDeliveryThreshold()).isEqualTo(newFreeDeliveryThreshold);
         assertThat(existingPolicy.getBaseDeliveryFee()).isEqualTo(newBaseDeliveryFee);
     }
@@ -111,22 +95,18 @@ class DeliveryPolicyServiceTest {
         // given
         DeliveryPolicyUpdateRequest req = new DeliveryPolicyUpdateRequest(50000, 2500);
 
-        // findTopByOrderByIdAsc 호출 시 정책이 없음을 가정
         when(deliveryPolicyRepository.findTopByOrderByIdAsc()).thenReturn(Optional.empty());
 
-        // when & then
         assertThatThrownBy(() -> deliveryPolicyService.update(req))
                 .isInstanceOf(ApplicationException.class)
                 .hasMessage(ErrorCode.DELIVERY_POLICY_NOT_CONFIGURED.getMessage());
     }
 
-    // --- getDeliveryPolicy 테스트 ---
-
     @Test
     @DisplayName("현재 배송 정책을 성공적으로 조회한다")
     void getDeliveryPolicy_success() {
         // given
-        DeliveryPolicy existingPolicy = new DeliveryPolicy(FREE_DELIVERY_THRESHOLD, BASE_DELIVERY_FEE);
+        DeliveryPolicy existingPolicy = new DeliveryPolicy(freeDeliveryThreshold, baseDeliveryFee);
 
         // findTopByOrderByIdAsc 호출 시 기존 정책 객체 반환을 가정
         when(deliveryPolicyRepository.findTopByOrderByIdAsc()).thenReturn(Optional.of(existingPolicy));
@@ -135,8 +115,8 @@ class DeliveryPolicyServiceTest {
         DeliveryPolicyGetResponse response = deliveryPolicyService.getDeliveryPolicy();
 
         // then
-        assertThat(response.getFreeDeliveryThreshold()).isEqualTo(FREE_DELIVERY_THRESHOLD);
-        assertThat(response.getBaseDeliveryFee()).isEqualTo(BASE_DELIVERY_FEE);
+        assertThat(response.getFreeDeliveryThreshold()).isEqualTo(freeDeliveryThreshold);
+        assertThat(response.getBaseDeliveryFee()).isEqualTo(baseDeliveryFee);
     }
 
     @Test
