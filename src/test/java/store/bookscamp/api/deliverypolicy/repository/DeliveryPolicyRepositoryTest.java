@@ -29,19 +29,15 @@ class DeliveryPolicyRepositoryTest {
         DeliveryPolicy saved1 = deliveryPolicyRepository.save(p1); // 먼저 저장 → 더 작은 ID
         DeliveryPolicy saved2 = deliveryPolicyRepository.save(p2); // 나중에 저장 → 더 큰 ID
 
-        // when
         Optional<DeliveryPolicy> result = deliveryPolicyRepository.findTopByOrderByIdAsc();
 
-        // then
         assertThat(result).isPresent();
 
         DeliveryPolicy oldest = result.get();
-        // 가장 먼저 저장한 saved1과 같은지 확인
         assertThat(oldest.getId()).isEqualTo(saved1.getId());
         assertThat(oldest.getFreeDeliveryThreshold()).isEqualTo(0);
         assertThat(oldest.getBaseDeliveryFee()).isEqualTo(3000);
 
-        // 참고로, 두 ID의 대소 관계도 한 번 더 체크해볼 수 있습니다.
         assertThat(saved1.getId()).isLessThan(saved2.getId());
     }
 

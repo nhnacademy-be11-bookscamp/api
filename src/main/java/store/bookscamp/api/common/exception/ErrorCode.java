@@ -94,6 +94,7 @@ public enum ErrorCode {
     ORDER_NOT_AWAITING_PAYMENT(BAD_REQUEST, "결제 대기 중인 주문이 아닙니다."),
     ORDER_CANNOT_BE_CANCELLED(BAD_REQUEST, "취소할 수 없는 주문입니다."),
     ORDER_PASSWORD_INVALID(NOT_FOUND, "주문이 존재하지 않습니다."),
+    ORDER_RETURN_PERIOD_EXPIRED(BAD_REQUEST, "반품 가능한 기간이 지났습니다."),
 
     ORDER_STATUS_ALREADY_SET(BAD_REQUEST, "이미 해당 상태로 설정되어 있습니다."),
     CANCELLED_ORDER_CANNOT_BE_UPDATED(BAD_REQUEST, "취소된 주문은 상태를 변경할 수 없습니다."),
@@ -105,7 +106,6 @@ public enum ErrorCode {
     AI_REVIEW_GENERATION_FAILED(INTERNAL_SERVER_ERROR, "AI 리뷰 생성에 실패했습니다."),
     AI_REVIEW_API_ERROR(INTERNAL_SERVER_ERROR, "AI 리뷰 API 호출 중 오류가 발생했습니다.")
     ;
-
 
     private HttpStatus httpStatus;
     private String message;
