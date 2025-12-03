@@ -1,6 +1,7 @@
 package store.bookscamp.api.orderinfo.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
@@ -24,6 +25,7 @@ import static store.bookscamp.api.common.exception.ErrorCode.*;
 import static store.bookscamp.api.orderinfo.entity.OrderStatus.RETURNED;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -103,6 +105,13 @@ public class OrderReturnService {
 
         int finalRefundPoints = refundAmount + Math.abs(usedPoint) - earnedPoint;
 
-        return new OrderReturnDto(order.getOrderNumber(), order.getOrderStatus(), finalRefundPoints);
+        OrderReturnDto result = new OrderReturnDto(order.getOrderNumber(), finalRefundPoints);
+
+        log.info("[ORDER-RETURN] 반품 처리 완료 - orderNumber: {}, returnType: {}, finalRefundPoints: {}, " +
+                "refundAmount: {}, usedPoint: {}, earnedPoint: {}",
+                order.getOrderNumber(), dto.returnType(), finalRefundPoints,
+                refundAmount, Math.abs(usedPoint), earnedPoint);
+
+        return result;
     }
 }
