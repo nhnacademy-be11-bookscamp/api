@@ -40,9 +40,9 @@ class NonMemberOrderControllerTest {
     @MockitoBean
     private OrderDetailService orderDetailService;
 
-    private final String BASE_URL = "/orders/non-member";
-    private final String TEST_ORDER_NUMBER = "NONMEMBER-20251202-001";
-    private final String VALID_PASSWORD = "1234";
+    private final String baseUrl = "/orders/non-member";
+    private final String testOrderNumber = "NONMEMBER-20251202-001";
+    private final String validPassword = "1234";
 
     @Nested
     @DisplayName("POST /orders/non-member/{orderNumber}")
@@ -52,7 +52,7 @@ class NonMemberOrderControllerTest {
         @DisplayName("유효한 주문번호와 비밀번호로 비회원 주문 상세 조회를 성공한다")
         void getNonMemberOrderList_success() throws Exception {
             // given
-            NonMemberInfoRequest request = new NonMemberInfoRequest(VALID_PASSWORD);
+            NonMemberInfoRequest request = new NonMemberInfoRequest(validPassword);
 
             OrderDetailResponse mockResponse = new OrderDetailResponse(
                     10L,
@@ -72,12 +72,12 @@ class NonMemberOrderControllerTest {
             );
 
             given(orderDetailService.getNonMemberOrderDetail(
-                    eq(TEST_ORDER_NUMBER),
+                    eq(testOrderNumber),
                     any(NonMemberInfoDto.class)))
                     .willReturn(mockResponse);
 
             // when & then
-            mockMvc.perform(post(BASE_URL + "/{orderNumber}", TEST_ORDER_NUMBER)
+            mockMvc.perform(post(baseUrl + "/{orderNumber}", testOrderNumber)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -89,22 +89,19 @@ class NonMemberOrderControllerTest {
         @Test
         @DisplayName("비밀번호 불일치 또는 주문번호가 없을 경우 404 NOT_FOUND를 반환한다")
         void getNonMemberOrderList_fail_invalidCredentials() throws Exception {
-            // given
-            NonMemberInfoRequest request = new NonMemberInfoRequest(VALID_PASSWORD);
 
-            // 서비스에서 ApplicationException(ORDER_NOT_FOUND) 발생하도록 Mocking
+            NonMemberInfoRequest request = new NonMemberInfoRequest(validPassword);
+
             given(orderDetailService.getNonMemberOrderDetail(
-                    eq(TEST_ORDER_NUMBER),
+                    eq(testOrderNumber),
                     any(NonMemberInfoDto.class)))
                     .willThrow(new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
-            // when & then
-            mockMvc.perform(post(BASE_URL + "/{orderNumber}", TEST_ORDER_NUMBER)
+            mockMvc.perform(post(baseUrl + "/{orderNumber}", testOrderNumber)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
-                    .andExpect(status().isNotFound()) // 404
-                    // 응답 본문이 Plain Text이므로, Content-Type과 Body 내용을 직접 검증
+                    .andExpect(status().isNotFound())
                     .andExpect(content().contentType("text/plain;charset=UTF-8"))
                     .andExpect(content().string(ErrorCode.ORDER_NOT_FOUND.getMessage()));
         }
@@ -116,7 +113,7 @@ class NonMemberOrderControllerTest {
             NonMemberInfoRequest request = new NonMemberInfoRequest("123");
 
             // when & then
-            mockMvc.perform(post(BASE_URL + "/{orderNumber}", TEST_ORDER_NUMBER)
+            mockMvc.perform(post(baseUrl + "/{orderNumber}", testOrderNumber)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -129,23 +126,19 @@ class NonMemberOrderControllerTest {
             // given
             NonMemberInfoRequest request = new NonMemberInfoRequest("123456789");
 
-            // when & then
-            mockMvc.perform(post(BASE_URL + "/{orderNumber}", TEST_ORDER_NUMBER)
+            mockMvc.perform(post(baseUrl + "/{orderNumber}", testOrderNumber)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
-                    .andExpect(status().isBadRequest()); // 응답 본문 검증을 생략하고 상태 코드만 확인
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("비밀번호 필드가 누락되어 요청된 경우 400 BAD_REQUEST를 반환한다 (@Valid NotBlank 실패)")
         void getNonMemberOrderList_fail_passwordMissing() throws Exception {
-            // given
-            // 비밀번호 필드가 빈 문자열이거나 누락된 경우를 테스트
             NonMemberInfoRequest request = new NonMemberInfoRequest(null);
 
-            // when & then
-            mockMvc.perform(post(BASE_URL + "/{orderNumber}", TEST_ORDER_NUMBER)
+            mockMvc.perform(post(baseUrl + "/{orderNumber}", testOrderNumber)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())

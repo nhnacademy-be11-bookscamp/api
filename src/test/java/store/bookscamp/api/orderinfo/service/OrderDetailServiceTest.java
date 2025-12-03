@@ -47,12 +47,12 @@ class OrderDetailServiceTest {
     @Mock
     private NonMemberRepository nonMemberRepository;
 
-    private final Long TEST_MEMBER_ID = 1L;
-    private final Long OTHER_MEMBER_ID = 99L;
-    private final Long TEST_ORDER_ID = 10L;
+    private final Long testMemberId = 1L;
+    private final Long otherMemberId = 99L;
+    private final Long testOrderId = 10L;
 
-    private final String TEST_ORDER_NUMBER = "ORD-NM-12345";
-    private final String VALID_PASSWORD = "abcd";
+    private final String testOrderNumber = "ORD-NM-12345";
+    private final String validPassword = "abcd";
 
     @Nested
     @DisplayName("getNonMemberOrderDetail")
@@ -61,48 +61,48 @@ class OrderDetailServiceTest {
         @DisplayName("유효한 주문번호로 비회원 주문 상세 조회를 성공한다")
         @Test
         void getNonMemberOrderDetail_success() {
-            NonMemberInfoDto nonMemberInfoDto = new NonMemberInfoDto(VALID_PASSWORD);
+            NonMemberInfoDto nonMemberInfoDto = new NonMemberInfoDto(validPassword);
 
             Delivery mockDelivery = createMockDelivery();
-            OrderInfo mockOrderInfo = createMockOrderInfo(TEST_ORDER_ID, null, mockDelivery); // 비회원 주문 (member=null)
+            OrderInfo mockOrderInfo = createMockOrderInfo(testOrderId, null, mockDelivery); // 비회원 주문 (member=null)
 
             Book book1 = createMockBook(100L, "비회원 도서", 30000);
             OrderItem item1 = createMockOrderItem(1L, mockOrderInfo, book1, 2, 30000);
             List<OrderItem> mockOrderItems = List.of(item1);
 
-            NonMember mockNonMember = new NonMember(mockOrderInfo, VALID_PASSWORD);
+            NonMember mockNonMember = new NonMember(mockOrderInfo, validPassword);
 
-            given(nonMemberRepository.findByOrderInfo_OrderNumber(TEST_ORDER_NUMBER))
+            given(nonMemberRepository.findByOrderInfo_OrderNumber(testOrderNumber))
                     .willReturn(Optional.of(mockNonMember));
 
-            given(orderItemRepository.findByOrderInfoId(TEST_ORDER_ID))
+            given(orderItemRepository.findByOrderInfoId(testOrderId))
                     .willReturn(mockOrderItems);
 
-            OrderDetailResponse result = orderDetailService.getNonMemberOrderDetail(TEST_ORDER_NUMBER, nonMemberInfoDto);
+            OrderDetailResponse result = orderDetailService.getNonMemberOrderDetail(testOrderNumber, nonMemberInfoDto);
 
             assertThat(result).isNotNull();
-            assertThat(result.orderId()).isEqualTo(TEST_ORDER_ID);
+            assertThat(result.orderId()).isEqualTo(testOrderId);
             assertThat(result.productAmount()).isEqualTo(80000);
             assertThat(result.recipientName()).isEqualTo("김철수");
 
-            verify(nonMemberRepository).findByOrderInfo_OrderNumber(TEST_ORDER_NUMBER);
-            verify(orderItemRepository).findByOrderInfoId(TEST_ORDER_ID);
+            verify(nonMemberRepository).findByOrderInfo_OrderNumber(testOrderNumber);
+            verify(orderItemRepository).findByOrderInfoId(testOrderId);
         }
 
         @DisplayName("주문번호를 찾을 수 없으면 ORDER_NOT_FOUND 예외가 발생한다")
         @Test
         void getNonMemberOrderDetail_orderNotFound() {
-            NonMemberInfoDto nonMemberInfoDto = new NonMemberInfoDto(VALID_PASSWORD);
+            NonMemberInfoDto nonMemberInfoDto = new NonMemberInfoDto(validPassword);
 
-            given(nonMemberRepository.findByOrderInfo_OrderNumber(TEST_ORDER_NUMBER))
+            given(nonMemberRepository.findByOrderInfo_OrderNumber(testOrderNumber))
                     .willReturn(Optional.empty());
 
             ApplicationException exception = assertThrows(ApplicationException.class, () -> {
-                orderDetailService.getNonMemberOrderDetail(TEST_ORDER_NUMBER, nonMemberInfoDto);
+                orderDetailService.getNonMemberOrderDetail(testOrderNumber, nonMemberInfoDto);
             });
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ORDER_NOT_FOUND);
-            verify(nonMemberRepository).findByOrderInfo_OrderNumber(TEST_ORDER_NUMBER);
+            verify(nonMemberRepository).findByOrderInfo_OrderNumber(testOrderNumber);
         }
     }
 
@@ -110,9 +110,9 @@ class OrderDetailServiceTest {
     @DisplayName("회원 ID와 주문 ID로 주문 상세 정보를 성공적으로 조회한다 (배송 정보 포함)")
     @Test
     void getOrderDetail_withDeliveryInfo_success() {
-        Member mockMember = createMockMember(TEST_MEMBER_ID);
+        Member mockMember = createMockMember(testMemberId);
         Delivery mockDelivery = createMockDelivery();
-        OrderInfo mockOrderInfo = createMockOrderInfo(TEST_ORDER_ID, mockMember, mockDelivery);
+        OrderInfo mockOrderInfo = createMockOrderInfo(testOrderId, mockMember, mockDelivery);
 
         Book book1 = createMockBook(100L, "Java Programming", 30000);
         Book book2 = createMockBook(101L, "Spring Guide", 20000);
@@ -121,15 +121,15 @@ class OrderDetailServiceTest {
         OrderItem item2 = createMockOrderItem(2L, mockOrderInfo, book2, 1, 20000); // 20000
         List<OrderItem> mockOrderItems = List.of(item1, item2); // 상품 총액 (netAmount) 80000원
 
-        given(orderInfoRepository.findById(TEST_ORDER_ID))
+        given(orderInfoRepository.findById(testOrderId))
                 .willReturn(Optional.of(mockOrderInfo));
-        given(orderItemRepository.findByOrderInfoId(TEST_ORDER_ID))
+        given(orderItemRepository.findByOrderInfoId(testOrderId))
                 .willReturn(mockOrderItems);
 
-        OrderDetailResponse result = orderDetailService.getOrderDetail(TEST_MEMBER_ID, TEST_ORDER_ID);
+        OrderDetailResponse result = orderDetailService.getOrderDetail(testMemberId, testOrderId);
 
         assertThat(result).isNotNull();
-        assertThat(result.orderId()).isEqualTo(TEST_ORDER_ID);
+        assertThat(result.orderId()).isEqualTo(testOrderId);
         assertThat(result.orderStatus()).isEqualTo(OrderStatus.DELIVERED.name());
 
         assertThat(result.productAmount()).isEqualTo(80000);
@@ -146,26 +146,26 @@ class OrderDetailServiceTest {
         assertThat(responseItem1.orderQuantity()).isEqualTo(2);
         assertThat(responseItem1.bookTotalAmount()).isEqualTo(60000);
 
-        verify(orderInfoRepository).findById(TEST_ORDER_ID);
-        verify(orderItemRepository).findByOrderInfoId(TEST_ORDER_ID);
+        verify(orderInfoRepository).findById(testOrderId);
+        verify(orderItemRepository).findByOrderInfoId(testOrderId);
     }
 
     @DisplayName("배송 정보가 없는 주문의 상세 정보를 성공적으로 조회한다")
     @Test
     void getOrderDetail_withoutDeliveryInfo_success() {
-        Member mockMember = createMockMember(TEST_MEMBER_ID);
-        OrderInfo mockOrderInfo = createMockOrderInfo(TEST_ORDER_ID, mockMember, null);
+        Member mockMember = createMockMember(testMemberId);
+        OrderInfo mockOrderInfo = createMockOrderInfo(testOrderId, mockMember, null);
 
         Book book1 = createMockBook(100L, "No Delivery Book", 10000);
         OrderItem item1 = createMockOrderItem(1L, mockOrderInfo, book1, 1, 10000);
         List<OrderItem> mockOrderItems = List.of(item1);
 
-        given(orderInfoRepository.findById(TEST_ORDER_ID))
+        given(orderInfoRepository.findById(testOrderId))
                 .willReturn(Optional.of(mockOrderInfo));
-        given(orderItemRepository.findByOrderInfoId(TEST_ORDER_ID))
+        given(orderItemRepository.findByOrderInfoId(testOrderId))
                 .willReturn(mockOrderItems);
 
-        OrderDetailResponse result = orderDetailService.getOrderDetail(TEST_MEMBER_ID, TEST_ORDER_ID);
+        OrderDetailResponse result = orderDetailService.getOrderDetail(testMemberId, testOrderId);
 
         assertThat(result).isNotNull();
         assertThat(result.recipientName()).isNull();
@@ -177,11 +177,11 @@ class OrderDetailServiceTest {
     @DisplayName("존재하지 않는 주문 ID로 조회 시 ORDER_NOT_FOUND 예외가 발생한다")
     @Test
     void getOrderDetail_orderNotFound() {
-        given(orderInfoRepository.findById(TEST_ORDER_ID))
+        given(orderInfoRepository.findById(testOrderId))
                 .willReturn(Optional.empty());
 
         ApplicationException exception = assertThrows(ApplicationException.class, () -> {
-            orderDetailService.getOrderDetail(TEST_MEMBER_ID, TEST_ORDER_ID);
+            orderDetailService.getOrderDetail(testMemberId, testOrderId);
         });
 
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ORDER_NOT_FOUND);
@@ -190,14 +190,14 @@ class OrderDetailServiceTest {
     @DisplayName("주문자와 요청 memberId가 일치하지 않으면 ORDER_NOT_FOUND 예외가 발생한다 (권한 없음)")
     @Test
     void getOrderDetail_unauthorizedMember() {
-        Member ownerMember = createMockMember(TEST_MEMBER_ID);
-        OrderInfo mockOrderInfo = createMockOrderInfo(TEST_ORDER_ID, ownerMember, null);
+        Member ownerMember = createMockMember(testMemberId);
+        OrderInfo mockOrderInfo = createMockOrderInfo(testOrderId, ownerMember, null);
 
-        given(orderInfoRepository.findById(TEST_ORDER_ID))
+        given(orderInfoRepository.findById(testOrderId))
                 .willReturn(Optional.of(mockOrderInfo));
 
         ApplicationException exception = assertThrows(ApplicationException.class, () -> {
-            orderDetailService.getOrderDetail(OTHER_MEMBER_ID, TEST_ORDER_ID);
+            orderDetailService.getOrderDetail(otherMemberId, testOrderId);
         });
 
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ORDER_NOT_FOUND);
@@ -206,14 +206,14 @@ class OrderDetailServiceTest {
     @DisplayName("memberId가 null일 경우 ORDER_NOT_FOUND 예외가 발생한다 (비회원 접근 차단)")
     @Test
     void getOrderDetail_nullMemberId() {
-        Member ownerMember = createMockMember(TEST_MEMBER_ID);
-        OrderInfo mockOrderInfo = createMockOrderInfo(TEST_ORDER_ID, ownerMember, null);
+        Member ownerMember = createMockMember(testMemberId);
+        OrderInfo mockOrderInfo = createMockOrderInfo(testOrderId, ownerMember, null);
 
-        given(orderInfoRepository.findById(TEST_ORDER_ID))
+        given(orderInfoRepository.findById(testOrderId))
                 .willReturn(Optional.of(mockOrderInfo));
 
         ApplicationException exception = assertThrows(ApplicationException.class, () -> {
-            orderDetailService.getOrderDetail(null, TEST_ORDER_ID);
+            orderDetailService.getOrderDetail(null, testOrderId);
         });
 
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ORDER_NOT_FOUND);
