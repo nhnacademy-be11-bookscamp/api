@@ -3,7 +3,6 @@ package store.bookscamp.api.orderinfo.service;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
@@ -23,13 +22,11 @@ import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 @Transactional(readOnly = true)
 public class OrderDetailService {
 
-    // 로그인한 회원
     private final OrderInfoRepository orderInfoRepository;
     private final OrderItemRepository orderItemRepository;
 
     // 비회원 주문 조회용
     private final NonMemberRepository nonMemberRepository;
-    //private final PasswordEncoder passwordEncoder;
 
     public OrderDetailResponse getOrderDetail(Long memberId, Long orderId) {
 
