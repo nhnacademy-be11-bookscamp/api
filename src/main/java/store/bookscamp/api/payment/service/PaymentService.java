@@ -24,7 +24,6 @@ import store.bookscamp.api.payment.entity.PaymentMethod;
 import store.bookscamp.api.payment.entity.PaymentProvider;
 import store.bookscamp.api.payment.repository.PaymentRepository;
 import store.bookscamp.api.pointhistory.entity.PointHistory;
-import store.bookscamp.api.pointhistory.entity.PointType;
 import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 
@@ -108,10 +107,9 @@ public class PaymentService {
 
         if (usedPoint > 0) {
             member.usePoint(usedPoint);
-            PointHistory useHistory = new PointHistory(
+            PointHistory useHistory = PointHistory.use(
                     orderInfo,
                     member,
-                    PointType.USE,
                     usedPoint,
                     "주문 사용"
             );
@@ -125,10 +123,9 @@ public class PaymentService {
         int earnedPoint = calculateEarnedPoint(member, orderInfo.getNetAmount());
         if (earnedPoint > 0) {
             member.earnPoint(earnedPoint);
-            PointHistory earnHistory = new PointHistory(
+            PointHistory earnHistory = PointHistory.earn(
                     orderInfo,
                     member,
-                    PointType.EARN,
                     earnedPoint,
                     "주문 적립"
             );
@@ -192,10 +189,9 @@ public class PaymentService {
 
         if (usedPoint > 0) {
             member.earnPoint(usedPoint);
-            PointHistory refundHistory = new PointHistory(
+            PointHistory refundHistory = PointHistory.earn(
                     orderInfo,
                     member,
-                    PointType.EARN,
                     usedPoint,
                     "결제 취소 - 사용 포인트 복구"
             );
@@ -205,10 +201,9 @@ public class PaymentService {
         int earnedPoint = calculateEarnedPoint(member, orderInfo.getNetAmount());
         if (earnedPoint > 0) {
             member.usePoint(earnedPoint);
-            PointHistory cancelEarnHistory = new PointHistory(
+            PointHistory cancelEarnHistory = PointHistory.use(
                     orderInfo,
                     member,
-                    PointType.USE,
                     earnedPoint,
                     "결제 취소 - 적립 포인트 차감"
             );
