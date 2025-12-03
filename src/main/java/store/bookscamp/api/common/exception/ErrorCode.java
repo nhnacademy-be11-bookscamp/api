@@ -100,7 +100,10 @@ public enum ErrorCode {
     RETURNED_ORDER_CANNOT_BE_UPDATED(BAD_REQUEST, "반품된 주문은 상태를 변경할 수 없습니다."),
     DELIVERED_ORDER_CAN_ONLY_BE_RETURNED(BAD_REQUEST, "배송 완료된 주문은 반품만 가능합니다."),
     AWAITING_PAYMENT_ORDER_CANNOT_BE_UPDATED(BAD_REQUEST, "결제 대기 중인 주문은 관리자가 변경할 수 없습니다."),
-    INVALID_ORDER_STATUS_TRANSITION(BAD_REQUEST, "유효하지 않은 주문 상태 전환입니다.")
+    INVALID_ORDER_STATUS_TRANSITION(BAD_REQUEST, "유효하지 않은 주문 상태 전환입니다."),
+
+    AI_REVIEW_GENERATION_FAILED(INTERNAL_SERVER_ERROR, "AI 리뷰 생성에 실패했습니다."),
+    AI_REVIEW_API_ERROR(INTERNAL_SERVER_ERROR, "AI 리뷰 API 호출 중 오류가 발생했습니다.")
     ;
 
 

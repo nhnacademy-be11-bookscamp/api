@@ -11,9 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.common.annotation.RequiredRole;
 import store.bookscamp.api.review.controller.request.ReviewCreateRequest;
 import store.bookscamp.api.review.controller.request.ReviewUpdateRequest;
+import store.bookscamp.api.review.service.AiReviewService;
 import store.bookscamp.api.review.service.ReviewService;
 import store.bookscamp.api.review.service.dto.*;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final AiReviewService aiReviewService;
 
     @GetMapping("/member/review/reviewable")
     @Operation(summary = "read reviewable orderItems", description = "작성 가능한 리뷰 상품 조회 API")
@@ -93,5 +96,12 @@ public class ReviewController {
         Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
         reviewService.updateReview(ReviewUpdateDto.from(updateReq, memberId));
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/review/book/{bookId}/ai")
+    @Operation(summary = "read AI review", description = "도서 AI 한 줄 요약 리뷰 조회 API")
+    public ResponseEntity<String> getAiReview(@PathVariable Long bookId) {
+        Book book = aiReviewService.getBookById(bookId);
+        return ResponseEntity.ok(book.getAiReview());
     }
 }
