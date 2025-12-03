@@ -103,7 +103,6 @@ public enum ErrorCode {
     INVALID_ORDER_STATUS_TRANSITION(BAD_REQUEST, "유효하지 않은 주문 상태 전환입니다.")
     ;
 
-
     private HttpStatus httpStatus;
     private String message;
 
