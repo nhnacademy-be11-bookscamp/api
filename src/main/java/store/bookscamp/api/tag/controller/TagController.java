@@ -48,8 +48,6 @@ public class TagController {
         return ResponseEntity.ok(TagGetResponse.fromDto(dto));
     }
 
-
-    // 페이징 조회
     @RequiredRole("ADMIN")
     @GetMapping
     public ResponseEntity<Page<TagGetResponse>> getAll(

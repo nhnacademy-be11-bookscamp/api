@@ -2,7 +2,6 @@ package store.bookscamp.api.packaging.controller.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -27,7 +26,6 @@ public class PackagingUpdateRequest {
     /** 이미지 교체 의사가 있는지 */
     public boolean hasImagePatch() { return imageUrl != null; }
 
-    /** 교체 시 사용할 신규 이미지(0번) */
     public String primaryImageUrlOrNull() {
         return (imageUrl != null && !imageUrl.isEmpty()) ? imageUrl.get(0) : null;
     }
