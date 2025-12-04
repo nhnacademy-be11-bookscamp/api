@@ -65,6 +65,7 @@
         <logger name="store.bookscamp.api" level="DEBUG"/>
         <logger name="org.springframework.web.reactive.function.client" level="DEBUG"/>
         <logger name="reactor.netty.http.client" level="DEBUG"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
 
         <!--루트 로그 설정 (전체 출력 기본값)-->
         <root level="DEBUG">
