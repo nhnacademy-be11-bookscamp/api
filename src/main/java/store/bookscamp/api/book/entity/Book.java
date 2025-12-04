@@ -169,4 +169,8 @@ public class Book extends SoftDeleteEntity {
     public void setAiReview(String aiReview) {
         this.aiReview = aiReview;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
