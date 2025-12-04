@@ -41,7 +41,7 @@ public class CouponIssueService {
     @Retryable(noRetryFor = ApplicationException.class, backoff = @Backoff(multiplier = 2.0, maxDelay = 10000), listeners = "customRetryListener")
     @Transactional
     public Long issueBirthDayCoupon(Coupon coupon, Member member) {
-        if (couponIssueRepository.existsByCouponAndMember(coupon, member)) {
+        if (couponIssueRepository.existsByCouponAndMemberAndExpiredAtIsAfter(coupon, member, LocalDateTime.now())) {
             throw new ApplicationException(COUPON_ISSUE_ALREADY_EXIST);
         }
         CouponIssue couponIssue = new CouponIssue(coupon, member, getExpiredAt(now().lengthOfMonth()));

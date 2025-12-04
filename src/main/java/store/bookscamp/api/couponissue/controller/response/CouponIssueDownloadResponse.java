@@ -27,6 +27,7 @@ public record CouponIssueDownloadResponse(
             return coupon.getDiscountValue() + "원 할인";
         } else {
             return "할인 혜택";
+
         }
     }
 }

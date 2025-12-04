@@ -33,14 +33,15 @@ import store.bookscamp.api.member.repository.MemberRepository;
 @RequiredArgsConstructor
 public class CartService {
 
+    private static final String CART_PREFIX = "cart:";
+    private static final Integer CART_CACHE_TTL = 7;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
     private final CartItemRepository cartItemRepository;
     private final BookRepository bookRepository;
     private final CartRepository cartRepository;
     private final MemberRepository memberRepository;
-
-    private static final String CART_PREFIX = "cart:";
-    private static final Integer CART_CACHE_TTL = 7;
-    private final RedisTemplate<String, Object> redisTemplate;
 
     private final CartItemSearchQuery cartItemSearchQuery;
     private final CartAsyncService cartAsyncService;

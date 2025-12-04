@@ -8,13 +8,6 @@ public record CategoryCreateRequest(
         String name
 ) {
 
-    public static CategoryCreateRequest fromDto(CategoryCreateDto dto){
-        return new CategoryCreateRequest(
-                dto.parentId(),
-                dto.name()
-        );
-    }
-
     public CategoryCreateDto toDto(){
         return new CategoryCreateDto(
                 parentId,

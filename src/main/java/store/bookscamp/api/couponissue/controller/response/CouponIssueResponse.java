@@ -1,5 +1,9 @@
 package store.bookscamp.api.couponissue.controller.response;
 
+import static store.bookscamp.api.couponissue.controller.status.CouponIssueStatus.AVAILABLE;
+import static store.bookscamp.api.couponissue.controller.status.CouponIssueStatus.EXPIRED;
+import static store.bookscamp.api.couponissue.controller.status.CouponIssueStatus.USED;
+
 import java.time.LocalDateTime;
 import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.couponissue.controller.status.CouponIssueStatus;
@@ -23,13 +27,13 @@ public record CouponIssueResponse(
         Coupon coupon = couponIssue.getCoupon();
 
         if (couponIssue.getUsedAt() != null) {
-            status = CouponIssueStatus.USED;
+            status = USED;
         }
         else if (couponIssue.getExpiredAt() != null && couponIssue.getExpiredAt().isBefore(LocalDateTime.now())) {
-            status = CouponIssueStatus.EXPIRED;
+            status = EXPIRED;
         }
         else {
-            status = CouponIssueStatus.AVAILABLE;
+            status = AVAILABLE;
         }
 
         return new CouponIssueResponse(
