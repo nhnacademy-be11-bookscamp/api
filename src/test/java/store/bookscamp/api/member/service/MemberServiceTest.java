@@ -67,11 +67,15 @@ class MemberServiceTest {
         @Test
         @DisplayName("성공: 존재하는 ID 조회 시 DTO 반환")
         void getMember_Success() {
+
             Long memberId = 1L;
             Member member = createMember(memberId);
-            given(memberRepository.getById(memberId)).willReturn(member);
+
+            given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+
 
             MemberGetDto result = memberService.getMember(memberId);
+
 
             assertThat(result).isNotNull();
             assertThat(result.username()).isEqualTo(member.getUsername());
@@ -80,8 +84,11 @@ class MemberServiceTest {
         @Test
         @DisplayName("실패: 존재하지 않는 ID 조회 시 예외 발생 (MEMBER_NOT_FOUND)")
         void getMember_Fail_NotFound() {
+
             Long memberId = 999L;
-            given(memberRepository.getById(memberId)).willReturn(null);
+
+            given(memberRepository.findById(memberId)).willReturn(Optional.empty());
+
 
             assertThatThrownBy(() -> memberService.getMember(memberId))
                     .isInstanceOf(ApplicationException.class)
@@ -186,7 +193,8 @@ class MemberServiceTest {
             MemberUpdateDto updateDto = new MemberUpdateDto("newName", "new@mail.com", "newPhone");
             Member member = mock(Member.class);
 
-            given(memberRepository.getById(id)).willReturn(member);
+            given(memberRepository.findById(id)).willReturn(Optional.of(member));
+
             memberService.updateMember(id, updateDto);
 
             verify(member).changeInfo(updateDto.name(), updateDto.email(), updateDto.phone());
@@ -195,7 +203,8 @@ class MemberServiceTest {
         @Test
         @DisplayName("실패: 회원을 찾을 수 없음")
         void updateMember_Fail_NotFound() {
-            given(memberRepository.getById(anyLong())).willReturn(null);
+
+            given(memberRepository.findById(anyLong())).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> memberService.updateMember(1L, new MemberUpdateDto("n","e","p")))
                     .isInstanceOf(ApplicationException.class)
@@ -211,7 +220,8 @@ class MemberServiceTest {
         void deleteMember_Success() {
             Long id = 1L;
             Member member = mock(Member.class);
-            given(memberRepository.getById(id)).willReturn(member);
+
+            given(memberRepository.findById(id)).willReturn(Optional.of(member));
 
             memberService.deleteMember(id);
 
@@ -221,7 +231,7 @@ class MemberServiceTest {
         @Test
         @DisplayName("실패: 존재하지 않는 회원")
         void deleteMember_Fail() {
-            given(memberRepository.getById(anyLong())).willReturn(null);
+            given(memberRepository.findById(anyLong())).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> memberService.deleteMember(1L))
                     .isInstanceOf(ApplicationException.class)
@@ -240,7 +250,9 @@ class MemberServiceTest {
             Page<Member> memberPage = new PageImpl<>(List.of(member));
 
             given(memberRepository.findAll(pageable)).willReturn(memberPage);
+
             Page<MemberPageDto> result = memberService.getAll(pageable);
+
             assertThat(result.getContent()).hasSize(1);
             assertThat(result.getContent().get(0).username()).isEqualTo("testUser");
             assertThat(result.getContent().get(0).status()).isEqualTo(MemberStatus.NORMAL);
@@ -257,7 +269,7 @@ class MemberServiceTest {
             MemberStatusUpdateDto dto = new MemberStatusUpdateDto(id, MemberStatus.WITHDRAWN);
             Member member = mock(Member.class);
 
-            given(memberRepository.getById(id)).willReturn(member);
+            given(memberRepository.findById(id)).willReturn(Optional.of(member));
 
             memberService.updateMemberState(dto);
 
@@ -269,7 +281,8 @@ class MemberServiceTest {
         @DisplayName("실패: 회원을 찾을 수 없음")
         void updateMemberState_Fail_NotFound() {
             MemberStatusUpdateDto dto = new MemberStatusUpdateDto(99L, MemberStatus.DORMANT);
-            given(memberRepository.getById(99L)).willReturn(null);
+
+            given(memberRepository.findById(99L)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> memberService.updateMemberState(dto))
                     .isInstanceOf(ApplicationException.class)

@@ -78,12 +78,7 @@ public class BookIndexService {
 
     public BookDocument projectionToDoc(BookProjection row) {
 
-        // LocalDate를 문자열로 변환
-        String dateStr = (row.getPublishDate() != null)
-                ? row.getPublishDate().toString()
-                : null;
-
-        BookDocument doc = BookDocument.builder()
+        return BookDocument.builder()
                 .id(row.getId())
                 .title(row.getTitle())
                 .explanation(row.getExplanation())
@@ -102,7 +97,6 @@ public class BookIndexService {
                 .averageRating(row.getAverageRating() != null ? row.getAverageRating() : 0.0)
                 .reviewCount(row.getReviewCount() != null ? row.getReviewCount() : 0L)
                 .build();
-        return doc;
     }
 
     public float[] generateEmbedding(String text) {
@@ -127,6 +121,9 @@ public class BookIndexService {
             }
             return vector;
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("embedding generation failed", e);
             return new float[1024]; // fallback vector
         }

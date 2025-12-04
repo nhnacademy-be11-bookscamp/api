@@ -40,14 +40,14 @@ public class DataSourceInspector implements CommandLineRunner {
                     ds.getMaxTotal(),
                     ds.getMinIdle(),
                     ds.getMaxIdle(),
-                    ds.getMaxWaitMillis(),
+                    ds.getMaxWaitDuration().toMillis(),
                     ds.getValidationQuery(),
                     ds.getTestOnBorrow(),
                     ds.getTestWhileIdle(),
-                    ds.getTimeBetweenEvictionRunsMillis(),
-                    ds.getMinEvictableIdleTimeMillis(),
+                    ds.getDurationBetweenEvictionRuns().toMillis(),
+                    ds.getMinEvictableIdleDuration().toMillis(),
                     ds.getRemoveAbandonedOnBorrow(),
-                    ds.getRemoveAbandonedTimeout()
+                    ds.getRemoveAbandonedTimeoutDuration().getSeconds()
             );
         }
     }

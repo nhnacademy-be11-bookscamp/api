@@ -146,26 +146,26 @@ public class BookSearchService {
 
         // BM25 검색 (키워드)
         List<BookDocument> bm25Results = runBm25Search(category, keyword, 20);
-        System.out.println("bm25Results size : " + bm25Results.size());
+        log.warn("bm25Results size : {}", bm25Results.size());
         for (BookDocument bm : bm25Results) {
-            System.out.println("bm25Results: " + bm.getTitle());
+            log.warn("bm25Results: {}", bm.getTitle());
         }
 
         // KNN 검색 (벡터)
         List<BookDocument> knnResults = runKnnSearch(category, keyword, 10);
-        System.out.println("knnResults size : " + knnResults.size());
+        log.warn("knnResults size : {}", knnResults.size());
         for (BookDocument kn : knnResults) {
-            System.out.println("knnResults: " + kn.getTitle());
+            log.warn("knnResults: {}", kn.getTitle());
         }
 
         // RRF 융합
         List<BookDocument> fused = rrfFusion(bm25Results, knnResults);
-        System.out.println("fused results size : " + fused.size());
+        log.warn("fused results size : ", fused.size());
 
         // Reranker 적용
         List<BookDocument> reranked = rerankResults(keyword, fused);
         for (BookDocument rerank : reranked) {
-            System.out.println("rerank : " + rerank.getTitle());
+            log.warn("rerank : {}", rerank.getTitle());
         }
 
         return reranked;
@@ -300,6 +300,9 @@ public class BookSearchService {
             }
             return vector;
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             log.error("embedding generation failed", e);
             return new float[1024];
         }
