@@ -1,7 +1,6 @@
 package store.bookscamp.api.book.controller.response;
 
 import java.time.LocalDate;
-import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 
 public record BookSortResponse(

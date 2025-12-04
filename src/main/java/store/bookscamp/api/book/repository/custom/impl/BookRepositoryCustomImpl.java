@@ -1,19 +1,19 @@
 package store.bookscamp.api.book.repository.custom.impl;
 
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.QBook;
 import store.bookscamp.api.book.repository.custom.BookRepositoryCustom;
-import store.bookscamp.api.bookcategory.entity.QBookCategory;
-import store.bookscamp.api.booklike.entity.QBookLike;
-import store.bookscamp.api.category.entity.QCategory;
 
 public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
@@ -24,8 +24,6 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     }
 
     private static final QBook book = QBook.book;
-    private static final QCategory category = QCategory.category;
-    private static final QBookLike bookLike = QBookLike.bookLike;
 
     @Override
     public Page<Book> getBooks(String keyword, Pageable pageable) {
@@ -51,12 +49,32 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
     }
 
+    @Override
     public List<Book> getRecommendBooks() {
         return queryFactory
                 .selectFrom(book)
                 .orderBy(book.viewCount.desc())
                 .limit(12)
                 .fetch();
+    }
+
+    @Override
+    public Page<Book> getNewBooks(Pageable pageable){
+        List<Book> content = queryFactory
+                .selectFrom(book)
+                .where(book.publishDate.after(LocalDate.now().minusMonths(1)))
+                .orderBy(book.publishDate.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(book.count())
+                .from(book)
+                .where(book.publishDate.after(LocalDate.now().minusMonths(1)))
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total != null ? total : 0L);
     }
 }
 
