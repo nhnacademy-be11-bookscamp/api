@@ -306,4 +306,6 @@ public class BookService {
     public Page<Book> getBooks(String keyword, Pageable pageable){
         return bookRepository.getBooks(keyword, pageable);
     }
+
+    public Page<Book> getNewBooks(Pageable pageable){return bookRepository.getNewBooks(pageable);}
 }

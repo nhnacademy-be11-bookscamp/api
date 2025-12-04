@@ -12,4 +12,6 @@ public interface BookRepositoryCustom {
     Page<Book> getBooks(String keyword, Pageable pageable);
 
     List<Book> getRecommendBooks();
+
+    Page<Book> getNewBooks(Pageable pageable);
 }
