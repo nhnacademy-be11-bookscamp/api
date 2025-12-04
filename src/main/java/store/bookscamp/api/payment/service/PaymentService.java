@@ -66,20 +66,34 @@ public class PaymentService {
             throw new ApplicationException(PAYMENT_AMOUNT_MISMATCH);
         }
 
-        PaymentApprovalResponse approvalResponse = paymentAdapter.approve(
-                paymentKey,
-                orderNumber,
-                amount
-        );
+        Payment payment;
 
-        Payment payment = new Payment(
-                orderInfo,
-                approvalResponse.totalAmount(),
-                approvalResponse.approvedAt(),
-                approvalResponse.paymentKey(),
-                PaymentMethod.CARD,
-                PaymentProvider.TOSS
-        );
+        if (amount == 0) {
+            payment = new Payment(
+                    orderInfo,
+                    0,
+                    null,
+                    null,
+                    PaymentMethod.POINT,
+                    PaymentProvider.INTERNAL
+            );
+        } else {
+            PaymentApprovalResponse approvalResponse = paymentAdapter.approve(
+                    paymentKey,
+                    orderNumber,
+                    amount
+            );
+
+            payment = new Payment(
+                    orderInfo,
+                    approvalResponse.totalAmount(),
+                    approvalResponse.approvedAt(),
+                    approvalResponse.paymentKey(),
+                    PaymentMethod.CARD,
+                    PaymentProvider.TOSS
+            );
+        }
+
         paymentRepository.save(payment);
 
         processStockDecrease(orderInfo);
@@ -167,8 +181,12 @@ public class PaymentService {
         Payment payment = paymentRepository.findByOrderInfo(orderInfo)
                 .orElseThrow(() -> new ApplicationException(PAYMENT_NOT_FOUND));
 
-        paymentAdapter.cancel(payment.getPaymentKey(), cancelReason);
-        log.info("[PAYMENT-CANCEL] Toss 취소 완료 - orderId: {}", orderId);
+        if (payment.getPaymentKey() != null) {
+            paymentAdapter.cancel(payment.getPaymentKey(), cancelReason);
+            log.info("[PAYMENT-CANCEL] Toss 취소 완료 - orderId: {}", orderId);
+        } else {
+            log.info("[PAYMENT-CANCEL] 포인트/쿠폰 결제 취소 - orderId: {}", orderId);
+        }
 
         rollbackStock(orderInfo);
         log.info("[PAYMENT-CANCEL] 재고 복구 완료 - orderId: {}", orderId);
