@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
@@ -102,7 +103,7 @@ class BookServiceTest {
                 "exp",
                 new ArrayList<>(Arrays.asList("img1", "img2")),
                 new ArrayList<>(Arrays.asList(10L, 20L)),
-        1L
+                1L
 
         );
 
@@ -138,8 +139,8 @@ class BookServiceTest {
 
         Book book = new Book(
                 "old", "exp", "content",
-                "pub", LocalDate.of(2023,1,1),
-                "isbn","c", BookStatus.AVAILABLE,
+                "pub", LocalDate.of(2023, 1, 1),
+                "isbn", "c", BookStatus.AVAILABLE,
                 true, 1000, 900, 10, 0
         );
 
@@ -147,21 +148,22 @@ class BookServiceTest {
             var f = Book.class.getDeclaredField("id");
             f.setAccessible(true);
             f.set(book, 10L);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         when(bookRepository.findById(10L)).thenReturn(Optional.of(book));
 
         BookUpdateRequest req = new BookUpdateRequest(
-                "newTitle","newCon","newPub",
-                "newIsbn", LocalDate.of(2024,1,1),
+                "newTitle", "newCon", "newPub",
+                "newIsbn", LocalDate.of(2024, 1, 1),
                 2000, 1500, 5, true,
-                "newContent","newExp",
-                List.of(1L,2L),
+                "newContent", "newExp",
+                List.of(1L, 2L),
                 1L,
-                List.of("newImg1","newImg2"),
+                List.of("newImg1", "newImg2"),
                 List.of("oldImg"),
                 BookStatus.SOLD_OUT
-                );
+        );
 
         Category cat = mock(Category.class);
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(cat));
@@ -243,18 +245,19 @@ class BookServiceTest {
         BookService service = createService();
 
         Book book = new Book(
-                "t","e","c","p",
-                LocalDate.of(2023,1,1),
-                "isbn","con",
-                BookStatus.AVAILABLE,true,
-                1000,900,10,0
+                "t", "e", "c", "p",
+                LocalDate.of(2023, 1, 1),
+                "isbn", "con",
+                BookStatus.AVAILABLE, true,
+                1000, 900, 10, 0
         );
 
         try {
             var f = Book.class.getDeclaredField("id");
             f.setAccessible(true);
             f.set(book, 5L);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         when(bookRepository.getBookById(5L)).thenReturn(book);
 
@@ -311,6 +314,58 @@ class BookServiceTest {
         List<BookIndexDto> result = service.getRecommendBooks();
 
         assertThat(result.get(0).thumbnail()).isEqualTo("THUMB.jpg");
+    }
+
+    // [추가됨] 베스트 셀러 조회 테스트
+    @Test
+    @DisplayName("getBestSellers - 페이징 + thumbnail 포함 반환")
+    void getBestSellers_success() {
+        BookService service = createService();
+
+        // 1. Mock Data Setup
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Book b1 = mock(Book.class);
+        when(b1.getId()).thenReturn(100L);
+        when(b1.getTitle()).thenReturn("Best Book 1");
+        // ... 필요한 필드 Mocking
+
+        Book b2 = mock(Book.class);
+        when(b2.getId()).thenReturn(101L);
+        when(b2.getTitle()).thenReturn("Best Book 2");
+
+        List<Book> content = List.of(b1, b2);
+        Page<Book> mockPage = new PageImpl<>(content, pageable, 2);
+
+        // 2. Repository Behavior
+        when(bookRepository.getBestSellers(pageable)).thenReturn(mockPage);
+
+        // 3. Image Behavior (각 책에 대한 썸네일 조회)
+        BookImage thumb1 = mock(BookImage.class);
+        when(thumb1.isThumbnail()).thenReturn(true);
+        when(thumb1.getImageUrl()).thenReturn("best1.jpg");
+
+        // b1은 썸네일 있음
+        when(bookImageRepository.findByBook(b1)).thenReturn(List.of(thumb1));
+        // b2는 이미지 없음 (빈 리스트)
+        when(bookImageRepository.findByBook(b2)).thenReturn(List.of());
+
+        // 4. Execution
+        Page<BookIndexDto> result = service.getBestSellers(pageable);
+
+        // 5. Assertion
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getContent()).hasSize(2);
+
+        // 첫 번째 책: 썸네일 확인
+        assertThat(result.getContent().get(0).title()).isEqualTo("Best Book 1");
+        assertThat(result.getContent().get(0).thumbnail()).isEqualTo("best1.jpg");
+
+        // 두 번째 책: 썸네일 null 확인
+        assertThat(result.getContent().get(1).title()).isEqualTo("Best Book 2");
+        assertThat(result.getContent().get(1).thumbnail()).isNull();
+
+        verify(bookRepository).getBestSellers(pageable);
     }
 
     @Test
@@ -460,4 +515,32 @@ class BookServiceTest {
         assertThat(dto.getAiRank()).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("BookIndexDto.from() - 정적 팩토리 메서드 검증")
+    void bookIndexDto_from_success() {
+        Book book = new Book(
+                "제목", "설명", "콘텐츠",
+                "출판사", LocalDate.now(),
+                "ISBN123", "저자",
+                BookStatus.AVAILABLE, true,
+                10000, 9000, 10, 0
+        );
+        try {
+            var f = Book.class.getDeclaredField("id");
+            f.setAccessible(true);
+            f.set(book, 123L);
+        } catch (Exception ignored) {}
+
+        String thumbUrl = "http://img.com/1.jpg";
+
+        BookIndexDto dto = BookIndexDto.from(book, thumbUrl);
+
+        assertThat(dto.id()).isEqualTo(123L);
+        assertThat(dto.title()).isEqualTo("제목");
+        assertThat(dto.publisher()).isEqualTo("출판사");
+        assertThat(dto.contributors()).isEqualTo("저자");
+        assertThat(dto.regularPrice()).isEqualTo(10000);
+        assertThat(dto.salePrice()).isEqualTo(9000);
+        assertThat(dto.thumbnail()).isEqualTo(thumbUrl);
+    }
 }
