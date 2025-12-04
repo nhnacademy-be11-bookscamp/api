@@ -28,11 +28,13 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final AiReviewService aiReviewService;
 
+    private static final String USER_ID_HEADER = "X-User-ID";
+
     @GetMapping("/member/review/reviewable")
     @Operation(summary = "read reviewable orderItems", description = "작성 가능한 리뷰 상품 조회 API")
     @RequiredRole("USER")
     public ResponseEntity<List<ReviewableItemDto>> getReviewableItems(HttpServletRequest request) {
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         return ResponseEntity.ok(reviewService.getReviewableItems(memberId));
     }
 
@@ -40,7 +42,7 @@ public class ReviewController {
     @Operation(summary = "read my reviews", description = "유저가 작성한 리뷰 조회 API")
     @RequiredRole("USER")
     public ResponseEntity<List<MyReviewDto>> getMyReviews(HttpServletRequest request) {
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         return ResponseEntity.ok(reviewService.getMyReviews(memberId));
     }
 
@@ -51,7 +53,7 @@ public class ReviewController {
             @PathVariable Long reviewId,
             HttpServletRequest request
     ) {
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         return ResponseEntity.ok(reviewService.getUpdateReview(reviewId, memberId));
     }
 
@@ -81,7 +83,7 @@ public class ReviewController {
             @Valid @RequestBody ReviewCreateRequest createReq,
             HttpServletRequest request
     ) {
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         reviewService.createReview(ReviewCreateDto.from(createReq, memberId));
         return ResponseEntity.ok().build();
     }
@@ -93,7 +95,7 @@ public class ReviewController {
             @RequestBody ReviewUpdateRequest updateReq,
             HttpServletRequest request
     ) {
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         reviewService.updateReview(ReviewUpdateDto.from(updateReq, memberId));
         return ResponseEntity.ok().build();
     }

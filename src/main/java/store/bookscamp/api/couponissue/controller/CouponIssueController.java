@@ -32,6 +32,7 @@ import store.bookscamp.api.couponissue.service.CouponIssueService;
 public class CouponIssueController {
 
     private final CouponIssueService couponIssueService;
+    private static final String USER_ID_HEADER = "X-User-ID";
 
     @PostMapping("/issue")
     @RequiredRole("USER")
@@ -42,7 +43,7 @@ public class CouponIssueController {
 
         Long issuedCouponId = couponIssueService.issueGeneralCoupon(
                 couponIssueRequest.couponId(),
-                Long.valueOf(httpServletRequest.getHeader("X-User-ID"))
+                Long.valueOf(httpServletRequest.getHeader(USER_ID_HEADER))
         );
 
         return ResponseEntity.ok(issuedCouponId);
@@ -55,7 +56,7 @@ public class CouponIssueController {
             @RequestParam(name = "status", required = false, defaultValue = "ALL") CouponFilterStatus status,
             @PageableDefault(size = 10, sort = "createdAt,desc") Pageable pageable
     ) {
-        Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
+        Long memberId = Long.valueOf(request.getHeader(USER_ID_HEADER));
         Page<CouponIssue> couponIssuesPage = couponIssueService.listCouponIssue(memberId, status, pageable);
 
         Page<CouponIssueResponse> response = couponIssuesPage
@@ -70,7 +71,7 @@ public class CouponIssueController {
             HttpServletRequest request,
             @PathVariable Long bookId
     ) {
-        String userIdHeader = request.getHeader("X-User-ID");
+        String userIdHeader = request.getHeader(USER_ID_HEADER);
         Long memberId = (userIdHeader != null && !userIdHeader.isEmpty())
                 ? Long.valueOf(userIdHeader)
                 : null;
@@ -90,7 +91,7 @@ public class CouponIssueController {
             HttpServletRequest request,
             @PathVariable Long couponIssueId
     ) {
-        Long memberId = Long.valueOf(request.getHeader("X-User-ID"));
+        Long memberId = Long.valueOf(request.getHeader(USER_ID_HEADER));
         couponIssueService.deleteCouponIssue(memberId, couponIssueId);
 
         return ResponseEntity.ok().build();

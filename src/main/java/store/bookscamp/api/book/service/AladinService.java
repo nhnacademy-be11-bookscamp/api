@@ -20,6 +20,10 @@ import store.bookscamp.api.common.exception.ErrorCode;
 @RequiredArgsConstructor
 public class AladinService {
 
+    private static final String PARAM_TTBKEY = "ttbkey";
+    private static final String PARAM_OUTPUT = "output";
+    private static final String PARAM_VERSION = "Version";
+
     private final @Qualifier("aladinClient") WebClient aladinWebClient;
 
 
@@ -39,14 +43,14 @@ public class AladinService {
 
         return aladinWebClient.get()
                 .uri(b -> b.path("/ItemList.aspx")
-                        .queryParam("ttbkey", ttbKey)
+                        .queryParam(PARAM_TTBKEY, ttbKey)
                         .queryParam("QueryType", queryType)
                         .queryParamIfPresent("CategoryId", Optional.ofNullable(categoryId))
                         .queryParam("MaxResults", defaultInt(maxResults, 10))
                         .queryParam("start", defaultInt(start, 1))
                         .queryParam("SearchTarget", "Book")
-                        .queryParam("output", output)
-                        .queryParam("Version", version)
+                        .queryParam(PARAM_OUTPUT, output)
+                        .queryParam(PARAM_VERSION, version)
                         .build()
                 )
                 .retrieve()
@@ -57,11 +61,11 @@ public class AladinService {
     public Mono<AladinResponse> lookupByIsbn13(String isbn13) {
         return aladinWebClient.get()
                 .uri(b -> b.path("/ItemLookUp.aspx")
-                        .queryParam("ttbkey", ttbKey)
+                        .queryParam(PARAM_TTBKEY, ttbKey)
                         .queryParam("itemIdType", "ISBN13")
                         .queryParam("ItemId", isbn13)
-                        .queryParam("output", output)
-                        .queryParam("Version", version)
+                        .queryParam(PARAM_OUTPUT, output)
+                        .queryParam(PARAM_VERSION, version)
                         .build()
                 )
                 .retrieve()
@@ -76,14 +80,14 @@ public class AladinService {
                                        String sort) {
         return aladinWebClient.get()
                 .uri(b -> b.path("/ItemSearch.aspx")
-                        .queryParam("ttbkey", ttbKey)
+                        .queryParam(PARAM_TTBKEY, ttbKey)
                         .queryParam("Query", query)
                         .queryParam("QueryType", Optional.ofNullable(queryType).orElse("Keyword"))
                         .queryParam("start", start)
                         .queryParam("MaxResults", maxResults)
                         .queryParam("Sort", Optional.ofNullable(sort).orElse("Accuracy"))
-                        .queryParam("output", output)
-                        .queryParam("Version", version)
+                        .queryParam(PARAM_OUTPUT, output)
+                        .queryParam(PARAM_VERSION, version)
                         .build()
                 )
                 .retrieve()

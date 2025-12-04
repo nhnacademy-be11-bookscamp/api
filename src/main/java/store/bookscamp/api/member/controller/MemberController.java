@@ -37,11 +37,13 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    private static final String USER_ID_HEADER = "X-User-ID";
+
     @GetMapping("/member")
     @Operation(summary = "read Member", description = "회원조희 API")
     @RequiredRole("USER")
     public MemberGetResponse getMember(HttpServletRequest request) {
-        return MemberGetResponse.fromDto(memberService.getMember(Long.parseLong(request.getHeader("X-User-ID"))));
+        return MemberGetResponse.fromDto(memberService.getMember(Long.parseLong(request.getHeader(USER_ID_HEADER))));
     }
 
     @GetMapping("/member/check-id")
@@ -70,7 +72,7 @@ public class MemberController {
     public ResponseEntity<MemberGetResponse> updateMember(
             @Valid @RequestBody MemberUpdateRequest memberUpdateRequest,
             HttpServletRequest request) {
-        Long currentUserId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long currentUserId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         MemberUpdateDto memberUpdateDto = MemberUpdateRequest.toDto(memberUpdateRequest);
         memberService.checkEmailPhoneDuplicateForUpdate(
                 currentUserId,
@@ -85,7 +87,7 @@ public class MemberController {
     @Operation(summary = "delete Member", description = "회원탈퇴 API")
     @RequiredRole("USER")
     public ResponseEntity<Void> deleteMember(HttpServletRequest request) {
-        memberService.deleteMember(Long.parseLong(request.getHeader("X-User-ID")));
+        memberService.deleteMember(Long.parseLong(request.getHeader(USER_ID_HEADER)));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

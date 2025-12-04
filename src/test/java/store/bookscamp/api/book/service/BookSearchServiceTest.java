@@ -1,22 +1,16 @@
 package store.bookscamp.api.book.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-import static store.bookscamp.api.book.entity.BookStatus.AVAILABLE;
+import java.util.*;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -24,199 +18,225 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.Query;
-import store.bookscamp.api.book.entity.Book;
+
+import store.bookscamp.api.book.controller.response.RerankerResponse;
 import store.bookscamp.api.book.entity.BookCaching;
 import store.bookscamp.api.book.entity.BookDocument;
 import store.bookscamp.api.book.feign.RerankerClient;
 import store.bookscamp.api.book.service.dto.BookSearchRequest;
 import store.bookscamp.api.book.service.dto.BookSortDto;
+import store.bookscamp.api.category.entity.Category;
 import store.bookscamp.api.category.repository.CategoryRepository;
 
-
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class BookSearchServiceTest {
 
-    private final ElasticsearchOperations esOps = mock(ElasticsearchOperations.class);
-    private final RerankerClient rerankerClient = mock(RerankerClient.class);
-    private final CategoryRepository categoryRepo = mock(CategoryRepository.class);
-    private final BookAnswerService bookAnswer = mock(BookAnswerService.class);
-    private final BookCachingIndexService cachingService = mock(BookCachingIndexService.class);
+    @Mock
+    private ElasticsearchOperations esOps;
+    @Mock
+    private RerankerClient rerankerClient;
+    @Mock
+    private CategoryRepository categoryRepository;
+    @Mock
+    private BookAnswerService bookAnswerService;
+    @Mock
+    private BookCachingIndexService cachingIndexService;
 
-    private BookSearchService createService() {
-        return new BookSearchService(
-                esOps, rerankerClient, categoryRepo, bookAnswer, cachingService
-        );
-    }
+    @InjectMocks
+    private BookSearchService service;
 
-
-    @Test
-    @DisplayName("noKeywordSearch - ES 결과 기반 정상 페이징")
-    void noKeywordSearch_ok() {
-
-        BookSearchService service = createService();
-
-        BookDocument d1 = BookDocument.builder().id(1L).title("A").salePrice(1000).build();
-        BookDocument d2 = BookDocument.builder().id(2L).title("B").salePrice(800).build();
-
-        SearchHit<BookDocument> h1 = mock(SearchHit.class);
-        when(h1.getContent()).thenReturn(d1);
-        SearchHit<BookDocument> h2 = mock(SearchHit.class);
-        when(h2.getContent()).thenReturn(d2);
+    private SearchHits<BookDocument> mockSearchHits(List<BookDocument> docs) {
+        List<SearchHit<BookDocument>> hitList = docs.stream().map(doc -> {
+            SearchHit<BookDocument> hit = mock(SearchHit.class);
+            lenient().when(hit.getContent()).thenReturn(doc);
+            return hit;
+        }).toList();
 
         SearchHits<BookDocument> hits = mock(SearchHits.class);
-        when(hits.getSearchHits()).thenReturn(List.of(h1, h2));
-
-        when(esOps.search((Query) any(), eq(BookDocument.class))).thenReturn(hits);
-
-        BookSearchRequest req = new BookSearchRequest(
-                null,
-                null,
-                "low-price",
-                PageRequest.of(0, 10),
-                "user"
-        );
-
-        Page<BookSortDto> result = service.noKeyWordSearch(
-                new NativeQueryBuilder(), req, null
-        );
-
-        Assertions.assertThat(result.getContent().size()).isEqualTo(2);
-        Assertions.assertThat(result.getContent().get(0).getId()).isEqualTo(2L);
+        lenient().when(hits.getSearchHits()).thenReturn(hitList);
+        return hits;
     }
 
+    private BookDocument createDoc(Long id, String title, int price, long viewCount, double rating) {
+        return BookDocument.builder()
+                .id(id)
+                .title(title)
+                .salePrice(price)
+                .viewCount(viewCount)
+                .averageRating(rating)
+                .explanation("desc")
+                .build();
+    }
 
     @Test
-    @DisplayName("searchBooks - 캐시 HIT 시 바로 캐시 반환")
-    void searchBooks_cacheHit() {
+    @DisplayName("searchBooks(Admin) - 키워드가 없으면 카테고리/전체 검색 (noKeyWordSearch)")
+    void searchBooks_Admin_NoKeyword() {
+        BookSearchRequest req = new BookSearchRequest(1L, null, "title", PageRequest.of(0, 10), "admin");
 
-        BookSearchService service = createService();
+        Category category = mock(Category.class);
+        lenient().when(category.getName()).thenReturn("IT");
 
-        BookSortDto dto = BookSortDto.builder().id(10L).title("cached").build();
-        BookCaching cache = BookCaching.builder()
-                .keyword("java")
-                .books(List.of(dto))
-                .cachedAt(System.currentTimeMillis())
-                .build();
+        when(categoryRepository.getCategoryById(1L)).thenReturn(category);
 
-        when(cachingService.getCache("java")).thenReturn(Optional.of(cache));
+        BookDocument doc = createDoc(1L, "Java", 1000, 0, 0.0);
+        SearchHits<BookDocument> hits = mockSearchHits(List.of(doc));
 
-        BookSearchRequest req = new BookSearchRequest(
-                null, "java", "title", PageRequest.of(0, 10), "user"
-                );
+        when(esOps.search(any(Query.class), eq(BookDocument.class))).thenReturn(hits);
 
         Page<BookSortDto> result = service.searchBooks(req);
 
-        Assertions.assertThat(result.getContent().get(0).getTitle()).isEqualTo("cached");
+        assertThat(result.getContent()).hasSize(1);
+        verify(esOps).search(any(Query.class), eq(BookDocument.class));
     }
 
+    @Test
+    @DisplayName("searchBooks(Admin) - 키워드가 있으면 RRF 검색 수행 (adminSearchWithRRF)")
+    void searchBooks_Admin_WithKeyword() {
+        BookSearchRequest req = new BookSearchRequest(null, "java", "title", PageRequest.of(0, 10), "admin");
+
+        SearchHits<BookDocument> bm25Hits = mockSearchHits(List.of(createDoc(1L, "Java Basic", 100, 0, 0)));
+
+        when(esOps.search(any(Query.class), eq(BookDocument.class)))
+                .thenReturn(bm25Hits);
+
+        when(rerankerClient.rerank(any())).thenReturn(Collections.emptyList());
+
+        Page<BookSortDto> result = service.searchBooks(req);
+
+        assertThat(result.getContent()).isNotEmpty();
+        assertThat(result.getContent().get(0).getAiRank()).isEqualTo(1);
+    }
 
     @Test
-    @DisplayName("hybridSearchWithLLM - LLM 실패 시 기본 순서 + aiRank 부여")
-    void hybridSearch_llmFail() {
+    @DisplayName("searchBooks(User) - 캐시가 존재하면 캐시된 데이터 반환")
+    void searchBooks_User_CacheHit() {
+        String keyword = "spring";
+        BookSortDto cachedDto = BookSortDto.builder().id(1L).title("Cached Book").build();
+        BookCaching cache = BookCaching.builder().keyword(keyword).books(List.of(cachedDto)).build();
 
-        BookSearchService service = spy(createService());
+        when(cachingIndexService.getCache(keyword)).thenReturn(Optional.of(cache));
 
-        BookDocument d1 = BookDocument.builder().id(1L).title("A").explanation("x").build();
-        BookDocument d2 = BookDocument.builder().id(2L).title("B").explanation("y").build();
+        BookSearchRequest req = new BookSearchRequest(null, keyword, "title", PageRequest.of(0, 10), "user");
 
-        doReturn(List.of(d1, d2)).when(service).hybridSearchWithRRF(any());
+        Page<BookSortDto> result = service.searchBooks(req);
 
-        when(bookAnswer.generateAnswer(any(), any()))
-                .thenReturn(Map.of("result", "LLM error"));
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("Cached Book");
+        verify(esOps, never()).search(any(Query.class), eq(BookDocument.class));
+    }
 
-        BookSearchRequest req = new BookSearchRequest(
-                null, "java", "title", PageRequest.of(0, 10), "user"
-                );
+    @Test
+    @DisplayName("noKeyWordSearch - 정렬 로직 검증 (가격 낮은순, 높은순, 평점순, 리뷰순 등)")
+    void noKeyWordSearch_Sorting() {
+        BookDocument d1 = createDoc(1L, "A_Book", 1000, 10, 4.5); // Low Price
+        BookDocument d2 = createDoc(2L, "B_Book", 2000, 5, 5.0);  // High Rating
+        BookDocument d3 = createDoc(3L, "C_Book", 3000, 100, 3.0); // High View
+
+        SearchHits<BookDocument> hits = mockSearchHits(List.of(d1, d2, d3));
+        lenient().when(esOps.search(any(Query.class), eq(BookDocument.class))).thenReturn(hits);
+
+        NativeQueryBuilder qb = new NativeQueryBuilder();
+        Category cat = null;
+
+        BookSearchRequest reqLowPrice = new BookSearchRequest(null, null, "low-price", PageRequest.of(0, 10), "user");
+        Page<BookSortDto> resLow = service.noKeyWordSearch(qb, reqLowPrice, cat);
+        assertThat(resLow.getContent().get(0).getId()).isEqualTo(1L); // 1000원
+
+        BookSearchRequest reqHighPrice = new BookSearchRequest(null, null, "high-price", PageRequest.of(0, 10), "user");
+        Page<BookSortDto> resHigh = service.noKeyWordSearch(qb, reqHighPrice, cat);
+        assertThat(resHigh.getContent().get(0).getId()).isEqualTo(3L); // 3000원
+
+        BookSearchRequest reqRating = new BookSearchRequest(null, null, "rating", PageRequest.of(0, 10), "user");
+        Page<BookSortDto> resRating = service.noKeyWordSearch(qb, reqRating, cat);
+        assertThat(resRating.getContent().get(0).getId()).isEqualTo(2L); // 5.0점
+
+        BookSearchRequest reqView = new BookSearchRequest(null, null, "bookLike", PageRequest.of(0, 10), "user");
+        Page<BookSortDto> resView = service.noKeyWordSearch(qb, reqView, cat);
+        assertThat(resView.getContent().get(0).getId()).isEqualTo(3L); // 100 view
+    }
+
+    @Test
+    @DisplayName("hybridSearchWithLLM - LLM 성공 시 AI 추천 코멘트 및 순위 반영")
+    void hybridSearchWithLLM_Success() {
+        BookSearchRequest req = new BookSearchRequest(null, "java", "ai", PageRequest.of(0, 10), "user");
+
+        BookDocument d1 = createDoc(10L, "Java 1", 100, 0, 0);
+        BookDocument d2 = createDoc(20L, "Java 2", 100, 0, 0);
+
+        SearchHits<BookDocument> bm25Hits = mockSearchHits(List.of(d1, d2));
+        SearchHits<BookDocument> knnHits = mockSearchHits(List.of(d2, d1));
+
+        when(esOps.search(any(Query.class), eq(BookDocument.class)))
+                .thenReturn(bm25Hits) // BM25 result
+                .thenReturn(knnHits); // KNN result
+
+        when(rerankerClient.rerank(any())).thenReturn(Collections.emptyList());
+
+        Map<String, Object> llmResult = new HashMap<>();
+        llmResult.put("idList", List.of(20L, 10L));
+        llmResult.put("recList", List.of("Strongly Recommend", "Recommend"));
+        when(bookAnswerService.generateAnswer(anyString(), anyList())).thenReturn(llmResult);
 
         Page<BookSortDto> result = service.hybridSearchWithLLM(req);
 
-        Assertions.assertThat(result.getContent().get(0).getAiRank()).isEqualTo(1);
-        Assertions.assertThat(result.getContent().get(1).getAiRank()).isEqualTo(2);
+        List<BookSortDto> content = result.getContent();
+
+        assertThat(content.get(0).getId()).isEqualTo(20L);
+        assertThat(content.get(0).getAiRank()).isEqualTo(1);
+        assertThat(content.get(0).getAiRecommand()).isEqualTo("Strongly Recommend");
+
+        assertThat(content.get(1).getId()).isEqualTo(10L);
+        assertThat(content.get(1).getAiRank()).isEqualTo(2);
+
+        verify(cachingIndexService).saveCache(eq("java"), anyList());
     }
 
-
     @Test
-    @DisplayName("hybridSearchWithLLM - LLM 성공 시 idList 순서/추천어 반영")
-    void hybridSearch_llmSuccess() {
+    @DisplayName("hybridSearchWithLLM - LLM 실패 시(result 키 존재) 기본 순서대로 순위 매김")
+    void hybridSearchWithLLM_Fail() {
+        BookSearchRequest req = new BookSearchRequest(null, "java", "ai", PageRequest.of(0, 10), "user");
 
-        BookSearchService service = spy(createService());
+        BookDocument d1 = createDoc(1L, "B1", 100, 0, 0);
 
-        BookDocument d1 = BookDocument.builder().id(3L).title("책3").explanation("a").build();
-        BookDocument d2 = BookDocument.builder().id(18L).title("책18").explanation("b").build();
-        BookDocument d3 = BookDocument.builder().id(10L).title("책10").explanation("c").build();
+        SearchHits<BookDocument> hits = mockSearchHits(List.of(d1));
 
-        doReturn(List.of(d1, d2, d3)).when(service).hybridSearchWithRRF(any());
+        when(esOps.search(any(Query.class), eq(BookDocument.class)))
+                .thenReturn(hits);
 
-        when(bookAnswer.generateAnswer(any(), any()))
-                .thenReturn(Map.of(
-                        "idList", List.of(3L, 18L, 10L),
-                        "recList", List.of("good", "better", "best")
-                ));
+        when(rerankerClient.rerank(any())).thenReturn(Collections.emptyList());
 
-        BookSearchRequest req = new BookSearchRequest(
-                null, "java", "title", PageRequest.of(0, 10), "user"
-                );
+        when(bookAnswerService.generateAnswer(anyString(), anyList()))
+                .thenReturn(Map.of("result", "Fail"));
 
         Page<BookSortDto> result = service.hybridSearchWithLLM(req);
 
-        List<BookSortDto> list = result.getContent();
-
-        Assertions.assertThat(list.get(0).getId()).isEqualTo(10L);
-        Assertions.assertThat(list.get(0).getAiRecommand()).isEqualTo("best");
-    }
-
-
-    @Test
-    @DisplayName("hybridSearchWithRRF - BM25 + KNN + RRF 흐름 통합 Mock")
-    void hybridRRF_mock() {
-
-        BookSearchService service = spy(createService());
-
-        BookDocument d1 = BookDocument.builder().id(1L).title("A").explanation("a").build();
-        BookDocument d2 = BookDocument.builder().id(2L).title("B").explanation("b").build();
-
-        doReturn(List.of(d1, d2))
-                .when(service)
-                .hybridSearchWithRRF(any());
-
-        BookSearchRequest req = new BookSearchRequest(null, "java",
-                null, PageRequest.of(0, 10), "user");
-
-        List<BookDocument> result = service.hybridSearchWithRRF(req);
-
-        Assertions.assertThat(result.size()).isEqualTo(2);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getAiRank()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getAiRecommand()).isNullOrEmpty();
     }
 
     @Test
-    @DisplayName("BookSortDto.from(Book) - Book 객체 기반 정확한 DTO 변환")
-    void dto_fromBook_success() {
-        Book book = new Book(
-                "title",
-                "explanation",
-                "content",
-                "publisher",
-                LocalDate.of(2024, 1, 1),
-                "1234567890123",
-                "contributor",
-                AVAILABLE,
-                true,
-                10000,
-                8000,
-                20,
-                5
-        );
+    @DisplayName("Reranker 로직 검증 - 재정렬 확인")
+    void hybridSearch_RerankerLogic() {
+        BookSearchRequest req = new BookSearchRequest(null, "java", "ai", PageRequest.of(0, 10), "admin");
 
-        BookSortDto dto = BookSortDto.from(book);
+        BookDocument docA = createDoc(1L, "A", 100, 0, 0);
+        BookDocument docB = createDoc(2L, "B", 100, 0, 0);
 
-        Assertions.assertThat(dto.getTitle()).isEqualTo("title");
-        Assertions.assertThat(dto.getViewCount()).isEqualTo(5);
-        Assertions.assertThat(dto.getSalePrice()).isEqualTo(8000);
+        SearchHits<BookDocument> hits = mockSearchHits(List.of(docA, docB));
 
-        // 고정값 배정 부분 테스트
-        Assertions.assertThat(dto.getIsbn()).isNull();
-        Assertions.assertThat(dto.getAverageRating()).isEqualTo(0.0);
-        Assertions.assertThat(dto.getReviewCount()).isEqualTo(0L);
-        Assertions.assertThat(dto.getAiRecommand()).isEqualTo("");
-        Assertions.assertThat(dto.getAiRank()).isEqualTo(0);
+        when(esOps.search(any(Query.class), eq(BookDocument.class)))
+                .thenReturn(hits);
+
+        List<RerankerResponse> rerankResp = new ArrayList<>();
+        rerankResp.add(new RerankerResponse(1, 0.9)); // docB
+        rerankResp.add(new RerankerResponse(0, 0.1)); // docA
+
+        when(rerankerClient.rerank(any())).thenReturn(rerankResp);
+
+        Page<BookSortDto> result = service.searchBooks(req); // calls adminSearchWithRRF -> hybridSearchWithRRF
+
+        assertThat(result.getContent().get(0).getId()).isEqualTo(2L);
+        assertThat(result.getContent().get(1).getId()).isEqualTo(1L);
     }
 }

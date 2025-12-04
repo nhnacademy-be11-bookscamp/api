@@ -32,11 +32,10 @@ public class BookCachingIndexService {
 
     private final ElasticsearchClient esClient;
     private final BookCachingRepository bookCachingRepository;
-    private final long TTL_MILLIS = 60 * 60 * 1000;
+    private static final long TTL_MILLIS = 60L * 60 * 1000;
     private final ElasticsearchOperations elasticsearchOperations;
 
-    @Value("bookscamp-caching")
-    private String CACHING_INDEX;
+    private static final String CACHING_INDEX = "bookscamp-caching";
 
     private static final String SETTINGS_PATH = "elasticsearch/bookscamp-caching-settings.json";
 
@@ -114,7 +113,9 @@ public class BookCachingIndexService {
         SearchHits<BookCaching> hits = elasticsearchOperations.search(query, BookCaching.class);
 
         for (SearchHit<BookCaching> hit : hits.getSearchHits()) {
-            elasticsearchOperations.delete(hit.getId(), BookCaching.class);
+            if (hit.getId() != null) {
+                elasticsearchOperations.delete(hit.getId(), BookCaching.class);
+            }
         }
     }
 

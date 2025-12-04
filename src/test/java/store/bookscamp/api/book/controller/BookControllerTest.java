@@ -24,7 +24,6 @@ import store.bookscamp.api.book.service.dto.*;
 import store.bookscamp.api.bookimage.service.BookImageService;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;

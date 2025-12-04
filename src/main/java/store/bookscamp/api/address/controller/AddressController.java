@@ -31,6 +31,7 @@ import store.bookscamp.api.address.service.dto.AddressUpdateRequestDto;
 public class AddressController {
 
     private final AddressService addressService;
+    private static final String USER_ID_HEADER = "X-USER-ID";
 
     @PostMapping
     @Operation(summary = "create Address", description = "회원 주소 생성 API")
@@ -38,7 +39,7 @@ public class AddressController {
             @Valid @RequestBody AddressCreateRequest addressCreateRequest,
             HttpServletRequest request) {
 
-        Long memberId = Long.parseLong(request.getHeader("X-USER-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
 
         AddressCreateDto addressCreateDto = AddressCreateRequest.toDto(addressCreateRequest);
         // 서비스 시그니처: createMemberAddress(Long memberId, AddressCreateDto dto)
@@ -50,7 +51,7 @@ public class AddressController {
     @GetMapping
     @Operation(summary = "get Address List", description = "회원 주소 리스트 조회 API")
     public ResponseEntity<AddressListResponse> getAddresses(HttpServletRequest request) {
-        Long memberId = Long.parseLong(request.getHeader("X-USER-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         List<AddressReadDto> addressDtos = addressService.getMemberAddresses(memberId);
         AddressListResponse response = AddressListResponse.from(addressDtos);
 
@@ -64,7 +65,7 @@ public class AddressController {
             @PathVariable Long addressId,
             @Valid @RequestBody AddressUpdateRequest addressUpdateRequest) {
 
-        Long memberId = Long.parseLong(request.getHeader("X-USER-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         AddressUpdateRequestDto addressUpdateDto = AddressUpdateRequest.toDto(addressUpdateRequest);
         addressService.updateMemberAddress(memberId, addressId, addressUpdateDto);
 
@@ -78,7 +79,7 @@ public class AddressController {
             HttpServletRequest request,
             @PathVariable Long addressId) {
 
-        Long memberId = Long.parseLong(request.getHeader("X-USER-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
         addressService.deleteMemberAddress(memberId, addressId);
         return ResponseEntity.noContent().build();
     }

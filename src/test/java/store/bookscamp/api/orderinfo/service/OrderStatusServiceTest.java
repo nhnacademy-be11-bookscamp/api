@@ -16,7 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.delivery.entity.Delivery;
-import store.bookscamp.api.delivery.repository.deliveryRepository;
+import store.bookscamp.api.delivery.repository.DeliveryRepository;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
 import store.bookscamp.api.deliverypolicy.repository.DeliveryPolicyRepository;
 import store.bookscamp.api.orderinfo.entity.OrderInfo;
@@ -36,7 +36,7 @@ class OrderStatusServiceTest {
     private OrderInfoRepository orderInfoRepository;
 
     @Autowired
-    private deliveryRepository deliveryRepository;
+    private DeliveryRepository deliveryRepository;
 
     @Autowired
     private DeliveryPolicyRepository deliveryPolicyRepository;

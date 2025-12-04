@@ -11,7 +11,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store.bookscamp.api.address.controller.request.AddressCreateRequest;
 import store.bookscamp.api.address.controller.request.AddressUpdateRequest;
-import store.bookscamp.api.address.controller.response.AddressListResponse;
 import store.bookscamp.api.address.service.AddressService;
 import store.bookscamp.api.address.service.dto.AddressCreateDto;
 import store.bookscamp.api.address.service.dto.AddressReadDto;

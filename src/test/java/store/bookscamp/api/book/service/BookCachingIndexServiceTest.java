@@ -3,134 +3,119 @@ package store.bookscamp.api.book.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.elasticsearch.core.*;
-
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.Query;
-import org.springframework.test.context.ActiveProfiles;
 import store.bookscamp.api.book.entity.BookCaching;
 import store.bookscamp.api.book.repository.BookCachingRepository;
 import store.bookscamp.api.book.service.dto.BookSortDto;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 class BookCachingIndexServiceTest {
 
-    private final ElasticsearchClient esClient = mock(ElasticsearchClient.class);
-    private final BookCachingRepository cacheRepo = mock(BookCachingRepository.class);
-    private final ElasticsearchOperations esOps = mock(ElasticsearchOperations.class);
+    @Mock
+    private ElasticsearchClient esClient;
 
-    private BookCachingIndexService createService() {
-        BookCachingIndexService service =
-                new BookCachingIndexService(esClient, cacheRepo, esOps);
+    @Mock
+    private BookCachingRepository bookCachingRepository;
 
-        setField(service, "CACHING_INDEX", "bookscamp-caching-test");
-        return service;
-    }
+    @Mock
+    private ElasticsearchOperations elasticsearchOperations;
 
-    private void setField(Object target, String field, Object value) {
-        try {
-            Field f = target.getClass().getDeclaredField(field);
-            f.setAccessible(true);
-            f.set(target, value);
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    @InjectMocks
+    private BookCachingIndexService service;
 
     @Test
-    @DisplayName("init() - ES 호출 중 exception 발생해도 정상 종료됨")
-    void init_fallback() throws Exception {
-
-        BookCachingIndexService service = createService();
-
-        when(esClient.indices()).thenThrow(new RuntimeException("ignored"));
-
-        assertDoesNotThrow(service::init);
-    }
-
-    @Test
-    @DisplayName("getCache - 캐시 존재하고 TTL 안 지났을 때 반환됨")
-    void getCache_ok() {
-
-        BookCachingIndexService service = createService();
-
+    @DisplayName("getCache - 캐시가 존재하고 TTL이 지나지 않았으면 반환한다")
+    void getCache_Hit() {
+        String keyword = "java";
         BookCaching cache = BookCaching.builder()
-                .keyword("java")
-                .cachedAt(System.currentTimeMillis()) // TTL 안 지남
+                .keyword(keyword)
+                .cachedAt(System.currentTimeMillis())
                 .books(List.of())
                 .build();
 
-        when(cacheRepo.findById("java")).thenReturn(Optional.of(cache));
+        when(bookCachingRepository.findById(keyword)).thenReturn(Optional.of(cache));
 
-        Optional<BookCaching> result = service.getCache("java");
+        Optional<BookCaching> result = service.getCache(keyword);
 
         assertThat(result).isPresent();
+        assertThat(result.get().getKeyword()).isEqualTo(keyword);
+        verify(bookCachingRepository, never()).deleteById(anyString());
     }
 
     @Test
-    @DisplayName("getCache - 캐시 TTL 만료 → 삭제 후 empty 반환")
-    void getCache_expired() {
+    @DisplayName("getCache - 캐시가 존재하지만 TTL(1시간)이 지났으면 삭제하고 빈 값 반환")
+    void getCache_Expired() {
+        String keyword = "java";
+        long pastTime = System.currentTimeMillis() - (1000 * 60 * 60 * 2);
 
-        BookCachingIndexService service = createService();
-
-        BookCaching cache = BookCaching.builder()
-                .keyword("java")
-                .cachedAt(System.currentTimeMillis() - (2 * 60 * 60 * 1000)) // TTL 1시간 초과
+        BookCaching expiredCache = BookCaching.builder()
+                .keyword(keyword)
+                .cachedAt(pastTime)
                 .books(List.of())
                 .build();
 
-        when(cacheRepo.findById("java")).thenReturn(Optional.of(cache));
+        when(bookCachingRepository.findById(keyword)).thenReturn(Optional.of(expiredCache));
 
-        Optional<BookCaching> result = service.getCache("java");
+        Optional<BookCaching> result = service.getCache(keyword);
 
         assertThat(result).isEmpty();
-        verify(cacheRepo, times(1)).deleteById("java");
+        verify(bookCachingRepository).deleteById(keyword);
     }
 
     @Test
-    @DisplayName("saveCache - 저장 성공")
-    void saveCache_ok() {
+    @DisplayName("getCache - 캐시가 없으면 빈 값 반환")
+    void getCache_Miss() {
+        when(bookCachingRepository.findById("unknown")).thenReturn(Optional.empty());
 
-        BookCachingIndexService service = createService();
+        Optional<BookCaching> result = service.getCache("unknown");
 
-        List<BookSortDto> books = List.of();
-        service.saveCache("test", books);
-
-        verify(cacheRepo, times(1)).save(any(BookCaching.class));
+        assertThat(result).isEmpty();
     }
 
     @Test
-    @DisplayName("invalidateCachesContainingBook - 검색된 hit들 삭제됨")
-    void invalidate_ok() {
+    @DisplayName("saveCache - 정상적으로 저장 메서드가 호출된다")
+    void saveCache_Success() {
+        String keyword = "spring";
+        List<BookSortDto> dtos = List.of(BookSortDto.builder().id(1L).build());
 
-        BookCachingIndexService service = createService();
+        service.saveCache(keyword, dtos);
 
-        SearchHit<BookCaching> hit1 = Mockito.mock(SearchHit.class);
-        when(hit1.getId()).thenReturn("key1");
+        verify(bookCachingRepository).save(any(BookCaching.class));
+    }
 
-        SearchHit<BookCaching> hit2 = Mockito.mock(SearchHit.class);
-        when(hit2.getId()).thenReturn("key2");
+    @Test
+    @DisplayName("invalidateCachesContainingBook - 특정 책이 포함된 캐시를 검색하여 삭제한다")
+    void invalidateCachesContainingBook_Success() {
+        Long bookId = 100L;
+        BookCaching cacheHit = BookCaching.builder().keyword("hit").build();
 
-        SearchHits<BookCaching> hits = Mockito.mock(SearchHits.class);
-        when(hits.getSearchHits()).thenReturn(List.of(hit1, hit2));
+        SearchHit<BookCaching> hit = mock(SearchHit.class);
+        when(hit.getId()).thenReturn("hit");
 
-        when(esOps.search((Query) any(), eq(BookCaching.class)))
+        SearchHits<BookCaching> hits = mock(SearchHits.class);
+        when(hits.getSearchHits()).thenReturn(List.of(hit));
+
+        when(elasticsearchOperations.search(any(Query.class), eq(BookCaching.class)))
                 .thenReturn(hits);
 
-        service.invalidateCachesContainingBook(99L);
+        service.invalidateCachesContainingBook(bookId);
 
-        verify(esOps, times(1)).delete("key1", BookCaching.class);
-        verify(esOps, times(1)).delete("key2", BookCaching.class);
+        verify(elasticsearchOperations).search(any(Query.class), eq(BookCaching.class));
+        verify(elasticsearchOperations).delete("hit", BookCaching.class);
     }
 }
