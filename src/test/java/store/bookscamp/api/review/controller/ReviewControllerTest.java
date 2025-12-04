@@ -9,18 +9,30 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.review.controller.request.ReviewCreateRequest;
 import store.bookscamp.api.review.controller.request.ReviewUpdateRequest;
+import store.bookscamp.api.review.service.AiReviewService;
 import store.bookscamp.api.review.service.ReviewService;
-import store.bookscamp.api.review.service.dto.*;
+import store.bookscamp.api.review.service.dto.BookReviewDto;
+import store.bookscamp.api.review.service.dto.MyReviewDto;
+import store.bookscamp.api.review.service.dto.ReviewCreateDto;
+import store.bookscamp.api.review.service.dto.ReviewUpdateDto;
+import store.bookscamp.api.review.service.dto.ReviewableItemDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ReviewController.class)
 class ReviewControllerTest {
@@ -33,6 +45,9 @@ class ReviewControllerTest {
 
     @MockitoBean
     ReviewService reviewService;
+
+    @MockitoBean
+    AiReviewService aiReviewService;
 
     @Test
     @DisplayName("리뷰 가능 상품 조회 성공")
@@ -182,5 +197,19 @@ class ReviewControllerTest {
         verify(reviewService).updateReview(any(ReviewUpdateDto.class));
     }
 
+    @Test
+    @DisplayName("AI 요약 리뷰 조회 성공")
+    void getAiReview_success() throws Exception {
+
+        Book mockBook = Book.builder()
+                .aiReview("AI 요약 리뷰입니다.")
+                .build();
+
+        given(aiReviewService.getBookById(10L)).willReturn(mockBook);
+
+        mockMvc.perform(get("/review/book/10/ai"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("AI 요약 리뷰입니다."));
+    }
 }
 

@@ -85,6 +85,9 @@ public class Book extends SoftDeleteEntity {
     @Column(nullable = false)
     private String contributors;
 
+    //AI리뷰
+    private String aiReview;
+
     public Book(
 
             String title,
@@ -161,5 +164,13 @@ public class Book extends SoftDeleteEntity {
 
     public void increaseStock(int quantity) {
         this.stock += quantity;
+    }
+
+    public void setAiReview(String aiReview) {
+        this.aiReview = aiReview;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

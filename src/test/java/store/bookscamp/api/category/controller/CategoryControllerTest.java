@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import store.bookscamp.api.category.controller.request.CategoryCreateRequest;
 import store.bookscamp.api.category.controller.request.CategoryUpdateRequest;
+import store.bookscamp.api.category.controller.response.CategoryListResponse;
 import store.bookscamp.api.category.service.CategoryService;
 import store.bookscamp.api.category.service.dto.CategoryCreateDto;
 import store.bookscamp.api.category.service.dto.CategoryDeleteDto;
@@ -66,6 +67,17 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$[0].children[0].id").value(2L))
                 .andExpect(jsonPath("$[0].children[0].name").value("자식 카테고리"))
                 .andExpect(jsonPath("$[0].children[0].children").isEmpty());
+
+        verify(categoryService, times(1)).getCategoryTree();
+
+        String responseJson = result.andReturn().getResponse().getContentAsString();
+        CategoryListResponse[] response =
+                objectMapper.readValue(responseJson, CategoryListResponse[].class);
+
+        assertThat(response.length).isEqualTo(1);
+        assertThat(response[0].id()).isEqualTo(1L);
+        assertThat(response[0].children().get(0).id()).isEqualTo(2L);
+        assertThat(response[0].children().get(0).name()).isEqualTo("자식 카테고리");
 
         verify(categoryService, times(1)).getCategoryTree();
     }
@@ -138,4 +150,7 @@ class CategoryControllerTest {
         CategoryDeleteDto capturedDto = captor.getValue();
         assertThat(capturedDto.id()).isEqualTo(categoryId);
     }
+
+
+
 }

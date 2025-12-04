@@ -8,6 +8,8 @@ import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.orderitem.entity.OrderItem;
 import store.bookscamp.api.review.entity.Review;
 
+import java.util.List;
+
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     boolean existsByOrderItemAndMember(OrderItem orderItem, Member member);
@@ -18,4 +20,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("select avg(r.score) from Review r where r.orderItem.book.id = :bookId")
     Double getAvgScore(Long bookId);
+
+    @Query("SELECT r FROM Review r " +
+            "JOIN r.orderItem oi " +
+            "JOIN oi.book b " +
+            "WHERE b.id = :bookId AND LENGTH(r.content) >= 50 " +
+            "ORDER BY r.score DESC, r.createdAt DESC")
+    List<Review> findAiReviewsByBookId(Long bookId);
 }
