@@ -52,4 +52,8 @@ public class Review extends SoftDeleteEntity {
         this.content = content;
         this.score = score;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

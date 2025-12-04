@@ -2,7 +2,6 @@ package store.bookscamp.api.deliverypolicy.controller.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +23,4 @@ public class DeliveryPolicyUpdateRequest {
     @Schema(description = "기본 배송비(원)")
     @PositiveOrZero
     private Integer baseDeliveryFee;
-
-    public boolean hasFreeThreshold() { return freeDeliveryThreshold != null; }
-    public boolean hasBaseFee() { return baseDeliveryFee != null; }
 }

@@ -1,18 +1,19 @@
 package store.bookscamp.api.orderinfo.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.common.exception.ErrorCode;
+import store.bookscamp.api.nonmember.entity.NonMember;
+import store.bookscamp.api.nonmember.repository.NonMemberRepository;
 import store.bookscamp.api.orderinfo.controller.response.OrderDetailResponse;
 import store.bookscamp.api.orderinfo.controller.response.OrderDetailResponse.OrderDetailItemResponse;
 import store.bookscamp.api.orderinfo.entity.OrderInfo;
 import store.bookscamp.api.orderinfo.repository.OrderInfoRepository;
+import store.bookscamp.api.orderinfo.service.dto.NonMemberInfoDto;
 import store.bookscamp.api.orderitem.entity.OrderItem;
 import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 
@@ -24,6 +25,9 @@ public class OrderDetailService {
     private final OrderInfoRepository orderInfoRepository;
     private final OrderItemRepository orderItemRepository;
 
+    // 비회원 주문 조회용
+    private final NonMemberRepository nonMemberRepository;
+
     public OrderDetailResponse getOrderDetail(Long memberId, Long orderId) {
 
         OrderInfo orderInfo = orderInfoRepository.findById(orderId)
@@ -34,6 +38,34 @@ public class OrderDetailService {
         }
 
         List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderId);
+
+        return toOrderDetailResponse(orderInfo, orderItems);
+    }
+
+    public OrderDetailResponse getOrderDetailForAdmin(Long orderId) {
+        OrderInfo orderInfo = orderInfoRepository.findById(orderId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
+
+        List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderId);
+
+        return toOrderDetailResponse(orderInfo, orderItems);
+    }
+
+
+    // 비회원부분
+    public OrderDetailResponse getNonMemberOrderDetail(String orderNumber, NonMemberInfoDto nonMemberInfoDto) {
+
+        NonMember nonMember = nonMemberRepository.findByOrderInfo_OrderNumber(orderNumber)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
+
+
+        OrderInfo orderInfo = nonMember.getOrderInfo();
+        List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderInfo.getId());
+
+        return toOrderDetailResponse(orderInfo, orderItems);
+    }
+
+    private OrderDetailResponse toOrderDetailResponse(OrderInfo orderInfo, List<OrderItem> orderItems) {
 
         List<OrderDetailItemResponse> itemResponses = orderItems.stream()
                 .map(item -> new OrderDetailItemResponse(
@@ -58,8 +90,8 @@ public class OrderDetailService {
             deliveryMemo = delivery.getDeliveryMemo();
 
         }
-        int productAmount = orderInfo.
-                getNetAmount();
+
+        int productAmount = orderInfo.getNetAmount();
         int deliveryFee = orderInfo.getDeliveryFee();
         int packagingFee = orderInfo.getPackagingFee();
         int discountAmount = orderInfo.getDiscountAmount();
@@ -83,4 +115,5 @@ public class OrderDetailService {
                 finalPaymentAmount
         );
     }
+
 }

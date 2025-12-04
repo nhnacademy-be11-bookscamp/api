@@ -1,18 +1,17 @@
 package store.bookscamp.api.payment.service;
 
-import static store.bookscamp.api.common.exception.ErrorCode.*;
-import static store.bookscamp.api.orderinfo.entity.OrderStatus.*;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.cart.service.CartService;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.orderinfo.entity.OrderInfo;
 import store.bookscamp.api.orderinfo.repository.OrderInfoRepository;
+import store.bookscamp.api.orderinfo.service.OrderCartMappingService;
 import store.bookscamp.api.orderitem.entity.OrderItem;
 import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 import store.bookscamp.api.payment.adapter.PaymentAdapter;
@@ -22,11 +21,20 @@ import store.bookscamp.api.payment.entity.PaymentMethod;
 import store.bookscamp.api.payment.entity.PaymentProvider;
 import store.bookscamp.api.payment.repository.PaymentRepository;
 import store.bookscamp.api.pointhistory.entity.PointHistory;
-import store.bookscamp.api.pointhistory.entity.PointType;
 import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 
 import java.util.List;
+
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_ALREADY_PAID;
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_CANNOT_BE_CANCELLED;
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_NOT_AWAITING_PAYMENT;
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_NOT_FOUND;
+import static store.bookscamp.api.common.exception.ErrorCode.PAYMENT_AMOUNT_MISMATCH;
+import static store.bookscamp.api.common.exception.ErrorCode.PAYMENT_NOT_FOUND;
+import static store.bookscamp.api.orderinfo.entity.OrderStatus.AWAITING_PAYMENT;
+import static store.bookscamp.api.orderinfo.entity.OrderStatus.CANCELLED;
+import static store.bookscamp.api.orderinfo.entity.OrderStatus.PENDING;
 
 @Slf4j
 @Service
@@ -39,6 +47,8 @@ public class PaymentService {
     private final OrderItemRepository orderItemRepository;
     private final PointHistoryRepository pointHistoryRepository;
     private final PaymentAdapter paymentAdapter;
+    private final OrderCartMappingService orderCartMappingService;
+    private final CartService cartService;
 
     public Payment confirmPayment(String paymentKey, String orderNumber, int amount) {
         OrderInfo orderInfo = orderInfoRepository.findByOrderNumber(orderNumber)
@@ -78,6 +88,12 @@ public class PaymentService {
             processMemberBenefits(orderInfo);
         }
 
+        Long cartId = orderCartMappingService.getAndDeleteMapping(orderNumber);
+        if (cartId != null) {
+            cartService.clearCart(cartId);
+            log.info("[PAYMENT] 장바구니 비우기 완료 - cartId: {}", cartId);
+        }
+
         orderInfo.changeOrderStatus(PENDING);
         return payment;
     }
@@ -98,10 +114,9 @@ public class PaymentService {
 
         if (usedPoint > 0) {
             member.usePoint(usedPoint);
-            PointHistory useHistory = new PointHistory(
+            PointHistory useHistory = PointHistory.use(
                     orderInfo,
                     member,
-                    PointType.USE,
                     usedPoint,
                     "주문 사용"
             );
@@ -115,10 +130,9 @@ public class PaymentService {
         int earnedPoint = calculateEarnedPoint(member, orderInfo.getNetAmount());
         if (earnedPoint > 0) {
             member.earnPoint(earnedPoint);
-            PointHistory earnHistory = new PointHistory(
+            PointHistory earnHistory = PointHistory.earn(
                     orderInfo,
                     member,
-                    PointType.EARN,
                     earnedPoint,
                     "주문 적립"
             );
@@ -154,16 +168,21 @@ public class PaymentService {
                 .orElseThrow(() -> new ApplicationException(PAYMENT_NOT_FOUND));
 
         paymentAdapter.cancel(payment.getPaymentKey(), cancelReason);
+        log.info("[PAYMENT-CANCEL] Toss 취소 완료 - orderId: {}", orderId);
 
         rollbackStock(orderInfo);
+        log.info("[PAYMENT-CANCEL] 재고 복구 완료 - orderId: {}", orderId);
 
         if (orderInfo.getMember() != null) {
             rollbackMemberBenefits(orderInfo);
+            log.info("[PAYMENT-CANCEL] 회원 혜택 복구 완료 - orderId: {}", orderId);
         }
 
         orderInfo.changeOrderStatus(CANCELLED);
+        log.info("[PAYMENT-CANCEL] 주문 상태 변경 완료 - orderId: {}, status: CANCELLED", orderId);
 
         paymentRepository.delete(payment);
+        log.info("[PAYMENT-CANCEL] 결제 정보 삭제 완료 - orderId: {}", orderId);
     }
 
     private void rollbackStock(OrderInfo orderInfo) {
@@ -182,10 +201,9 @@ public class PaymentService {
 
         if (usedPoint > 0) {
             member.earnPoint(usedPoint);
-            PointHistory refundHistory = new PointHistory(
+            PointHistory refundHistory = PointHistory.earn(
                     orderInfo,
                     member,
-                    PointType.EARN,
                     usedPoint,
                     "결제 취소 - 사용 포인트 복구"
             );
@@ -195,10 +213,9 @@ public class PaymentService {
         int earnedPoint = calculateEarnedPoint(member, orderInfo.getNetAmount());
         if (earnedPoint > 0) {
             member.usePoint(earnedPoint);
-            PointHistory cancelEarnHistory = new PointHistory(
+            PointHistory cancelEarnHistory = PointHistory.use(
                     orderInfo,
                     member,
-                    PointType.USE,
                     earnedPoint,
                     "결제 취소 - 적립 포인트 차감"
             );

@@ -29,7 +29,7 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
            a.status AS status,
            COALESCE(b.average_rating, 0) AS averageRating,
            COALESCE(b.review_count, 0) AS reviewCount,
-           c.category_name AS category   -- ✅ 카테고리 이름
+           c.category_name AS category   
     FROM book a
     LEFT JOIN (
         SELECT oi.book_id,
@@ -47,7 +47,7 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
         WHERE bc.deleted_at IS NULL
         GROUP BY bc.book_id
     ) c ON a.id = c.book_id
-    WHERE a.deleted_at IS NULL           -- ✅ 삭제되지 않은 도서만
+    WHERE a.deleted_at IS NULL         
 """, nativeQuery = true)
     List<BookProjection> findAllBooksWithRatingAndReview();
 
@@ -71,7 +71,7 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
            a.status AS status,
            COALESCE(b.average_rating, 0) AS averageRating,
            COALESCE(b.review_count, 0) AS reviewCount,
-           c.category_name AS category   -- ✅ 카테고리 이름
+           c.category_name AS category  
     FROM book a
     LEFT JOIN (
         SELECT oi.book_id,

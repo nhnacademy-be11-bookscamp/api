@@ -21,7 +21,6 @@ import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -37,8 +36,8 @@ class OrderListServiceTest {
     @Mock
     private OrderItemRepository orderItemRepository;
 
-    private final Long TEST_MEMBER_ID = 1L;
-    private final Pageable PAGEABLE = PageRequest.of(0, 5);
+    private final Long testMemberId = 1L;
+    private final Pageable pageable = PageRequest.of(0, 5);
 
     @DisplayName("회원 ID와 Pageable로 주문 목록을 성공적으로 조회한다")
     @Test
@@ -48,25 +47,31 @@ class OrderListServiceTest {
         OrderInfo order2 = createOrderInfo(2L, 25000, "AWAITING_PAYMENT");
 
         List<OrderInfo> mockOrderInfoList = List.of(order1, order2);
-        Page<OrderInfo> mockOrderInfoPage = new PageImpl<>(mockOrderInfoList, PAGEABLE, 2);
+        Page<OrderInfo> mockOrderInfoPage = new PageImpl<>(mockOrderInfoList, pageable, 2);
 
-        given(orderInfoRepository.findByMemberId(eq(TEST_MEMBER_ID), eq(PAGEABLE)))
+        given(orderInfoRepository.findByMemberId(testMemberId, pageable))
                 .willReturn(mockOrderInfoPage);
 
-        Book book1 = createBook(100L, "대표 도서 제목 A");
-        OrderItem item1_1 = createOrderItem(10L, order1, book1, 2);
-        OrderItem item1_2 = createOrderItem(11L, order1, createBook(101L, "기타 도서"), 1); // 총 수량 3
-        List<OrderItem> itemsForOrder1 = List.of(item1_1, item1_2);
+        OrderItem item11 = createOrderItem(10L, order1, null, 2);
+        OrderItem item12 = createOrderItem(11L, order1, null, 1);
+        List<OrderItem> itemsForOrder1 = List.of(item11, item12); // 총 수량 3
 
-        Book book2 = createBook(200L, "대표 도서 제목 B");
-        OrderItem item2_1 = createOrderItem(20L, order2, book2, 1); // 총 수량 1
-        List<OrderItem> itemsForOrder2 = List.of(item2_1);
+        OrderItem item21 = createOrderItem(20L, order2, null, 1);
+        List<OrderItem> itemsForOrder2 = List.of(item21); // 총 수량 1
 
         given(orderItemRepository.findByOrderInfoId(1L)).willReturn(itemsForOrder1);
         given(orderItemRepository.findByOrderInfoId(2L)).willReturn(itemsForOrder2);
 
-        Page<OrderListDto> resultPage = orderListService.getOrderList(TEST_MEMBER_ID, PAGEABLE);
+        final String TITLE_A = "대표 도서 제목 A";
+        final String TITLE_B = "대표 도서 제목 B";
 
+        given(orderItemRepository.findRepresentativeBookTitleIncludingDeleted(1L)).willReturn(TITLE_A);
+        given(orderItemRepository.findRepresentativeBookTitleIncludingDeleted(2L)).willReturn(TITLE_B);
+
+        // when
+        Page<OrderListDto> resultPage = orderListService.getOrderList(testMemberId, pageable);
+
+        // then
         assertThat(resultPage).isNotNull();
         assertThat(resultPage.getTotalElements()).isEqualTo(2);
         assertThat(resultPage.getContent()).hasSize(2);
@@ -74,41 +79,47 @@ class OrderListServiceTest {
         OrderListDto dto1 = resultPage.getContent().get(0);
         assertThat(dto1.getOrderId()).isEqualTo(1L);
         assertThat(dto1.getFinalPaymentAmount()).isEqualTo(50000);
-        assertThat(dto1.getRepresentativeBookTitle()).isEqualTo("대표 도서 제목 A");
-        assertThat(dto1.getTotalQuantity()).isEqualTo(3); // 2 + 1 = 3
+
+        assertThat(dto1.getRepresentativeBookTitle()).isEqualTo(TITLE_A);
+        assertThat(dto1.getTotalQuantity()).isEqualTo(3);
 
         OrderListDto dto2 = resultPage.getContent().get(1);
         assertThat(dto2.getOrderId()).isEqualTo(2L);
         assertThat(dto2.getFinalPaymentAmount()).isEqualTo(25000);
-        assertThat(dto2.getRepresentativeBookTitle()).isEqualTo("대표 도서 제목 B");
+
+        assertThat(dto2.getRepresentativeBookTitle()).isEqualTo(TITLE_B);
         assertThat(dto2.getTotalQuantity()).isEqualTo(1);
 
-        verify(orderInfoRepository).findByMemberId(eq(TEST_MEMBER_ID), eq(PAGEABLE));
+        verify(orderInfoRepository).findByMemberId(testMemberId, pageable);
         verify(orderItemRepository).findByOrderInfoId(1L);
         verify(orderItemRepository).findByOrderInfoId(2L);
+        // 새로운 Repository 메서드 호출 검증
+        verify(orderItemRepository).findRepresentativeBookTitleIncludingDeleted(1L);
+        verify(orderItemRepository).findRepresentativeBookTitleIncludingDeleted(2L);
     }
 
     @DisplayName("조회된 주문이 없을 경우 빈 페이지를 반환한다")
     @Test
     void getOrderList_empty() {
-        Page<OrderInfo> mockOrderInfoPage = new PageImpl<>(List.of(), PAGEABLE, 0);
+        // given
+        Page<OrderInfo> mockOrderInfoPage = new PageImpl<>(List.of(), pageable, 0);
 
-        given(orderInfoRepository.findByMemberId(eq(TEST_MEMBER_ID), eq(PAGEABLE)))
+        given(orderInfoRepository.findByMemberId(testMemberId, pageable))
                 .willReturn(mockOrderInfoPage);
 
-        Page<OrderListDto> resultPage = orderListService.getOrderList(TEST_MEMBER_ID, PAGEABLE);
+        // when
+        Page<OrderListDto> resultPage = orderListService.getOrderList(testMemberId, pageable);
 
-
+        // then
         assertThat(resultPage).isNotNull();
         assertThat(resultPage.getTotalElements()).isEqualTo(0);
         assertThat(resultPage.getContent()).isEmpty();
 
-        verify(orderInfoRepository).findByMemberId(eq(TEST_MEMBER_ID), eq(PAGEABLE));
+        verify(orderInfoRepository).findByMemberId(testMemberId, pageable);
     }
-
     private OrderInfo createOrderInfo(Long id, int finalPaymentAmount, String status) {
         Member mockMember = Member.builder()
-                .id(TEST_MEMBER_ID)
+                .id(testMemberId)
                 .name("Test Member")
                 .build();
 
@@ -126,13 +137,6 @@ class OrderListServiceTest {
                 .finalPaymentAmount(finalPaymentAmount)
                 .orderStatus(OrderStatus.valueOf(status))
                 .usedPoint(0)
-                .build();
-    }
-
-    private Book createBook(Long id, String title) {
-        return Book.builder()
-                .id(id)
-                .title(title)
                 .build();
     }
 

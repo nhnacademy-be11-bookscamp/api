@@ -27,14 +27,11 @@ public class TossPaymentAdapter implements PaymentAdapter {
 
     @Override
     public PaymentApprovalResponse approve(String paymentKey, String orderId, int amount) {
-        log.info("[TOSS-ADAPTER] Approve START - paymentKey={}, orderId={}, amount={}", paymentKey, orderId, amount);
         String authorization = "Basic " + encodeSecretKey();
         TossApprovalRequest request = new TossApprovalRequest(paymentKey, orderId, amount);
 
         try {
-            log.debug("[TOSS-ADAPTER] Calling Toss API...");
             TossApprovalResponse response = tossPaymentClient.approve(authorization, request);
-            log.info("[TOSS-ADAPTER] Toss API response received: {}", response);
 
             PaymentApprovalResponse result = new PaymentApprovalResponse(
                     response.paymentKey(),
@@ -43,10 +40,8 @@ public class TossPaymentAdapter implements PaymentAdapter {
                     response.method(),
                     OffsetDateTime.parse(response.approvedAt()).toLocalDateTime()
             );
-            log.info("[TOSS-ADAPTER] Approve SUCCESS - paymentKey={}", result.paymentKey());
             return result;
         } catch (Exception e) {
-            log.error("[TOSS-ADAPTER] Approve FAILED - paymentKey={}, orderId={}, error: {}", paymentKey, orderId, e.getMessage(), e);
             throw new ApplicationException(ErrorCode.PAYMENT_APPROVAL_FAILED);
         }
     }
@@ -59,12 +54,21 @@ public class TossPaymentAdapter implements PaymentAdapter {
         try {
             TossCancelResponse response = tossPaymentClient.cancel(authorization, paymentKey, request);
 
-            return new PaymentCancelResponse(
+            LocalDateTime canceledAt;
+            if (response.cancels() != null && !response.cancels().isEmpty()) {
+                String canceledAtStr = response.cancels().getFirst().canceledAt();
+                canceledAt = OffsetDateTime.parse(canceledAtStr).toLocalDateTime();
+            } else {
+                canceledAt = LocalDateTime.now();
+            }
+
+            PaymentCancelResponse result = new PaymentCancelResponse(
                     response.paymentKey(),
                     response.orderId(),
                     cancelReason,
-                    OffsetDateTime.parse(response.canceledAt()).toLocalDateTime()
+                    canceledAt
             );
+            return result;
         } catch (Exception e) {
             throw new ApplicationException(ErrorCode.PAYMENT_CANCEL_FAILED);
         }
