@@ -37,10 +37,10 @@ public class Payment extends SoftDeleteEntity {
     @Column(nullable = false)
     private Integer paidAmount;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime paidAt;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String paymentKey;
 
     @Enumerated(EnumType.STRING)
