@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store.bookscamp.api.review.controller.request.ReviewCreateRequest;
 import store.bookscamp.api.review.controller.request.ReviewUpdateRequest;
+import store.bookscamp.api.review.service.AiReviewService;
 import store.bookscamp.api.review.service.ReviewService;
 import store.bookscamp.api.review.service.dto.*;
 
@@ -33,6 +34,9 @@ class ReviewControllerTest {
 
     @MockitoBean
     ReviewService reviewService;
+
+    @MockitoBean
+    AiReviewService aiReviewService;
 
     @Test
     @DisplayName("리뷰 가능 상품 조회 성공")
