@@ -104,7 +104,7 @@ public class AiReviewService {
         return sb.toString();
     }
 
-    private String callGeminiApi(String prompt) {
+    protected String callGeminiApi(String prompt) {
         try {
             JSONObject body = new JSONObject()
                     .put("contents", new JSONArray()
@@ -112,18 +112,11 @@ public class AiReviewService {
                                     .put("parts", new JSONArray()
                                             .put(new JSONObject().put("text", prompt)))));
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(GEMINI_URL + "?key=" + reviewApiKey))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
-                    .build();
+            String responseBody = executeGeminiRequest(body.toString());
 
-            HttpResponse<String> response = HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-
-            JSONObject res = new JSONObject(response.body());
+            JSONObject res = new JSONObject(responseBody);
             JSONArray candidates = res.optJSONArray("candidates");
-            if (candidates == null || candidates.isEmpty()) return null;
+            if (candidates == null || candidates.length() == 0) return null;
 
             String text = candidates.getJSONObject(0)
                     .getJSONObject("content")
@@ -142,5 +135,19 @@ public class AiReviewService {
     public Book getBookById(Long bookId) {
         return bookRepository.findById(bookId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.BOOK_NOT_FOUND));
+    }
+
+    protected String executeGeminiRequest(String body) throws Exception {
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(GEMINI_URL + "?key=" + reviewApiKey))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(request, HttpResponse.BodyHandlers.ofString());
+
+        return response.body();
     }
 }
