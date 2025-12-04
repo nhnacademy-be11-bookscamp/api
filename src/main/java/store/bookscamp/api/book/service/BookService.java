@@ -3,6 +3,8 @@ package store.bookscamp.api.book.service;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +60,7 @@ public class BookService {
     private final BookCachingIndexService bookCachingIndexService;
 
     @Transactional
+    @CacheEvict(value = "recommendBooks", allEntries = true)
     public void createBook(BookCreateDto dto) {
 
         Book book = new Book(
@@ -104,6 +107,7 @@ public class BookService {
     }
 
     @Transactional
+    @CacheEvict(value = "recommendBooks", allEntries = true)
     public void updateBook(Long id, BookUpdateRequest req) {
 
         Book book = bookRepository.findById(id)
@@ -167,6 +171,7 @@ public class BookService {
     }
 
     @Transactional
+    @CacheEvict(value = "recommendBooks", allEntries = true)
     public void deleteBook(Long id) {
 
         Book book = bookRepository.findById(id)
@@ -231,6 +236,7 @@ public class BookService {
         return BookDetailDto.from(book, categoryList, tagList, imageUrlList);
     }
 
+    @Cacheable(value = "recommendBooks")
     public List<BookIndexDto> getRecommendBooks() {
 
         List<Book> recommendBooks = bookRepository.getRecommendBooks();
