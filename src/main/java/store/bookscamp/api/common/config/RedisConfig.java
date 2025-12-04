@@ -72,6 +72,7 @@ public class RedisConfig {
 
         Map<String, RedisCacheConfiguration> configMap = new HashMap<>();
 
+        configMap.put("bestSellers", defaultConfig.entryTtl(Duration.ofHours(1)));
         configMap.put("recommendBooks", defaultConfig.entryTtl(Duration.ofMinutes(30)));
 
         return RedisCacheManager.builder(connectionFactory)
