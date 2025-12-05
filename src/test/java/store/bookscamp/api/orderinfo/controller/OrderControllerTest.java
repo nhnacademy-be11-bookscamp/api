@@ -308,5 +308,91 @@ class OrderControllerTest {
                     .andDo(print())
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("포인트/쿠폰으로 전액 결제 시 최종 금액 0원 주문 성공")
+        void createOrder_zeroAmount_success() throws Exception {
+            // given
+            OrderItemCreateRequest item = new OrderItemCreateRequest(1L, 1, null);
+            DeliveryInfoRequest deliveryInfo = new DeliveryInfoRequest(
+                    "수령인",
+                    "010-1234-5678",
+                    12345,
+                    "서울시 강남구",
+                    "101동 101호",
+                    LocalDate.now().plusDays(3),
+                    null
+            );
+            OrderCreateRequest request = new OrderCreateRequest(
+                    List.of(item),
+                    deliveryInfo,
+                    1L,      // 쿠폰 사용
+                    5000,    // 포인트 사용
+                    null,
+                    OrderType.DIRECT
+            );
+
+            OrderCreateDto responseDto = new OrderCreateDto(100L, "ORDER-003", 0);
+
+            given(orderCreateService.createOrder(any(), eq(1L)))
+                    .willReturn(responseDto);
+
+            // when & then
+            mockMvc.perform(post("/orders")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header("X-User-ID", 1L)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.orderId").value(100))
+                    .andExpect(jsonPath("$.finalAmount").value(0));
+        }
+
+        @Test
+        @DisplayName("주문 수량이 0이면 400 에러")
+        void createOrder_zeroQuantity_badRequest() throws Exception {
+            // given
+            OrderItemCreateRequest item = new OrderItemCreateRequest(1L, 0, null);  // 수량 0
+            DeliveryInfoRequest deliveryInfo = new DeliveryInfoRequest(
+                    "수령인",
+                    "010-1234-5678",
+                    12345,
+                    "서울시 강남구",
+                    "101동 101호",
+                    LocalDate.now().plusDays(3),
+                    null
+            );
+            OrderCreateRequest request = new OrderCreateRequest(
+                    List.of(item),
+                    deliveryInfo,
+                    null,
+                    0,
+                    null,
+                    OrderType.DIRECT
+            );
+
+            // when & then
+            mockMvc.perform(post("/orders")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header("X-User-ID", 1L)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("도서 ID가 null이면 400 에러")
+        void createOrder_nullBookId_badRequest() throws Exception {
+            // given
+            String jsonContent = "{\"items\":[{\"bookId\":null,\"quantity\":1}],\"deliveryInfo\":{\"recipientName\":\"수령인\",\"recipientPhone\":\"010-1234-5678\",\"zipCode\":12345,\"roadNameAddress\":\"서울시 강남구\",\"detailAddress\":\"101동\",\"desiredDeliveryDate\":\"2025-12-10\"},\"orderType\":\"DIRECT\"}";
+
+            // when & then
+            mockMvc.perform(post("/orders")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header("X-User-ID", 1L)
+                            .content(jsonContent))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
+        }
     }
 }
