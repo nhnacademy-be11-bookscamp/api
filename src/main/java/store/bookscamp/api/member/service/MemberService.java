@@ -39,7 +39,7 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public boolean checkIdDuplicate(String id) {
+    public long checkIdDuplicate(String id) {
         return memberRepository.existsByUsername(id);
     }
 
