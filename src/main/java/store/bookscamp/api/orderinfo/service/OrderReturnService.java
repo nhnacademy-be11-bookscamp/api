@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.common.exception.ApplicationException;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
@@ -14,6 +15,8 @@ import store.bookscamp.api.orderinfo.entity.ReturnType;
 import store.bookscamp.api.orderinfo.repository.OrderInfoRepository;
 import store.bookscamp.api.orderinfo.service.dto.OrderReturnDto;
 import store.bookscamp.api.orderinfo.service.dto.OrderReturnRequestDto;
+import store.bookscamp.api.orderitem.entity.OrderItem;
+import store.bookscamp.api.orderitem.repository.OrderItemRepository;
 import store.bookscamp.api.pointhistory.entity.PointHistory;
 import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
 
@@ -32,6 +35,7 @@ import static store.bookscamp.api.orderinfo.entity.OrderStatus.RETURNED;
 public class OrderReturnService {
 
     private final OrderInfoRepository orderInfoRepository;
+    private final OrderItemRepository orderItemRepository;
     private final PointHistoryRepository pointHistoryRepository;
     private final OrderStatusService orderStatusService;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
@@ -57,6 +61,10 @@ public class OrderReturnService {
         if (dto.returnType() == ReturnType.CHANGE_OF_MIND) {
             refundAmount -= deliveryFee;
         }
+
+        // 재고 복구
+        rollbackStock(order);
+        log.info("[ORDER-RETURN] 재고 복구 완료 - orderId: {}", orderId);
 
         List<PointHistory> histories = pointHistoryRepository.findByOrderInfo_Id(orderId);
 
@@ -113,5 +121,16 @@ public class OrderReturnService {
                 refundAmount, Math.abs(usedPoint), earnedPoint);
 
         return result;
+    }
+
+    private void rollbackStock(OrderInfo orderInfo) {
+        List<OrderItem> orderItems = orderItemRepository.findByOrderInfoId(orderInfo.getId());
+
+        for (OrderItem orderItem : orderItems) {
+            Book book = orderItem.getBook();
+            book.increaseStock(orderItem.getOrderQuantity());
+            log.info("[ORDER-RETURN] 재고 복구 - bookId: {}, quantity: {}, newStock: {}",
+                    book.getId(), orderItem.getOrderQuantity(), book.getStock());
+        }
     }
 }
