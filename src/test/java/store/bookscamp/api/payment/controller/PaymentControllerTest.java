@@ -96,6 +96,73 @@ class PaymentControllerTest {
     }
 
     @Test
+    @DisplayName("POST /payments/confirm : amount가 0원(포인트 전액 결제)이면 성공해야 한다 (@PositiveOrZero)")
+    void confirmPayment_Success_ZeroAmount() throws Exception {
+        PaymentConfirmRequest request = new PaymentConfirmRequest(null, "ORD-123", 0);
+
+        Payment mockPayment = mock(Payment.class);
+        OrderInfo mockOrderInfo = mock(OrderInfo.class);
+
+        given(paymentService.confirmPayment(null, "ORD-123", 0)).willReturn(mockPayment);
+        given(mockPayment.getId()).willReturn(5L);
+        given(mockPayment.getOrderInfo()).willReturn(mockOrderInfo);
+        given(mockOrderInfo.getId()).willReturn(10L);
+        given(mockPayment.getPaidAmount()).willReturn(0);
+        given(mockPayment.getPaidAt()).willReturn(null);
+
+        ResultActions result = mockMvc.perform(
+                post("/payments/confirm")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.paymentId").value(5L))
+                .andExpect(jsonPath("$.orderId").value(10L))
+                .andExpect(jsonPath("$.paidAmount").value(0))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("POST /payments/confirm : paymentKey가 null이어도 성공해야 한다 (0원 결제 시)")
+    void confirmPayment_Success_NullPaymentKey() throws Exception {
+        String jsonContent = "{\"paymentKey\": null, \"orderNumber\": \"ORD-123\", \"amount\": 0}";
+
+        Payment mockPayment = mock(Payment.class);
+        OrderInfo mockOrderInfo = mock(OrderInfo.class);
+
+        given(paymentService.confirmPayment(null, "ORD-123", 0)).willReturn(mockPayment);
+        given(mockPayment.getId()).willReturn(5L);
+        given(mockPayment.getOrderInfo()).willReturn(mockOrderInfo);
+        given(mockOrderInfo.getId()).willReturn(10L);
+        given(mockPayment.getPaidAmount()).willReturn(0);
+        given(mockPayment.getPaidAt()).willReturn(null);
+
+        mockMvc.perform(
+                        post("/payments/confirm")
+                                .content(jsonContent)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paymentId").value(5L))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("POST /payments/confirm : amount가 음수이면 400 Bad Request가 발생해야 한다 (@PositiveOrZero)")
+    void confirmPayment_ValidationFailure_NegativeAmount() throws Exception {
+        PaymentConfirmRequest request = new PaymentConfirmRequest("pay_key", "ORD-123", -1000);
+
+        mockMvc.perform(
+                        post("/payments/confirm")
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @Test
     @DisplayName("POST /payments/cancel : 결제 취소 요청 성공 시 200 OK와 빈 응답을 반환해야 한다")
     void cancelPayment_Success() throws Exception {
         PaymentCancelRequest request = new PaymentCancelRequest(10L, "고객 단순 변심");
