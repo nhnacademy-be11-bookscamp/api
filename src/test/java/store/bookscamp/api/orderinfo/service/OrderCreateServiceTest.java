@@ -493,6 +493,122 @@ class OrderCreateServiceTest {
         }
 
         @Test
+        @DisplayName("무료 배송 기준 미달 시 배송비 부과")
+        void createOrder_withDeliveryFee_success() {
+            // given
+            OrderItemCreateDto item = new OrderItemCreateDto(book2.getId(), 1, null); // 13000원 (무료배송 기준 30000원 미달)
+            OrderRequestDto request = new OrderRequestDto(
+                    List.of(item),
+                    deliveryInfo,
+                    null,
+                    0,
+                    null
+            );
+
+            // when
+            OrderCreateDto result = orderCreateService.createOrder(request, member.getId());
+
+            // then
+            OrderInfo orderInfo = orderInfoRepository.findById(result.orderId()).orElseThrow();
+            assertThat(orderInfo.getDeliveryFee()).isEqualTo(3000); // 배송 정책에 설정된 배송비
+            assertThat(result.finalPaymentAmount()).isEqualTo(16000); // 13000 + 3000
+        }
+
+        @Test
+        @DisplayName("포인트와 쿠폰 동시 사용하여 주문 생성")
+        void createOrder_withPointsAndCoupon_success() {
+            // given
+            Coupon coupon = couponRepository.save(new Coupon(
+                    TargetType.WELCOME,
+                    null,
+                    DiscountType.AMOUNT,
+                    5000,
+                    10000,
+                    null,
+                    30,
+                    "테스트 쿠폰"
+            ));
+            CouponIssue couponIssue = couponIssueRepository.save(
+                    new CouponIssue(coupon, member, LocalDateTime.now().plusDays(30))
+            );
+
+            OrderItemCreateDto item = new OrderItemCreateDto(book1.getId(), 2, null); // 36000원
+            OrderRequestDto request = new OrderRequestDto(
+                    List.of(item),
+                    deliveryInfo,
+                    couponIssue.getId(),
+                    3000,  // 포인트 3000원 사용
+                    null
+            );
+
+            // when
+            OrderCreateDto result = orderCreateService.createOrder(request, member.getId());
+
+            // then
+            // 36000 - 5000(쿠폰) - 3000(포인트) = 28000
+            assertThat(result.finalPaymentAmount()).isEqualTo(28000);
+        }
+
+        @Test
+        @DisplayName("포인트로 전액 결제 시 최종 금액 0원")
+        void createOrder_fullPaymentWithPoints_zeroAmount() {
+            // given
+            OrderItemCreateDto item = new OrderItemCreateDto(book2.getId(), 1, null); // 13000원 (무료배송 미달, +3000 배송비 = 16000)
+            OrderRequestDto request = new OrderRequestDto(
+                    List.of(item),
+                    deliveryInfo,
+                    null,
+                    10000,  // 포인트 10000원 보유 중 전액 사용 (하지만 16000원이 필요하므로 부족)
+                    null
+            );
+
+            // when
+            OrderCreateDto result = orderCreateService.createOrder(request, member.getId());
+
+            // then
+            // 16000 - 10000 = 6000
+            assertThat(result.finalPaymentAmount()).isEqualTo(6000);
+        }
+
+        @Test
+        @DisplayName("쿠폰과 포인트로 전액 결제 시 최종 금액 0원")
+        void createOrder_fullPaymentWithCouponAndPoints_zeroAmount() {
+            // given
+            // 회원 포인트를 16000원으로 설정
+            member.earnPoint(6000); // 기존 10000 + 6000 = 16000
+
+            Coupon coupon = couponRepository.save(new Coupon(
+                    TargetType.WELCOME,
+                    null,
+                    DiscountType.AMOUNT,
+                    3000,
+                    10000,
+                    null,
+                    30,
+                    "3000원 할인 쿠폰"
+            ));
+            CouponIssue couponIssue = couponIssueRepository.save(
+                    new CouponIssue(coupon, member, LocalDateTime.now().plusDays(30))
+            );
+
+            OrderItemCreateDto item = new OrderItemCreateDto(book2.getId(), 1, null); // 13000원 + 3000(배송비) = 16000원
+            OrderRequestDto request = new OrderRequestDto(
+                    List.of(item),
+                    deliveryInfo,
+                    couponIssue.getId(),  // 3000원 할인
+                    13000,  // 포인트 13000원 사용
+                    null
+            );
+
+            // when
+            OrderCreateDto result = orderCreateService.createOrder(request, member.getId());
+
+            // then
+            // 16000 - 3000(쿠폰) - 13000(포인트) = 0
+            assertThat(result.finalPaymentAmount()).isEqualTo(0);
+        }
+
+        @Test
         @DisplayName("존재하지 않는 도서로 주문 시 BOOK_NOT_FOUND 예외 발생")
         void createOrder_bookNotFound_throwsException() {
             // given
@@ -509,6 +625,60 @@ class OrderCreateServiceTest {
             assertThatThrownBy(() -> orderCreateService.createOrder(request, member.getId()))
                     .isInstanceOf(ApplicationException.class)
                     .hasMessageContaining(BOOK_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("재고 부족 시 INSUFFICIENT_STOCK 예외 발생")
+        void createOrder_insufficientStock_throwsException() {
+            // given
+            OrderItemCreateDto item = new OrderItemCreateDto(book1.getId(), 200, null); // 재고는 100권
+            OrderRequestDto request = new OrderRequestDto(
+                    List.of(item),
+                    deliveryInfo,
+                    null,
+                    0,
+                    null
+            );
+
+            // expect
+            assertThatThrownBy(() -> orderCreateService.createOrder(request, member.getId()))
+                    .isInstanceOf(ApplicationException.class)
+                    .hasMessageContaining("재고");
+        }
+
+        @Test
+        @DisplayName("판매 불가 도서 주문 시 BOOK_NOT_AVAILABLE 예외 발생")
+        void createOrder_bookNotAvailable_throwsException() {
+            // given
+            Book unavailableBook = bookRepository.save(new Book(
+                    "판매 중지 책",
+                    "설명",
+                    null,
+                    "출판사",
+                    LocalDate.of(2024, 1, 1),
+                    "999999999999",
+                    "저자",
+                    store.bookscamp.api.book.entity.BookStatus.DISCONTINUED,  // 판매 중지 상태
+                    false,
+                    10000,
+                    9000,
+                    50,
+                    0L
+            ));
+
+            OrderItemCreateDto item = new OrderItemCreateDto(unavailableBook.getId(), 1, null);
+            OrderRequestDto request = new OrderRequestDto(
+                    List.of(item),
+                    deliveryInfo,
+                    null,
+                    0,
+                    null
+            );
+
+            // expect
+            assertThatThrownBy(() -> orderCreateService.createOrder(request, member.getId()))
+                    .isInstanceOf(ApplicationException.class)
+                    .hasMessageContaining("판매 불가능");
         }
     }
 }

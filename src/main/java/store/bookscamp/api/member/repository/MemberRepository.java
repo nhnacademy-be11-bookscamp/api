@@ -6,13 +6,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import store.bookscamp.api.member.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findById(Long id);
 
-    boolean existsByUsername(String id);
+    @Query("select count(m) > 0 from Member m where m.username = :username")
+    boolean existsByUsername(@Param("username")String username);
 
     boolean existsByEmail(String email);
 
