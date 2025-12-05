@@ -13,8 +13,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findById(Long id);
 
-    @Query("select count(m) > 0 from Member m where m.username = :username")
-    boolean existsByUsername(@Param("username")String username);
+    @Query(
+            value = "SELECT COUNT(*) FROM member m WHERE m.username = :username",
+            nativeQuery = true
+    )    Long existsByUsername(@Param("username")String username);
 
     boolean existsByEmail(String email);
 
