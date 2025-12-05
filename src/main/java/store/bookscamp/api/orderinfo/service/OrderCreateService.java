@@ -21,7 +21,7 @@ import store.bookscamp.api.coupon.entity.Coupon;
 import store.bookscamp.api.couponissue.entity.CouponIssue;
 import store.bookscamp.api.couponissue.repository.CouponIssueRepository;
 import store.bookscamp.api.delivery.entity.Delivery;
-import store.bookscamp.api.delivery.repository.deliveryRepository;
+import store.bookscamp.api.delivery.repository.DeliveryRepository;
 import store.bookscamp.api.deliverypolicy.entity.DeliveryPolicy;
 import store.bookscamp.api.deliverypolicy.repository.DeliveryPolicyRepository;
 import store.bookscamp.api.member.entity.Member;
@@ -51,7 +51,7 @@ public class OrderCreateService {
 
     private final OrderInfoRepository orderInfoRepository;
     private final OrderItemRepository orderItemRepository;
-    private final deliveryRepository deliveryRepository;
+    private final DeliveryRepository deliveryRepository;
     private final NonMemberRepository nonMemberRepository;
     private final BookRepository bookRepository;
     private final PackagingRepository packagingRepository;

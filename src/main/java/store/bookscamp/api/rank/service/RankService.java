@@ -1,8 +1,6 @@
 package store.bookscamp.api.rank.service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -17,7 +15,6 @@ import store.bookscamp.api.pointpolicy.repository.PointPolicyRepository;
 import store.bookscamp.api.rank.entity.Rank;
 import store.bookscamp.api.rank.repository.RankRepository;
 import store.bookscamp.api.rank.service.dto.RankGetDto;
-import store.bookscamp.api.rank.service.dto.RankSummaryDto;
 
 @Service
 @RequiredArgsConstructor

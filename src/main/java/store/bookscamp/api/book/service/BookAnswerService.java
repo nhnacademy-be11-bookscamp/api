@@ -101,6 +101,10 @@ public class BookAnswerService {
             return result;
 
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+
             log.error("[Gemini] 응답 생성 실패", e);
             result.put("result","AI 응답 생성 중 오류가 발생했습니다." );
             return result;
@@ -125,11 +129,11 @@ public class BookAnswerService {
                 sb.append("요약: ").append(b.getExplanation()).append("\n\n");
         }
 
-        sb.append("출력형식은 아래와 같습니다.\n");
-        sb.append("연관이 있는 도서는 연관도 순위로 정렬하여 도서 id 전체를 가지고 옵니다.");
-        sb.append("추가적으로 연관도 순위 3등까지는 '순위,추천 이유' 형식으로 출력합니다. 출력 예를 제외한 문장은 출력하지 않습니다."
-                + "출력 예: 3,18,10,14\n"
-                + "        1,이 책은~~\n");
+        sb.append("""
+                출력형식은 아래와 같습니다.
+                연관이 있는 도서는 연관도 순위로 정렬하여 도서 id 전체를 가지고 옵니다.추가적으로 연관도 순위 3등까지는 '순위,추천 이유' 형식으로 출력합니다. 출력 예를 제외한 문장은 출력하지 않습니다.출력 예: 3,18,10,14
+                        1,이 책은~~
+                """);
 
 
         return sb.toString();

@@ -10,7 +10,7 @@ import store.bookscamp.api.member.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Optional<Member> getByUsername(String id);
+    Optional<Member> findById(Long id);
 
     boolean existsByUsername(String id);
 
@@ -25,4 +25,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByBirthDateMonth(int month);
 
     Page<Member> findAll(Pageable pageable);
+
 }

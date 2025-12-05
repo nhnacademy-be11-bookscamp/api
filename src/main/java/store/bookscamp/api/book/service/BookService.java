@@ -3,6 +3,8 @@ package store.bookscamp.api.book.service;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -39,7 +41,6 @@ import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
 import store.bookscamp.api.tag.service.dto.TagDto;
 
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -58,6 +59,7 @@ public class BookService {
     private final BookCachingIndexService bookCachingIndexService;
 
     @Transactional
+    @CacheEvict(value = {"recommendBooks", "bestSellers"}, allEntries = true)
     public void createBook(BookCreateDto dto) {
 
         Book book = new Book(
@@ -104,6 +106,7 @@ public class BookService {
     }
 
     @Transactional
+    @CacheEvict(value = {"recommendBooks", "bestSellers"}, allEntries = true)
     public void updateBook(Long id, BookUpdateRequest req) {
 
         Book book = bookRepository.findById(id)
@@ -167,6 +170,7 @@ public class BookService {
     }
 
     @Transactional
+    @CacheEvict(value = {"recommendBooks", "bestSellers"}, allEntries = true)
     public void deleteBook(Long id) {
 
         Book book = bookRepository.findById(id)
@@ -231,28 +235,26 @@ public class BookService {
         return BookDetailDto.from(book, categoryList, tagList, imageUrlList);
     }
 
+    @Cacheable(value = "recommendBooks")
     public List<BookIndexDto> getRecommendBooks() {
 
         List<Book> recommendBooks = bookRepository.getRecommendBooks();
 
-        return recommendBooks.stream().map(book -> {
+        return recommendBooks.stream()
+                .map(this::convertToBookIndexDto)
+                .toList();
+    }
 
-            String thumbnailUrl = bookImageRepository.findByBook(book).stream()
-                    .filter(BookImage::isThumbnail)
-                    .map(BookImage::getImageUrl)
-                    .findFirst()
-                    .orElse(null);
+    @Cacheable(value = "bestSellers", key = "#pageable.pageNumber")
+    public Page<BookIndexDto> getBestSellers(Pageable pageable) {
 
-            return new BookIndexDto(
-                    book.getId(),
-                    book.getTitle(),
-                    book.getPublisher(),
-                    book.getContributors(),
-                    book.getRegularPrice(),
-                    book.getSalePrice(),
-                    thumbnailUrl
-            );
-        }).toList();
+        Page<Book> bestSellers = bookRepository.getBestSellers(pageable);
+
+        List<BookIndexDto> dtoList = bestSellers.getContent().stream()
+                .map(this::convertToBookIndexDto)
+                .toList();
+
+        return new PageImpl<>(dtoList, pageable, bestSellers.getTotalElements());
     }
 
     public Page<BookWishListDto> getWishList(Long memberId, Pageable pageable) {
@@ -307,5 +309,17 @@ public class BookService {
         return bookRepository.getBooks(keyword, pageable);
     }
 
-    public Page<Book> getNewBooks(Pageable pageable){return bookRepository.getNewBooks(pageable);}
+    public Page<Book> getNewBooks(Pageable pageable){
+        return bookRepository.getNewBooks(pageable);
+    }
+
+    private BookIndexDto convertToBookIndexDto(Book book) {
+        String thumbnailUrl = bookImageRepository.findByBook(book).stream()
+                .filter(BookImage::isThumbnail)
+                .map(BookImage::getImageUrl)
+                .findFirst()
+                .orElse(null);
+
+        return BookIndexDto.from(book, thumbnailUrl);
+    }
 }
