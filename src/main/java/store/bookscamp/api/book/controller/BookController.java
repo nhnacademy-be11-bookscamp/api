@@ -221,5 +221,25 @@ public class BookController {
 
         return ResponseEntity.ok(responsePage);
     }
-}
 
+    @GetMapping("/books/best")
+    public ResponseEntity<RestPageImpl<BookIndexResponse>> getBestSellers(
+            @PageableDefault(size = 9, page = 0) Pageable pageable
+    ) {
+        Page<BookIndexDto> bestSellersDto = bookService.getBestSellers(pageable);
+
+        List<BookIndexResponse> responses = bestSellersDto.getContent().stream()
+                .map(BookIndexResponse::from)
+                .toList();
+
+        Page<BookIndexResponse> responsePage = new PageImpl<>(
+                responses,
+                pageable,
+                bestSellersDto.getTotalElements()
+        );
+
+        RestPageImpl<BookIndexResponse> restPage = new RestPageImpl<>(responsePage);
+
+        return ResponseEntity.ok(restPage);
+    }
+}
