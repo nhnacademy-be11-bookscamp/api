@@ -1,23 +1,45 @@
 package store.bookscamp.api.book.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
-import store.bookscamp.api.book.entity.*;
-import store.bookscamp.api.book.repository.*;
-import store.bookscamp.api.book.service.dto.*;
+import store.bookscamp.api.book.entity.Book;
+import store.bookscamp.api.book.entity.BookDocument;
+import store.bookscamp.api.book.entity.BookProjection;
+import store.bookscamp.api.book.entity.BookStatus;
+import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.dto.BookCreateDto;
+import store.bookscamp.api.book.service.dto.BookDetailDto;
+import store.bookscamp.api.book.service.dto.BookIndexDto;
+import store.bookscamp.api.book.service.dto.BookSortDto;
+import store.bookscamp.api.book.service.dto.BookWishListDto;
 import store.bookscamp.api.bookcategory.entity.BookCategory;
 import store.bookscamp.api.bookcategory.repository.BookCategoryRepository;
 import store.bookscamp.api.bookimage.entity.BookImage;
 import store.bookscamp.api.bookimage.repository.BookImageRepository;
 import store.bookscamp.api.bookimage.service.BookImageService;
-import store.bookscamp.api.bookimage.service.dto.*;
+import store.bookscamp.api.bookimage.service.dto.BookImageCreateDto;
+import store.bookscamp.api.bookimage.service.dto.BookImageDeleteDto;
 import store.bookscamp.api.booklike.service.BookLikeService;
 import store.bookscamp.api.booktag.entity.BookTag;
 import store.bookscamp.api.booktag.repository.BookTagRepository;
@@ -28,12 +50,6 @@ import store.bookscamp.api.member.entity.Member;
 import store.bookscamp.api.member.repository.MemberRepository;
 import store.bookscamp.api.tag.entity.Tag;
 import store.bookscamp.api.tag.repository.TagRepository;
-
-import java.time.LocalDate;
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -87,7 +103,7 @@ class BookServiceTest {
                 "exp",
                 new ArrayList<>(Arrays.asList("img1", "img2")),
                 new ArrayList<>(Arrays.asList(10L, 20L)),
-        1L
+                1L
 
         );
 
@@ -123,8 +139,8 @@ class BookServiceTest {
 
         Book book = new Book(
                 "old", "exp", "content",
-                "pub", LocalDate.of(2023,1,1),
-                "isbn","c", BookStatus.AVAILABLE,
+                "pub", LocalDate.of(2023, 1, 1),
+                "isbn", "c", BookStatus.AVAILABLE,
                 true, 1000, 900, 10, 0
         );
 
@@ -132,21 +148,22 @@ class BookServiceTest {
             var f = Book.class.getDeclaredField("id");
             f.setAccessible(true);
             f.set(book, 10L);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         when(bookRepository.findById(10L)).thenReturn(Optional.of(book));
 
         BookUpdateRequest req = new BookUpdateRequest(
-                "newTitle","newCon","newPub",
-                "newIsbn", LocalDate.of(2024,1,1),
+                "newTitle", "newCon", "newPub",
+                "newIsbn", LocalDate.of(2024, 1, 1),
                 2000, 1500, 5, true,
-                "newContent","newExp",
-                List.of(1L,2L),
+                "newContent", "newExp",
+                List.of(1L, 2L),
                 1L,
-                List.of("newImg1","newImg2"),
+                List.of("newImg1", "newImg2"),
                 List.of("oldImg"),
                 BookStatus.SOLD_OUT
-                );
+        );
 
         Category cat = mock(Category.class);
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(cat));
@@ -228,18 +245,19 @@ class BookServiceTest {
         BookService service = createService();
 
         Book book = new Book(
-                "t","e","c","p",
-                LocalDate.of(2023,1,1),
-                "isbn","con",
-                BookStatus.AVAILABLE,true,
-                1000,900,10,0
+                "t", "e", "c", "p",
+                LocalDate.of(2023, 1, 1),
+                "isbn", "con",
+                BookStatus.AVAILABLE, true,
+                1000, 900, 10, 0
         );
 
         try {
             var f = Book.class.getDeclaredField("id");
             f.setAccessible(true);
             f.set(book, 5L);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         when(bookRepository.getBookById(5L)).thenReturn(book);
 
@@ -296,6 +314,58 @@ class BookServiceTest {
         List<BookIndexDto> result = service.getRecommendBooks();
 
         assertThat(result.get(0).thumbnail()).isEqualTo("THUMB.jpg");
+    }
+
+    // [추가됨] 베스트 셀러 조회 테스트
+    @Test
+    @DisplayName("getBestSellers - 페이징 + thumbnail 포함 반환")
+    void getBestSellers_success() {
+        BookService service = createService();
+
+        // 1. Mock Data Setup
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Book b1 = mock(Book.class);
+        when(b1.getId()).thenReturn(100L);
+        when(b1.getTitle()).thenReturn("Best Book 1");
+        // ... 필요한 필드 Mocking
+
+        Book b2 = mock(Book.class);
+        when(b2.getId()).thenReturn(101L);
+        when(b2.getTitle()).thenReturn("Best Book 2");
+
+        List<Book> content = List.of(b1, b2);
+        Page<Book> mockPage = new PageImpl<>(content, pageable, 2);
+
+        // 2. Repository Behavior
+        when(bookRepository.getBestSellers(pageable)).thenReturn(mockPage);
+
+        // 3. Image Behavior (각 책에 대한 썸네일 조회)
+        BookImage thumb1 = mock(BookImage.class);
+        when(thumb1.isThumbnail()).thenReturn(true);
+        when(thumb1.getImageUrl()).thenReturn("best1.jpg");
+
+        // b1은 썸네일 있음
+        when(bookImageRepository.findByBook(b1)).thenReturn(List.of(thumb1));
+        // b2는 이미지 없음 (빈 리스트)
+        when(bookImageRepository.findByBook(b2)).thenReturn(List.of());
+
+        // 4. Execution
+        Page<BookIndexDto> result = service.getBestSellers(pageable);
+
+        // 5. Assertion
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getContent()).hasSize(2);
+
+        // 첫 번째 책: 썸네일 확인
+        assertThat(result.getContent().get(0).title()).isEqualTo("Best Book 1");
+        assertThat(result.getContent().get(0).thumbnail()).isEqualTo("best1.jpg");
+
+        // 두 번째 책: 썸네일 null 확인
+        assertThat(result.getContent().get(1).title()).isEqualTo("Best Book 2");
+        assertThat(result.getContent().get(1).thumbnail()).isNull();
+
+        verify(bookRepository).getBestSellers(pageable);
     }
 
     @Test
@@ -371,5 +441,106 @@ class BookServiceTest {
         service.deleteWishList(10L, 1L);
 
         verify(bookLikeService).unlikeBook(10L, 1L);
+    }
+
+    @Test
+    @DisplayName("BookSortDto.from(Book) - Book 엔티티 기반 DTO 변환 검증")
+    void dto_fromBook_success() {
+
+        Book book = new Book(
+                "제목", "설명", "콘텐츠",
+                "출판사", LocalDate.of(2024, 1, 1),
+                "1234567890123", "기여자",
+                BookStatus.AVAILABLE, true,
+                20000, 15000, 10, 5
+        );
+
+        BookSortDto dto = BookSortDto.from(book);
+
+        assertThat(dto.getTitle()).isEqualTo("제목");
+        assertThat(dto.getContributors()).isEqualTo("기여자");
+        assertThat(dto.getPublisher()).isEqualTo("출판사");
+        assertThat(dto.getPublishDate()).isEqualTo(LocalDate.of(2024, 1, 1));
+        assertThat(dto.getRegularPrice()).isEqualTo(20000);
+        assertThat(dto.getSalePrice()).isEqualTo(15000);
+        assertThat(dto.getStock()).isEqualTo(10);
+        assertThat(dto.getViewCount()).isEqualTo(5);
+        assertThat(dto.isPackable()).isTrue();
+
+        // 기본값 검증
+        assertThat(dto.getIsbn()).isNull();
+        assertThat(dto.getAverageRating()).isEqualTo(0.0);
+        assertThat(dto.getReviewCount()).isEqualTo(0L);
+        assertThat(dto.getAiRecommand()).isEqualTo("");
+        assertThat(dto.getAiRank()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("BookSortDto.fromDocument(BookDocument) - ES 문서 기반 DTO 변환 검증")
+    void dto_fromDocument_success() {
+
+        BookDocument doc = BookDocument.builder()
+                .id(999L)
+                .title("도큐먼트 책")
+                .publisher("ES출판사")
+                .publishDate(LocalDate.of(2023, 12, 25))
+                .contributors("Doc Writer")
+                .packable(false)
+                .regularPrice(30000)
+                .salePrice(25000)
+                .stock(50)
+                .viewCount(100L)
+                .isbn("ABC123")
+                .averageRating(4.7)
+                .reviewCount(321L)
+                .build();
+
+        BookSortDto dto = BookSortDto.fromDocument(doc);
+
+        assertThat(dto.getId()).isEqualTo(999L);
+        assertThat(dto.getTitle()).isEqualTo("도큐먼트 책");
+        assertThat(dto.getPublisher()).isEqualTo("ES출판사");
+        assertThat(dto.getPublishDate()).isEqualTo(LocalDate.of(2023, 12, 25));
+        assertThat(dto.getContributors()).isEqualTo("Doc Writer");
+        assertThat(dto.getSalePrice()).isEqualTo(25000);
+        assertThat(dto.getStock()).isEqualTo(50);
+        assertThat(dto.getViewCount()).isEqualTo(100L);
+        assertThat(dto.getIsbn()).isEqualTo("ABC123");
+        assertThat(dto.getAverageRating()).isEqualTo(4.7);
+        assertThat(dto.getReviewCount()).isEqualTo(321L);
+        assertThat(dto.isPackable()).isFalse();
+
+        // 기본값 검증
+        assertThat(dto.getAiRecommand()).isEqualTo("");
+        assertThat(dto.getAiRank()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("BookIndexDto.from() - 정적 팩토리 메서드 검증")
+    void bookIndexDto_from_success() {
+        Book book = new Book(
+                "제목", "설명", "콘텐츠",
+                "출판사", LocalDate.now(),
+                "ISBN123", "저자",
+                BookStatus.AVAILABLE, true,
+                10000, 9000, 10, 0
+        );
+        try {
+            var f = Book.class.getDeclaredField("id");
+            f.setAccessible(true);
+            f.set(book, 123L);
+        } catch (Exception ignored) {}
+
+        String thumbUrl = "http://img.com/1.jpg";
+
+        BookIndexDto dto = BookIndexDto.from(book, thumbUrl);
+
+        assertThat(dto.id()).isEqualTo(123L);
+        assertThat(dto.title()).isEqualTo("제목");
+        assertThat(dto.publisher()).isEqualTo("출판사");
+        assertThat(dto.contributors()).isEqualTo("저자");
+        assertThat(dto.regularPrice()).isEqualTo(10000);
+        assertThat(dto.salePrice()).isEqualTo(9000);
+        assertThat(dto.thumbnail()).isEqualTo(thumbUrl);
     }
 }

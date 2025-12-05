@@ -110,7 +110,6 @@ public class BookController {
         Page<BookSortDto> bookSortDtoPage = bookSearchService.searchBooks(searchRequest);
         List<BookSortResponse> bookSortResponseList = new ArrayList<>();
 
-        //TODO : 성능개선 필요
         for(BookSortDto dto : bookSortDtoPage){
             String thumbnailUrl = bookImageService.getThumbnailUrl(dto.getId());
             bookSortResponseList.add(BookSortResponse.from(dto,thumbnailUrl));
@@ -195,5 +194,52 @@ public class BookController {
 
         return ResponseEntity.ok(restPage);
     }
-}
 
+    @GetMapping("/books/newBooks")
+    public ResponseEntity<RestPageImpl<BookSortResponse>> getNewBooks(
+            @PageableDefault(size = 9, sort = "publishDate,desc") Pageable pageable
+    ){
+        Page<Book> bookPage = bookService.getNewBooks(pageable);
+
+        List<BookSortResponse> bookSortResponseList = new ArrayList<>();
+
+        for (Book book : bookPage) {
+            BookSortDto dto = BookSortDto.from(book);
+
+            String thumbnailUrl = bookImageService.getThumbnailUrl(book.getId());
+
+            bookSortResponseList.add(BookSortResponse.from(dto, thumbnailUrl));
+        }
+
+        Page<BookSortResponse> bookSortResponsePage = new PageImpl<>(
+                bookSortResponseList,
+                pageable,
+                bookPage.getTotalElements()
+        );
+
+        RestPageImpl<BookSortResponse> responsePage = new RestPageImpl<>(bookSortResponsePage);
+
+        return ResponseEntity.ok(responsePage);
+    }
+
+    @GetMapping("/books/best")
+    public ResponseEntity<RestPageImpl<BookIndexResponse>> getBestSellers(
+            @PageableDefault(size = 9, page = 0) Pageable pageable
+    ) {
+        Page<BookIndexDto> bestSellersDto = bookService.getBestSellers(pageable);
+
+        List<BookIndexResponse> responses = bestSellersDto.getContent().stream()
+                .map(BookIndexResponse::from)
+                .toList();
+
+        Page<BookIndexResponse> responsePage = new PageImpl<>(
+                responses,
+                pageable,
+                bestSellersDto.getTotalElements()
+        );
+
+        RestPageImpl<BookIndexResponse> restPage = new RestPageImpl<>(responsePage);
+
+        return ResponseEntity.ok(restPage);
+    }
+}

@@ -1,5 +1,6 @@
 package store.bookscamp.api.couponissue.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import store.bookscamp.api.coupon.entity.Coupon;
@@ -13,6 +14,8 @@ public interface CouponIssueRepository extends JpaRepository<CouponIssue, Long>,
     boolean existsByCouponTargetTypeAndMember(TargetType targetType, Member member);
 
     boolean existsByCouponAndMember(Coupon coupon, Member member);
+
+    boolean existsByCouponAndMemberAndExpiredAtIsAfter(Coupon coupon, Member member, LocalDateTime expiredAtAfter);
 
     List<CouponIssue> findAllByMember(Member member);
 

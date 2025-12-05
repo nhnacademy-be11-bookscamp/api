@@ -1,8 +1,5 @@
 package store.bookscamp.api.payment.service;
 
-import static store.bookscamp.api.common.exception.ErrorCode.*;
-import static store.bookscamp.api.orderinfo.entity.OrderStatus.*;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +25,16 @@ import store.bookscamp.api.pointhistory.repository.PointHistoryRepository;
 import store.bookscamp.api.pointpolicy.entity.PointPolicy;
 
 import java.util.List;
+
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_ALREADY_PAID;
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_CANNOT_BE_CANCELLED;
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_NOT_AWAITING_PAYMENT;
+import static store.bookscamp.api.common.exception.ErrorCode.ORDER_NOT_FOUND;
+import static store.bookscamp.api.common.exception.ErrorCode.PAYMENT_AMOUNT_MISMATCH;
+import static store.bookscamp.api.common.exception.ErrorCode.PAYMENT_NOT_FOUND;
+import static store.bookscamp.api.orderinfo.entity.OrderStatus.AWAITING_PAYMENT;
+import static store.bookscamp.api.orderinfo.entity.OrderStatus.CANCELLED;
+import static store.bookscamp.api.orderinfo.entity.OrderStatus.PENDING;
 
 @Slf4j
 @Service
@@ -59,20 +66,34 @@ public class PaymentService {
             throw new ApplicationException(PAYMENT_AMOUNT_MISMATCH);
         }
 
-        PaymentApprovalResponse approvalResponse = paymentAdapter.approve(
-                paymentKey,
-                orderNumber,
-                amount
-        );
+        Payment payment;
 
-        Payment payment = new Payment(
-                orderInfo,
-                approvalResponse.totalAmount(),
-                approvalResponse.approvedAt(),
-                approvalResponse.paymentKey(),
-                PaymentMethod.CARD,
-                PaymentProvider.TOSS
-        );
+        if (amount == 0) {
+            payment = new Payment(
+                    orderInfo,
+                    0,
+                    null,
+                    null,
+                    PaymentMethod.POINT,
+                    PaymentProvider.INTERNAL
+            );
+        } else {
+            PaymentApprovalResponse approvalResponse = paymentAdapter.approve(
+                    paymentKey,
+                    orderNumber,
+                    amount
+            );
+
+            payment = new Payment(
+                    orderInfo,
+                    approvalResponse.totalAmount(),
+                    approvalResponse.approvedAt(),
+                    approvalResponse.paymentKey(),
+                    PaymentMethod.CARD,
+                    PaymentProvider.TOSS
+            );
+        }
+
         paymentRepository.save(payment);
 
         processStockDecrease(orderInfo);
@@ -160,17 +181,26 @@ public class PaymentService {
         Payment payment = paymentRepository.findByOrderInfo(orderInfo)
                 .orElseThrow(() -> new ApplicationException(PAYMENT_NOT_FOUND));
 
-        paymentAdapter.cancel(payment.getPaymentKey(), cancelReason);
+        if (payment.getPaymentKey() != null) {
+            paymentAdapter.cancel(payment.getPaymentKey(), cancelReason);
+            log.info("[PAYMENT-CANCEL] Toss 취소 완료 - orderId: {}", orderId);
+        } else {
+            log.info("[PAYMENT-CANCEL] 포인트/쿠폰 결제 취소 - orderId: {}", orderId);
+        }
 
         rollbackStock(orderInfo);
+        log.info("[PAYMENT-CANCEL] 재고 복구 완료 - orderId: {}", orderId);
 
         if (orderInfo.getMember() != null) {
             rollbackMemberBenefits(orderInfo);
+            log.info("[PAYMENT-CANCEL] 회원 혜택 복구 완료 - orderId: {}", orderId);
         }
 
         orderInfo.changeOrderStatus(CANCELLED);
+        log.info("[PAYMENT-CANCEL] 주문 상태 변경 완료 - orderId: {}, status: CANCELLED", orderId);
 
         paymentRepository.delete(payment);
+        log.info("[PAYMENT-CANCEL] 결제 정보 삭제 완료 - orderId: {}", orderId);
     }
 
     private void rollbackStock(OrderInfo orderInfo) {

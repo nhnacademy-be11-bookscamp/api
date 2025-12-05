@@ -85,7 +85,7 @@ class MemberControllerTest {
     @DisplayName("GET /member/check-id - 아이디 중복 발생 (409 Conflict)")
     void checkIdDuplicate_True() throws Exception {
         String duplicateId = "duplicateId";
-        given(memberService.checkIdDuplicate(duplicateId)).willReturn(true);
+        given(memberService.checkIdDuplicate(duplicateId)).willReturn(1L);
 
         mockMvc.perform(get("/member/check-id")
                         .param("id", duplicateId))
@@ -98,7 +98,7 @@ class MemberControllerTest {
     @DisplayName("GET /member/check-id - 아이디 사용 가능 (200 OK)")
     void checkIdDuplicate_False() throws Exception {
         String availableId = "newId";
-        given(memberService.checkIdDuplicate(availableId)).willReturn(false);
+        given(memberService.checkIdDuplicate(availableId)).willReturn(0L);
 
         mockMvc.perform(get("/member/check-id")
                         .param("id", availableId))

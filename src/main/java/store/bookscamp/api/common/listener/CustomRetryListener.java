@@ -19,7 +19,7 @@ public class CustomRetryListener implements RetryListener {
         String name = (String) context.getAttribute("context.name");
         Object method = context.getAttribute("method");
 
-        log.info("재시도 실행... (count: {}), context.name = {}, method = {}",
+        log.info("에러 발생... (retry count: {}), context.name = {}, method = {}",
                 context.getRetryCount(),
                 name,
                 method instanceof java.lang.reflect.Method m ? m.getName() : "unknown"

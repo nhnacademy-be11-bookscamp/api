@@ -1,7 +1,6 @@
 package store.bookscamp.api.member.service;
 
 import java.time.LocalDate;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,7 +16,6 @@ import store.bookscamp.api.member.repository.MemberRepository;
 import store.bookscamp.api.member.service.dto.MemberCreateDto;
 import store.bookscamp.api.member.service.dto.MemberGetDto;
 import store.bookscamp.api.member.service.dto.MemberPageDto;
-import store.bookscamp.api.member.service.dto.MemberPasswordUpdateDto;
 import store.bookscamp.api.member.service.dto.MemberStatusUpdateDto;
 import store.bookscamp.api.member.service.dto.MemberUpdateDto;
 import store.bookscamp.api.pointpolicy.entity.PointPolicyType;
@@ -35,15 +33,13 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberGetDto getMember(Long id){
-        Member member = memberRepository.getById(id);
-        if (Objects.isNull(member)){
-            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
-        }
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
         return MemberGetDto.fromEntity(member);
     }
 
     @Transactional(readOnly = true)
-    public boolean checkIdDuplicate(String id) {
+    public long checkIdDuplicate(String id) {
         return memberRepository.existsByUsername(id);
     }
 
@@ -82,10 +78,8 @@ public class MemberService {
 
     @Transactional
     public void updateMember(Long id, MemberUpdateDto memberUpdateDto){
-        Member member = memberRepository.getById(id);
-        if(Objects.isNull(member)){
-            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
-        }
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
 
         member.changeInfo(
                 memberUpdateDto.name(),
@@ -106,10 +100,8 @@ public class MemberService {
 
     @Transactional
     public void deleteMember(Long id){
-        Member member = memberRepository.getById(id);
-        if(Objects.isNull(member)){
-            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
-        }
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
         memberRepository.delete(member);
     }
 
@@ -131,10 +123,8 @@ public class MemberService {
 
     @Transactional
     public void updateMemberState(MemberStatusUpdateDto dto){
-        Member member = memberRepository.getById(dto.memberId());
-        if(Objects.isNull(member)){
-            throw new ApplicationException(ErrorCode.MEMBER_NOT_FOUND);
-        }
+        Member member = memberRepository.findById(dto.memberId())
+                .orElseThrow(() -> new ApplicationException(ErrorCode.MEMBER_NOT_FOUND));
         member.updateStatus(dto.status());
         memberRepository.save(member);
     }

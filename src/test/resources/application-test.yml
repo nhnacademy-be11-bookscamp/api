@@ -52,6 +52,7 @@ elasticsearch:
 google:
   gemini:
     api-key: dummy-test-key
+    review-api-key: dummy-test-key
 
 aladin:
   base-url: https://example.com

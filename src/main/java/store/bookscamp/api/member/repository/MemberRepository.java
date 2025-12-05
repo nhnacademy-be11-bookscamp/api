@@ -6,13 +6,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import store.bookscamp.api.member.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Optional<Member> getByUsername(String id);
+    Optional<Member> findById(Long id);
 
-    boolean existsByUsername(String id);
+    @Query(
+            value = "SELECT COUNT(*) FROM member m WHERE m.username = :username",
+            nativeQuery = true
+    )    Long existsByUsername(@Param("username")String username);
 
     boolean existsByEmail(String email);
 
@@ -25,4 +29,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByBirthDateMonth(int month);
 
     Page<Member> findAll(Pageable pageable);
+
 }

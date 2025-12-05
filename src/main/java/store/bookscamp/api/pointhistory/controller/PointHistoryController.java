@@ -25,6 +25,7 @@ import store.bookscamp.api.pointhistory.service.PointHistoryService;
 public class PointHistoryController {
 
     private final PointHistoryService pointHistoryService;
+    private static final String USER_ID_HEADER = "X-User-ID";
 
     @PostMapping("/point-histories/earn")
     @Operation(summary = "earn Point", description = "포인트 적립 API")
@@ -33,7 +34,7 @@ public class PointHistoryController {
             HttpServletRequest request
     ) {
 
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
 
         pointHistoryService.earnPoint(pointRequest.toDto(), memberId);
         return ResponseEntity.ok().build();
@@ -46,7 +47,7 @@ public class PointHistoryController {
             HttpServletRequest request
     ) {
 
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
 
         pointHistoryService.usePoint(pointRequest.toDto(), memberId);
         return ResponseEntity.ok().build();
@@ -61,7 +62,7 @@ public class PointHistoryController {
             @RequestParam(defaultValue = "10") int size
     ) {
 
-        Long memberId = Long.parseLong(request.getHeader("X-User-ID"));
+        Long memberId = Long.parseLong(request.getHeader(USER_ID_HEADER));
 
         Page<PointHistoryResponse> response =
                 pointHistoryService.listMemberPoints(memberId, PageRequest.of(page, size) )
