@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import store.bookscamp.api.book.controller.request.AladinCreateRequest;
 import store.bookscamp.api.book.controller.request.BookCreateRequest;
 import store.bookscamp.api.book.controller.request.BookUpdateRequest;
-import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.service.BookSearchService;
 import store.bookscamp.api.book.service.BookService;
@@ -28,7 +27,6 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -85,13 +83,11 @@ class BookControllerTest {
     @Test
     @DisplayName("알라딘 도서 등록 성공")
     void aladinCreateBook_Success() throws Exception {
-        // [수정] ISBN 유효성 검사 통과를 위해 실제 ISBN 사용
-        // imageUrls는 Controller에서 @RequestParam으로 받아 setter로 주입하므로 DTO 생성 시엔 null 또는 빈 리스트
         AladinCreateRequest request = new AladinCreateRequest(
                 "Aladin Title",
                 "Author",
                 "Pub",
-                "9788966263158",     // [수정] 유효한 ISBN13 (지킬박사와 하이드 씨 등 아무거나)
+                "9788966263158",
                 LocalDate.now(),
                 20000,
                 18000,
@@ -99,7 +95,7 @@ class BookControllerTest {
                 true,
                 "Desc",
                 "Explanation",
-                null,                // imageUrls (어차피 컨트롤러에서 덮어씀)
+                null,
                 List.of(1L),
                 1L
         );
@@ -117,7 +113,6 @@ class BookControllerTest {
     @Test
     @DisplayName("도서 수정 성공")
     void updateBook_Success() throws Exception {
-        // BookUpdateRequest 생성자 (title, contributors, publisher, isbn, publishDate, regularPrice, salePrice, stock, packable, content, explanation, tagIds, categoryId, imageUrls, removedUrls, status)
         BookUpdateRequest request = new BookUpdateRequest(
                 "New Title",
                 "New Author",
@@ -158,7 +153,6 @@ class BookControllerTest {
     @Test
     @DisplayName("도서 목록 검색 및 조회 성공")
     void getBooks_Success() throws Exception {
-        // BookSortDto Builder 사용
         BookSortDto dto = BookSortDto.builder()
                 .id(1L)
                 .title("Book1")
@@ -195,7 +189,6 @@ class BookControllerTest {
     @Test
     @DisplayName("도서 상세 조회 성공")
     void getBookDetail_Success() throws Exception {
-        // BookDetailDto 생성자 (id, title, explanation, content, publisher, publishDate, contributors, isbn, status, packable, regularPrice, salePrice, stock, viewCount, categoryList, tagList, imageUrlList)
         BookDetailDto detailDto = new BookDetailDto(
                 1L,
                 "Detail Book",
@@ -225,7 +218,6 @@ class BookControllerTest {
     @Test
     @DisplayName("추천 도서 목록 조회 성공")
     void getRecommendBooks_Success() throws Exception {
-        // BookIndexDto (id, title, publisher, contributors, regularPrice, salePrice, thumbnail)
         BookIndexDto dto = new BookIndexDto(1L, "Rec Book", "Pub", "Contrib", 10000, 9000, "http://img.com");
         given(bookService.getRecommendBooks()).willReturn(List.of(dto));
 
@@ -235,9 +227,35 @@ class BookControllerTest {
     }
 
     @Test
+    @DisplayName("베스트 셀러 목록 조회 성공")
+    void getBestSellers_Success() throws Exception {
+        // given
+        BookIndexDto bestDto = new BookIndexDto(
+                10L,
+                "Best Seller",
+                "Best Pub",
+                "Best Author",
+                20000,
+                18000,
+                "http://best.img"
+        );
+        Page<BookIndexDto> page = new PageImpl<>(List.of(bestDto), PageRequest.of(0, 9), 1);
+
+        given(bookService.getBestSellers(any(Pageable.class))).willReturn(page);
+
+        // when & then
+        mockMvc.perform(get("/books/best")
+                        .param("page", "0")
+                        .param("size", "9"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].title").value("Best Seller"))
+                .andExpect(jsonPath("$.content[0].salePrice").value(18000))
+                .andExpect(jsonPath("$.content[0].thumbnail").value("http://best.img"));
+    }
+
+    @Test
     @DisplayName("위시리스트 조회 성공")
     void getWishListBooks_Success() throws Exception {
-        // BookWishListDto (id, title, publisher, publishDate, contributors, packable, regularPrice, salePrice, status, thumbnailUrl)
         BookWishListDto dto = new BookWishListDto(1L, "Wish Book", "Pub", LocalDate.now(), "Contrib", true, 12000, 10000, BookStatus.AVAILABLE, "img.jpg");
         Page<BookWishListDto> page = new PageImpl<>(List.of(dto));
 
@@ -263,17 +281,17 @@ class BookControllerTest {
     @Test
     @DisplayName("관리자: 쿠폰 적용 대상 도서 조회 성공")
     void getBooksForCoupon_Success() throws Exception {
-        Book mockBook = mock(Book.class);
+        // BookService.getBooks 반환 타입이 Page<Book>이므로 Mock Book 필요
+        store.bookscamp.api.book.entity.Book mockBook = org.mockito.Mockito.mock(store.bookscamp.api.book.entity.Book.class);
         given(mockBook.getId()).willReturn(10L);
         given(mockBook.getTitle()).willReturn("Coupon Book");
+        // BookCouponResponse.from(book)에서 필요한 필드 모킹
         given(mockBook.getSalePrice()).willReturn(13500);
         given(mockBook.getRegularPrice()).willReturn(15000);
         given(mockBook.getPublisher()).willReturn("Pub");
         given(mockBook.getContributors()).willReturn("Author");
-        // BookCouponResponse.from(book) 내부에서 사용하는 Getter들을 모두 Mocking해야 함.
-        // BookCouponResponse가 없지만 일반적으로 필요한 필드들 Mocking 완료.
 
-        Page<Book> bookPage = new PageImpl<>(List.of(mockBook));
+        Page<store.bookscamp.api.book.entity.Book> bookPage = new PageImpl<>(List.of(mockBook));
 
         given(bookService.getBooks(anyString(), any(Pageable.class))).willReturn(bookPage);
 
@@ -286,9 +304,11 @@ class BookControllerTest {
     @Test
     @DisplayName("신간 도서 조회 성공")
     void getNewBooks_Success() throws Exception {
-        Book mockBook = mock(Book.class);
+        // BookService.getNewBooks 반환 타입이 Page<Book>
+        store.bookscamp.api.book.entity.Book mockBook = org.mockito.Mockito.mock(store.bookscamp.api.book.entity.Book.class);
         given(mockBook.getId()).willReturn(20L);
         given(mockBook.getTitle()).willReturn("New Book");
+        // BookSortDto.from(book)에 필요한 필드 모킹
         given(mockBook.getContributors()).willReturn("Author");
         given(mockBook.getPublisher()).willReturn("Pub");
         given(mockBook.getPublishDate()).willReturn(LocalDate.now());
@@ -297,9 +317,8 @@ class BookControllerTest {
         given(mockBook.getStock()).willReturn(10);
         given(mockBook.getViewCount()).willReturn(0L);
         given(mockBook.isPackable()).willReturn(true);
-        // BookSortDto.from(book)에서 호출되는 getter들 모두 Mocking 필요
 
-        Page<Book> bookPage = new PageImpl<>(List.of(mockBook));
+        Page<store.bookscamp.api.book.entity.Book> bookPage = new PageImpl<>(List.of(mockBook));
 
         given(bookService.getNewBooks(any(Pageable.class))).willReturn(bookPage);
         given(bookImageService.getThumbnailUrl(20L)).willReturn("new_thumb.jpg");

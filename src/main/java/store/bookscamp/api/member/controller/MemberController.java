@@ -49,7 +49,7 @@ public class MemberController {
     @GetMapping("/member/check-id")
     @Operation(summary = "check id", description = "회원중복검사")
     public ResponseEntity<String> checkIdDuplicate(@RequestParam("id") String id) {
-        boolean isDuplicate = memberService.checkIdDuplicate(id);
+        boolean isDuplicate = memberService.checkIdDuplicate(id) > 0;
         if (isDuplicate) {
             return new ResponseEntity<>("이미 사용 중인 아이디입니다.", HttpStatus.CONFLICT);
         } else {

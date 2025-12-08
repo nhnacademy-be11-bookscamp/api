@@ -101,10 +101,11 @@ class MemberServiceTest {
     class DuplicateCheckTest {
 
         @Test
-        @DisplayName("아이디 중복 검사: 중복이면 true")
+        @DisplayName("아이디 중복 검사: 중복이면 카운트 > 0")
         void checkIdDuplicate_True() {
-            given(memberRepository.existsByUsername("duplicateId")).willReturn(true);
-            assertThat(memberService.checkIdDuplicate("duplicateId")).isTrue();
+            given(memberRepository.existsByUsername("duplicateId")).willReturn(1L);
+
+            assertThat(memberService.checkIdDuplicate("duplicateId")).isGreaterThan(0L);
         }
 
         @Test
