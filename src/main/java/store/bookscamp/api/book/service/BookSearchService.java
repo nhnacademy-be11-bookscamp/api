@@ -53,8 +53,15 @@ public class BookSearchService {
         }
 
         if (request.keyword() != null && !request.keyword().equals("")) {
+            long start = System.currentTimeMillis();   // 타이머 시작
+
             Optional<BookCaching> cache = cachingIndexService.getCache(request.keyword());
+
+            long end = System.currentTimeMillis();     // 타이머 끝
+            long elapsed = end - start;                // 걸린 시간(ms)
+
             if (cache.isPresent()) {
+                log.info("Caching-data served : {} ms", elapsed);
                 return convertToSearchResponse(cache.get(), request);
             }
         }
@@ -96,6 +103,8 @@ public class BookSearchService {
 
     // Gemini LLM 검증
     public Page<BookSortDto> hybridSearchWithLLM(BookSearchRequest request) {
+        long startTimer = System.currentTimeMillis();   // 타이머 시작
+
         // 기존 hybridSearchWithRRF 결과 가져오기
         List<BookDocument> docs = hybridSearchWithRRF(request);
         List<BookDocument> topDocs = docs.stream().limit(10).toList();
@@ -132,6 +141,9 @@ public class BookSearchService {
         }
 
         List<BookSortDto> pageSlice = sorted.subList(start, end);
+        long endTimer = System.currentTimeMillis();     // 타이머 끝
+        long elapsed = endTimer - startTimer;
+        log.info("Search-Data with LLM : {} ms",elapsed);
         return new PageImpl<>(pageSlice, pageable, sorted.size());
     }
 
