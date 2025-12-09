@@ -28,6 +28,7 @@ import store.bookscamp.api.book.entity.BookDocument;
 import store.bookscamp.api.book.entity.BookProjection;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.dto.BookBestSellerDto;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookIndexDto;
@@ -318,7 +319,7 @@ class BookServiceTest {
 
     // [추가됨] 베스트 셀러 조회 테스트
     @Test
-    @DisplayName("getBestSellers - 페이징 + thumbnail 포함 반환")
+    @DisplayName("getBestSellers - 페이징 + thumbnail 포함 반환 (Record 타입 검증)")
     void getBestSellers_success() {
         BookService service = createService();
 
@@ -328,7 +329,6 @@ class BookServiceTest {
         Book b1 = mock(Book.class);
         when(b1.getId()).thenReturn(100L);
         when(b1.getTitle()).thenReturn("Best Book 1");
-        // ... 필요한 필드 Mocking
 
         Book b2 = mock(Book.class);
         when(b2.getId()).thenReturn(101L);
@@ -340,30 +340,27 @@ class BookServiceTest {
         // 2. Repository Behavior
         when(bookRepository.getBestSellers(pageable)).thenReturn(mockPage);
 
-        // 3. Image Behavior (각 책에 대한 썸네일 조회)
+        // 3. Image Behavior
         BookImage thumb1 = mock(BookImage.class);
         when(thumb1.isThumbnail()).thenReturn(true);
         when(thumb1.getImageUrl()).thenReturn("best1.jpg");
 
-        // b1은 썸네일 있음
         when(bookImageRepository.findByBook(b1)).thenReturn(List.of(thumb1));
-        // b2는 이미지 없음 (빈 리스트)
         when(bookImageRepository.findByBook(b2)).thenReturn(List.of());
 
-        // 4. Execution
-        Page<BookIndexDto> result = service.getBestSellers(pageable);
+        // 4. Execution (반환 타입이 Record인 BookBestSellerDto임)
+        BookBestSellerDto<BookIndexDto> result = service.getBestSellers(pageable);
 
         // 5. Assertion
-        assertThat(result.getTotalElements()).isEqualTo(2);
-        assertThat(result.getContent()).hasSize(2);
+        // Record는 getter가 content(), totalElements() 형태입니다.
+        assertThat(result.totalElements()).isEqualTo(2);
+        assertThat(result.content()).hasSize(2);
 
-        // 첫 번째 책: 썸네일 확인
-        assertThat(result.getContent().get(0).title()).isEqualTo("Best Book 1");
-        assertThat(result.getContent().get(0).thumbnail()).isEqualTo("best1.jpg");
+        assertThat(result.content().get(0).title()).isEqualTo("Best Book 1");
+        assertThat(result.content().get(0).thumbnail()).isEqualTo("best1.jpg");
 
-        // 두 번째 책: 썸네일 null 확인
-        assertThat(result.getContent().get(1).title()).isEqualTo("Best Book 2");
-        assertThat(result.getContent().get(1).thumbnail()).isNull();
+        assertThat(result.content().get(1).title()).isEqualTo("Best Book 2");
+        assertThat(result.content().get(1).thumbnail()).isNull();
 
         verify(bookRepository).getBestSellers(pageable);
     }

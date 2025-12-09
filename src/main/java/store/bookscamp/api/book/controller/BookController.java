@@ -31,6 +31,7 @@ import store.bookscamp.api.book.controller.response.BookWishListResponse;
 import store.bookscamp.api.book.entity.Book;
 import store.bookscamp.api.book.service.BookSearchService;
 import store.bookscamp.api.book.service.BookService;
+import store.bookscamp.api.book.service.dto.BookBestSellerDto;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookIndexDto;
@@ -226,16 +227,16 @@ public class BookController {
     public ResponseEntity<RestPageImpl<BookIndexResponse>> getBestSellers(
             @PageableDefault(size = 9, page = 0) Pageable pageable
     ) {
-        Page<BookIndexDto> bestSellersDto = bookService.getBestSellers(pageable);
+        BookBestSellerDto<BookIndexDto> bestSellersDto = bookService.getBestSellers(pageable);
 
-        List<BookIndexResponse> responses = bestSellersDto.getContent().stream()
+        List<BookIndexResponse> responses = bestSellersDto.content().stream()
                 .map(BookIndexResponse::from)
                 .toList();
 
         Page<BookIndexResponse> responsePage = new PageImpl<>(
                 responses,
                 pageable,
-                bestSellersDto.getTotalElements()
+                bestSellersDto.totalElements()
         );
 
         RestPageImpl<BookIndexResponse> restPage = new RestPageImpl<>(responsePage);
