@@ -239,11 +239,18 @@ class BookControllerTest {
                 18000,
                 "http://best.img"
         );
+
+        // 1. Page 객체 생성
         Page<BookIndexDto> page = new PageImpl<>(List.of(bestDto), PageRequest.of(0, 9), 1);
 
-        given(bookService.getBestSellers(any(Pageable.class))).willReturn(page);
+        // 2. Service가 반환할 Record(Dto) 생성 ✨
+        BookBestSellerDto<BookIndexDto> serviceResult = BookBestSellerDto.from(page);
+
+        // 3. Mocking: Service는 이제 Page가 아니라 Record를 반환함
+        given(bookService.getBestSellers(any(Pageable.class))).willReturn(serviceResult);
 
         // when & then
+        // Controller 내부에서 Record -> Page -> RestPageImpl 변환 로직이 수행됨
         mockMvc.perform(get("/books/best")
                         .param("page", "0")
                         .param("size", "9"))

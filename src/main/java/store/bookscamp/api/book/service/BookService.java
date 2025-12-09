@@ -16,6 +16,7 @@ import store.bookscamp.api.book.entity.BookDocument;
 import store.bookscamp.api.book.entity.BookProjection;
 import store.bookscamp.api.book.entity.BookStatus;
 import store.bookscamp.api.book.repository.BookRepository;
+import store.bookscamp.api.book.service.dto.BookBestSellerDto;
 import store.bookscamp.api.book.service.dto.BookCreateDto;
 import store.bookscamp.api.book.service.dto.BookDetailDto;
 import store.bookscamp.api.book.service.dto.BookIndexDto;
@@ -246,15 +247,21 @@ public class BookService {
     }
 
     @Cacheable(value = "bestSellers", key = "#pageable.pageNumber")
-    public Page<BookIndexDto> getBestSellers(Pageable pageable) {
+    public BookBestSellerDto<BookIndexDto> getBestSellers(Pageable pageable) {
 
+        // 1. DB에서 조회 (엔티티 Page)
         Page<Book> bestSellers = bookRepository.getBestSellers(pageable);
 
+        // 2. DTO로 변환
         List<BookIndexDto> dtoList = bestSellers.getContent().stream()
                 .map(this::convertToBookIndexDto)
                 .toList();
 
-        return new PageImpl<>(dtoList, pageable, bestSellers.getTotalElements());
+        // 3. PageImpl 생성
+        Page<BookIndexDto> page = new PageImpl<>(dtoList, pageable, bestSellers.getTotalElements());
+
+        // 4. Redis에 저장하기 좋은 Record 형태로 변환하여 반환 ✨
+        return BookBestSellerDto.from(page);
     }
 
     public Page<BookWishListDto> getWishList(Long memberId, Pageable pageable) {
